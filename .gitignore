@@ -13,3 +13,6 @@ core/python/__init__.py
 **jobTempOutput_**/**
 
 ToDo.md
+
+config/workdir*
+config/save*
