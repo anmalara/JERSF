@@ -13,6 +13,7 @@
 #include <TPaveStats.h>
 #include <TGraphAsymmErrors.h>
 #include "functions.C"
+#include "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/JER2017/include/constants.h"
 
 #include "TFrame.h"
 // #include "plotting/CMS_lumi.C"
@@ -240,7 +241,7 @@ tdrDraw(h1.at(m).at(p).at(r), "", kFullCircle, c1 );                            
 tdrDraw(h2.at(m).at(p).at(r), "", kFullCircle, c2 );                                        \
 tdrDraw(h3.at(m).at(p).at(r), "", kFullCircle, c3 );                                        \
 
-int mainRun( bool data, const char* filename, const char* filename_data, TString lumi, TString label_mc, TString label_data )		// filename is input .root file, data determines if we work on data or mc (no gen level info in data)
+int mainRun( bool data, const char* filename, const char* filename_data, TString lumi, TString label_mc, TString label_data, std::string Trigger)		// filename is input .root file, data determines if we work on data or mc (no gen level info in data)
 {
 
   ////////////////////////////////////////////////////////////////////////////
@@ -268,17 +269,79 @@ int mainRun( bool data, const char* filename, const char* filename_data, TString
 
   std::vector< std::vector< std::vector< TH1F* > > > dummy_hists;
 
-  //	int pt_bins = 9, pt_bins_fe = 6, eta_bins = 5, eta_bins_fe = 3, eta_bins_fec = 4;
-  //	int pt_bins = 9, pt_bins_fe = 6, eta_bins = 7, eta_bins_fe = 3, eta_bins_fec = 6;
-  int pt_bins = 9, pt_bins_fe = 6, eta_bins = 10, eta_bins_fe = 3, eta_bins_fec = 8, alpha_bins;
+  //
+  // int pt_bins, pt_bins_fe, eta_bin, eta_bins_fe, eta_bins_fec;
+  //
+  // std::vector<double> p_bins_edge;
+  // std::vector<double> p_bins_edge_FT;
+  //
+  // if (Trigger == "Single") {
+  //   pt_bins       = n_pt_bins_Si;
+  //   pt_bins_fe    = n_pt_bins_Si_HF;
+  //   for (int i = 0; i < n_pt_bins_Si; i++) p_bins_edge.push_back(pt_bins_Si[i]);
+  //   for (int i = 0; i < n_pt_bins_Si_HF; i++) p_bins_edge_FT.push_back(pt_bins_Si_HF[i]);
+  // } else if (Trigger == "DiJet") {
+  //   pt_bins       = n_pt_bins_Di;
+  //   pt_bins_fe    = n_pt_bins_Di_HF;
+  //   for (int i = 0; i < n_pt_bins_Di; i++) p_bins_edge.push_back(pt_bins_Di[i]);
+  //   for (int i = 0; i < n_pt_bins_Di_HF; i++) p_bins_edge_FT.push_back(pt_bins_Di_HF[i]);
+  // }
+  //
+  // p_bins_edge.push_back(1500);
+  // p_bins_edge_FT.push_back(1500);
+  //
+  // std::cout << "help " << p_bins_edge.size() << std::endl;
+  // std::cout << "help " << p_bins_edge_FT.size() << std::endl;
+  // std::cout << "help " << eta_bins_edge.size() << std::endl;
+  // std::cout << "help " << eta_bins_control_edge.size() << std::endl;
+  // std::cout << "help " << pt_bins << std::endl;
+  // std::cout << "help " << pt_bins_fe << std::endl;
+  // std::cout << "help " << eta_bin << std::endl;
+  // std::cout << "help " << eta_bins_fe << std::endl;
+  // std::cout << "help " << eta_bins_fec << std::endl;
+  //
+  //
+  // for (int i = 0; i < p_bins_edge.size(); i++) std::cout << "help " << p_bins_edge.at(i) << std::endl;
+  // for (int i = 0; i < p_bins_edge_FT.size(); i++) std::cout << "help " << p_bins_edge_FT.at(i) << std::endl;
+  // for (int i = 0; i < eta_bins_edge.size(); i++) std::cout << "help " << eta_bins_edge.at(i) << std::endl;
+  // for (int i = 0; i < eta_bins_control_edge.size(); i++) std::cout << "help " << eta_bins_control_edge.at(i) << std::endl;
+
+
 
   // bin values only for labels at some plots
 
-  double p_bins_edge [] = { 51, 74, 96, 165, 232, 300, 366, 456, 569, 1500 };
-  double p_bins_edge_FT [] = { 72, 95, 118, 188, 257, 354, 1500 };
+  int pt_bins = 9, pt_bins_fe = 6, eta_bin = 10, eta_bins_fe = 3, eta_bins_fec = 8, alpha_bins;
 
-  double eta_bins_edge [] = { 0, 0.522, 0.783, 1.131, 1.305, 1.740, 1.930, 2.043, 2.322, 2.5, 2.853, 2.964, 3.139, 5.191 };
-  double eta_bins_control_edge [] = { 0, 1.131, 1.305, 1.740, 1.930, 2.043, 2.322, 2.5, 2.853, 2.964, 3.139, 5.191 };
+
+  std::vector<double> p_bins_edge;
+  std::vector<double> p_bins_edge_FT;
+
+  if (Trigger == "Single") {
+    pt_bins       = n_pt_bins_Si;
+    pt_bins_fe    = n_pt_bins_Si_HF;
+    for (int i = 0; i < n_pt_bins_Si; i++) p_bins_edge.push_back(pt_bins_Si[i]);
+    for (int i = 0; i < n_pt_bins_Si_HF; i++) p_bins_edge_FT.push_back(pt_bins_Si_HF[i]);
+  } else if (Trigger == "DiJet") {
+    pt_bins       = n_pt_bins_Di;
+    pt_bins_fe    = n_pt_bins_Di_HF;
+    for (int i = 0; i < n_pt_bins_Di; i++) p_bins_edge.push_back(pt_bins_Di[i]);
+    for (int i = 0; i < n_pt_bins_Di_HF; i++) p_bins_edge_FT.push_back(pt_bins_Di_HF[i]);
+  }
+
+  p_bins_edge.push_back(1500);
+  p_bins_edge_FT.push_back(1500);
+
+
+  // double eta_bins_edge [] = { 0, 0.522, 0.783, 1.131, 1.305, 1.740, 1.930, 2.043, 2.322, 2.5, 2.853, 2.964, 3.139, 5.191 };
+  // double eta_bins_control_edge [] = { 0, 1.131, 1.305, 1.740, 1.930, 2.043, 2.322, 2.5, 2.853, 2.964, 3.139, 5.191 };
+  std::vector<double> eta_bins_edge(eta_bins, eta_bins + sizeof(eta_bins)/sizeof(double));
+  std::vector<double> eta_bins_control_edge(eta_bins+3, eta_bins + sizeof(eta_bins)/sizeof(double)-3);
+  eta_bins_control_edge.insert(eta_bins_control_edge.begin(), 0.);
+
+  eta_bins_fe   = 3;
+  eta_bin      = n_eta_bins - eta_bins_fe - 1;
+  eta_bins_fec  = eta_bins_control_edge.size() -1 ;
+
 
   std::vector<float> alpha;
   alpha.push_back(0.05); alpha.push_back(0.1);  alpha.push_back(0.15);
@@ -289,8 +352,8 @@ int mainRun( bool data, const char* filename, const char* filename_data, TString
   f = new TFile( filename, "READ");
   f_data = new TFile( filename_data, "READ");
 
-  histLoadAsym( *f_data, 	real_data, "asymm_eta", asymmetries_all_data, asymmetries_gen_all_data, pt_bins, eta_bins );	// load asymm from data
-  histLoadAsym( *f, 	data, "asymm_eta", asymmetries_all, asymmetries_gen_all, pt_bins, eta_bins );		// load asymm from mc (all)
+  histLoadAsym( *f_data, 	real_data, "asymm_eta", asymmetries_all_data, asymmetries_gen_all_data, pt_bins, eta_bin );	// load asymm from data
+  histLoadAsym( *f, 	data, "asymm_eta", asymmetries_all, asymmetries_gen_all, pt_bins, eta_bin );		// load asymm from mc (all)
 
   histLoadFE1( *f_data, 	real_data, "forward_control_probe", forward_hist_data , forward_gen_hist_data , pt_bins, eta_bins_fec );
   histLoadFE1( *f, 	data, "forward_control_probe", forward_hist , forward_gen_hist, pt_bins, eta_bins_fec );
@@ -298,8 +361,8 @@ int mainRun( bool data, const char* filename, const char* filename_data, TString
   histLoadFE1( *f_data, 	real_data, "forward_probe", forward_hist_data , forward_gen_hist_data , pt_bins_fe, eta_bins_fe );
   histLoadFE1( *f, 	data, "forward_probe", forward_hist, forward_gen_hist, pt_bins_fe, eta_bins_fe );
 
-  histLoadAsym( *f_data, 	real_data, "asymmpt_probe", asymmetries_all_data_pt, asymmetries_gen_all_data_pt, pt_bins, eta_bins );	// load asymm pt from data
-  histLoadAsym( *f, 	data, "asymmpt_probe", asymmetries_all_pt, asymmetries_gen_all_pt, pt_bins, eta_bins );		// load asymm pt from mc (all)
+  histLoadAsym( *f_data, 	real_data, "asymmpt_probe", asymmetries_all_data_pt, asymmetries_gen_all_data_pt, pt_bins, eta_bin );	// load asymm pt from data
+  histLoadAsym( *f, 	data, "asymmpt_probe", asymmetries_all_pt, asymmetries_gen_all_pt, pt_bins, eta_bin );		// load asymm pt from mc (all)
 
   histLoadFE1( *f_data, 	real_data, "forwardpt_control_probe", forward_hist_data_pt , forward_gen_hist_data_pt , pt_bins, eta_bins_fec );
   histLoadFE1( *f, 	data, "forwardpt_control_probe", forward_hist_pt , forward_gen_hist_pt, pt_bins, eta_bins_fec );
@@ -307,7 +370,7 @@ int mainRun( bool data, const char* filename, const char* filename_data, TString
   histLoadFE1( *f_data, 	real_data, "forwardpt_probe", forward_hist_data_pt , forward_gen_hist_data_pt , pt_bins_fe, eta_bins_fe );
   histLoadFE1( *f, 	data, "forwardpt_probe", forward_hist_pt , forward_gen_hist_pt, pt_bins_fe, eta_bins_fe );
 
-  histLoadAsym( *f, 	data, "mctruth_eta", mc_truth_asymmetries_all, dummy_hists, pt_bins, eta_bins );		// load asymm from mc (all)
+  histLoadAsym( *f, 	data, "mctruth_eta", mc_truth_asymmetries_all, dummy_hists, pt_bins, eta_bin );		// load asymm from mc (all)
 
   histLoadFE1( *f, 	data, "mctruth_forward_control_probe", mc_truth_forward_hist , dummy_hists, pt_bins, eta_bins_fec );
   histLoadFE1( *f, 	data, "mctruth_forward_probe",         mc_truth_forward_hist , dummy_hists, pt_bins_fe, eta_bins_fe );
@@ -1087,8 +1150,8 @@ for( unsigned int m = 0; m < FE_MC_cor_graphs.size(); m++ ){
     TLegend *leg = tdrLeg(0.42,0.885,0.9,0.92);
     char legTitle[100];
     sprintf(legTitle, "#eta #in [%.3f,%.3f], p_{T} #in [%.0f,%.0f] GeV",
-    eta_bins_edge[eta_bins + eta_bins_fe - FE_MC_cor_graphs.size() + m],
-    eta_bins_edge[eta_bins + eta_bins_fe - FE_MC_cor_graphs.size() + m+1],
+    eta_bins_edge[eta_bin + eta_bins_fe - FE_MC_cor_graphs.size() + m],
+    eta_bins_edge[eta_bin + eta_bins_fe - FE_MC_cor_graphs.size() + m+1],
     p_bins_edge_FT[p], p_bins_edge_FT[p+1]);
     // leg->SetHeader(legTitle,"");
     tdrHeader(leg,"");
@@ -1126,9 +1189,9 @@ gprim.Close();
 
 
 TFile gbis("output/SFs.root","RECREATE");
-ofstream mytxtfile;
-mytxtfile.open ("output/scalefactors.txt");
-mytxtfile << "standard method\n";
+ofstream texfile;
+texfile.open ("output/scalefactors_tex.txt");
+texfile << "standard method\n";
 
 // ofstream mytxtfile2;
 // mytxtfile2.open ("output/scalefactors_short.txt");
@@ -1147,8 +1210,8 @@ for( unsigned int m = 0; m < JER_scale_hist.size(); m++ ){
   eta_bin_err.push_back((eta_bins_edge[m+1]-eta_bins_edge[m]) /2);
   st.push_back(constfit -> GetParameter( 0 ));
   st_err.push_back(constfit -> GetParError( 0 ));
-  mytxtfile << constfit -> GetParameter( 0 ) << " \\pm " << constfit -> GetParError( 0 ) << " & ";
-  if(m == JER_scale_hist.size()-1 ) mytxtfile << "\\\\";
+  texfile << constfit -> GetParameter( 0 ) << " \\pm " << constfit -> GetParError( 0 ) << " & ";
+  if(m == JER_scale_hist.size()-1 ) texfile << "\\\\";
   // sprintf(text_tex, "#chi^{2}/ndf = %.2f/%d", f->GetChisquare(), f->GetNDF());      legend->AddEntry((TObject*)0, line, "");
   delete constfit;
   // std::cout << std::endl;
@@ -1185,23 +1248,23 @@ for( unsigned int m = 0; m < JER015_FE_scale_hist.size(); m++ ){
   // std::cout << std::endl;
 }
 
-mytxtfile << "\n forward extension \n";
+texfile << "\n forward extension \n";
 for( unsigned int m = 0; m < JER_FE_scale_hist.size(); m++ ){
   TF1 * constfit = new TF1( "constfit", "pol0", 0, 0.25 );
   // std::cout << "FE scales, eta bin " << m << std::endl;
   JER_FE_scale_hist.at(m) -> Fit("constfit","Q");
   JER_FE_scale_hist.at(m) -> Write();
-  int diff = eta_bins + eta_bins_fe - JER_FE_scale_hist.size();
+  int diff = eta_bin + eta_bins_fe - JER_FE_scale_hist.size();
   eta_bin_center_fe.push_back((eta_bins_edge[diff+m+1]+eta_bins_edge[diff+m]) /2);
   eta_bin_err_fe.push_back((eta_bins_edge[diff+m+1]-eta_bins_edge[diff+m]) /2);
   fe.push_back(constfit -> GetParameter( 0 ));
   fe_err.push_back(constfit -> GetParError( 0 ));
-  mytxtfile << constfit -> GetParameter( 0 ) << " \\pm " << constfit -> GetParError( 0 ) << " & ";
-  if(m == JER_FE_scale_hist.size()-1 ) mytxtfile << "\\\\";
+  texfile << constfit -> GetParameter( 0 ) << " \\pm " << constfit -> GetParError( 0 ) << " & ";
+  if(m == JER_FE_scale_hist.size()-1 ) texfile << "\\\\";
   delete constfit;
 }
 
-mytxtfile << "\n standard method, correlated fit\n";
+texfile << "\n standard method, correlated fit\n";
 for( unsigned int m = 0; m < JER_cor_scale_hist.size(); m++ ){
   TF1 * constfit = new TF1( "constfit", "pol0", 0, 0.25 );
   // std::cout << "standard scales, eta bin " << m << std::endl;
@@ -1209,14 +1272,14 @@ for( unsigned int m = 0; m < JER_cor_scale_hist.size(); m++ ){
   JER_cor_scale_hist.at(m) -> Write();
   st_cor.push_back(constfit -> GetParameter( 0 ));
   st_err_cor.push_back(constfit -> GetParError( 0 ));
-  mytxtfile << constfit -> GetParameter( 0 ) << " \\pm " << constfit -> GetParError( 0 ) << " & ";
-  if(m == JER_cor_scale_hist.size()-1 ) mytxtfile << "\\\\";
+  texfile << constfit -> GetParameter( 0 ) << " \\pm " << constfit -> GetParError( 0 ) << " & ";
+  if(m == JER_cor_scale_hist.size()-1 ) texfile << "\\\\";
   delete constfit;
   // std::cout << std::endl;
   // std::cout << std::endl;
 }
 
-mytxtfile << "\n forward extension, correlated fit \n";
+texfile << "\n forward extension, correlated fit \n";
 for( unsigned int m = 0; m < JER_cor_FE_scale_hist.size(); m++ ){
   TF1 * constfit = new TF1( "constfit", "pol0", 0, 0.25 );
   // std::cout << "FE scales, eta bin " << m << std::endl;
@@ -1224,18 +1287,34 @@ for( unsigned int m = 0; m < JER_cor_FE_scale_hist.size(); m++ ){
   JER_cor_FE_scale_hist.at(m) -> Write();
   fe_cor.push_back(constfit -> GetParameter( 0 ));
   fe_err_cor.push_back(constfit -> GetParError( 0 ));
-  mytxtfile << constfit -> GetParameter( 0 ) << " \\pm " << constfit -> GetParError( 0 ) << " & ";
-  if(m == JER_cor_FE_scale_hist.size()-1 ) mytxtfile << "\\\\";
+  texfile << constfit -> GetParameter( 0 ) << " \\pm " << constfit -> GetParError( 0 ) << " & ";
+  if(m == JER_cor_FE_scale_hist.size()-1 ) texfile << "\\\\";
   // std::cout << std::endl;
   // std::cout << std::endl;
   delete constfit;
 }
-mytxtfile << "\n";
-mytxtfile.close();
+texfile << "\n";
+texfile.close();
 
 gbis.Close();
-
-TCanvas* canv_SF = tdrCanvas("JER SF",eta_bins_edge[0]-0.1, eta_bins_edge[eta_bins + eta_bins_fe]+0.5, 0.8, 3.0, "#eta", "JER SF");
+ofstream txt_ST, txt_FE;
+txt_ST.open ("output/scalefactors_ST.txt");
+txt_FE.open ("output/scalefactors_FE.txt");
+std::cout << "#eta_bin_center" << "\t" << "eta_bin_err" << "\t" << "st" << "\t" << "st_err" << "\t" << "st_cor" << "\t" << "st_err_cor" << "\n";
+txt_ST << "#eta_bin_center" << "\t" << "eta_bin_err" << "\t" << "st" << "\t" << "st_err" << "\t" << "st_cor" << "\t" << "st_err_cor" << "\n";
+txt_FE << "#eta_bin_center_fe" << "\t" << "eta_bin_err_fe" << "\t" << "fe" << "\t" << "fe_err" << "\t" << "fe_cor" << "\t" << "fe_err_cor" << "\n";
+for (unsigned int i = 0; i < JER_scale_hist.size(); i++) {
+  txt_ST << eta_bin_center[i] << " " << eta_bin_err[i] << " " << st[i] << " " << st_err[i] << " " << st_cor[i] << " " << st_err_cor[i] << "\n";
+  std::cout << eta_bin_center[i] << " " << eta_bin_err[i] << " " << st[i] << " " << st_err[i] << " " << st_cor[i] << " " << st_err_cor[i] << "\n";
+}
+for (unsigned int i = 0; i < JER_FE_scale_hist.size(); i++) {
+  txt_FE << eta_bin_center_fe[i] << " \t " << eta_bin_err_fe[i] << " \t " << fe[i] << " \t " << fe_err[i] << " \t " << fe_cor[i] << " \t " << fe_err_cor[i] << "\n";
+  std::cout << eta_bin_center_fe[i] << "\t" << eta_bin_err_fe[i] << "\t" << fe[i] << "\t" << fe_err[i] << "\t" << fe_cor[i] << "\t" << fe_err_cor[i] << "\n";
+}
+txt_ST.close();
+txt_FE.close();
+// return 0;
+TCanvas* canv_SF = tdrCanvas("JER SF",eta_bins_edge[0]-0.1, eta_bins_edge[eta_bin + eta_bins_fe]+0.5, 0.8, 3.0, "#eta", "JER SF");
 canv_SF->SetTickx(0);
 canv_SF->SetTicky(0);
 TGraphErrors *gr_st = new TGraphErrors(JER_scale_hist.size(), &(eta_bin_center[0]), &(st[0]), &(eta_bin_err[0]), &(st_err[0]));
@@ -1269,9 +1348,15 @@ TFile h_merged("output/widths_merged.root","RECREATE");
 
 for( unsigned int m = 0; m < widths_hist_FE.size(); m++ ){
   for( unsigned int p = 0; p < widths_hist_FE.at(m).size(); p++ ){
+    std::cout << "help " << m << " " << eta_bins_edge.at(m) << " " << p << " " << p_bins_edge.at(p) << std::endl;
     PLOT_3_2(widths_hist_FE,widths_hist_FE_gen,widths_hist_FE_data,kRed,kGreen+2,kBlue,m,p)
-    widths_hist_FE.at(m).at(p) -> GetFunction("linfit")->SetLineColor(kRed);
-    widths_hist_FE_gen.at(m).at(p) -> GetFunction("linfit")->SetLineColor(kGreen+2);
+
+    if( widths_hist_FE.at(m).at(p)->GetEntries() != 0 ){
+      widths_hist_FE.at(m).at(p) -> GetFunction("linfit")->SetLineColor(kRed);
+    }
+    if( widths_hist_FE_gen.at(m).at(p)->GetEntries() != 0 ){
+      widths_hist_FE_gen.at(m).at(p) -> GetFunction("linfit")->SetLineColor(kGreen+2);
+    }
     if( widths_hist_FE_data.at(m).at(p)->GetEntries() != 0 ){
       widths_hist_FE_data.at(m).at(p) -> GetFunction("linfit")->SetLineColor(kBlue);
     }
@@ -1280,7 +1365,9 @@ for( unsigned int m = 0; m < widths_hist_FE.size(); m++ ){
     char line[100];
     TLegend *legend;
 
-    f = widths_hist_FE.at(m).at(p) -> GetFunction("linfit");
+    if( widths_hist_FE.at(m).at(p)->GetEntries() != 0 ){
+      f = widths_hist_FE.at(m).at(p) -> GetFunction("linfit");
+    }
     legend = tdrLeg(0.50,0.70,0.70,0.90);
     legend->SetTextFont(42);  legend->SetTextSize(0.025);  legend->SetTextColor(kRed);
     // legend->SetHeader("MC", "C");
@@ -1290,7 +1377,9 @@ for( unsigned int m = 0; m < widths_hist_FE.size(); m++ ){
     sprintf(line, "p1 = %.5f #pm %.5f", f->GetParameter(1), f->GetParError(1));    legend->AddEntry((TObject*)0, line, "");
     legend->Draw("same");
 
-    f = widths_hist_FE_gen.at(m).at(p) -> GetFunction("linfit");
+    if( widths_hist_FE_gen.at(m).at(p)->GetEntries() != 0 ){
+      f = widths_hist_FE_gen.at(m).at(p) -> GetFunction("linfit");
+    }
     legend = tdrLeg(0.70,0.70,0.90,0.90);
     legend->SetTextFont(42);  legend->SetTextSize(0.025);  legend->SetTextColor(kGreen+2);
     // legend->SetHeader("gen", "C");
@@ -1315,11 +1404,11 @@ for( unsigned int m = 0; m < widths_hist_FE.size(); m++ ){
     TLegend *leg = tdrLeg(0.42,0.885,0.9,0.92);
     char legTitle[100];
     sprintf(legTitle, "#eta #in [%.3f,%.3f], p_{T} #in [%.0f,%.0f] GeV",
-    eta_bins_edge[eta_bins + eta_bins_fe - widths_hist_FE.size() + m],
-    eta_bins_edge[eta_bins + eta_bins_fe - widths_hist_FE.size() + m+1],
+    eta_bins_edge[eta_bin + eta_bins_fe - widths_hist_FE.size() + m],
+    eta_bins_edge[eta_bin + eta_bins_fe - widths_hist_FE.size() + m+1],
     p_bins_edge_FT[p], p_bins_edge_FT[p+1]);
     // leg->SetHeader(legTitle,"");
-    tdrHeader(leg,"");
+    tdrHeader(leg,legTitle);
     leg->SetTextFont(42);  leg->SetTextSize(0.035);  leg->SetTextColor(kBlack);
     leg->Draw("same");
 
@@ -1596,7 +1685,7 @@ for( unsigned int m = 0; m < JER_FE_MC_hist.size(); m++ ){
 
   TLegend *leg = tdrLeg(0.6,0.7,0.9,0.9);
   char legTitle[100];
-  sprintf(legTitle,     "#eta #in [%.3f,%.3f]", eta_bins_edge[eta_bins + eta_bins_fe - JER_FE_MC_hist.size() + m], eta_bins_edge[eta_bins + eta_bins_fe - JER_FE_MC_hist.size() + m+1]);
+  sprintf(legTitle,     "#eta #in [%.3f,%.3f]", eta_bins_edge[eta_bin + eta_bins_fe - JER_FE_MC_hist.size() + m], eta_bins_edge[eta_bin + eta_bins_fe - JER_FE_MC_hist.size() + m+1]);
   // leg->SetHeader(legTitle,"");
   tdrHeader(leg,legTitle);
   leg->AddEntry(JER_FE_data_hist.at(m),label_data,"lep");
@@ -1677,7 +1766,7 @@ for( unsigned int m = 0; m < JER_cor_FE_MC_hist.size(); m++ ){
 
   TLegend *leg = tdrLeg(0.6,0.7,0.9,0.9);
   char legTitle[100];
-  sprintf(legTitle,     "#eta #in [%.3f,%.3f]", eta_bins_edge[eta_bins + eta_bins_fe - JER_cor_FE_data_hist.size() + m], eta_bins_edge[eta_bins + eta_bins_fe - JER_cor_FE_data_hist.size() + m+1]);
+  sprintf(legTitle,     "#eta #in [%.3f,%.3f]", eta_bins_edge[eta_bin + eta_bins_fe - JER_cor_FE_data_hist.size() + m], eta_bins_edge[eta_bin + eta_bins_fe - JER_cor_FE_data_hist.size() + m+1]);
   // leg->SetHeader(legTitle,"");
   tdrHeader(leg,legTitle);
   leg->AddEntry(JER_cor_FE_data_hist.at(m),label_data,"lep");
@@ -1713,7 +1802,7 @@ for( unsigned int m = 0; m < JER_cor_FE_MC_hist.size(); m++ ){
 
     TLegend *leg = tdrLeg(0.6,0.7,0.9,0.9);
     char legTitle[100];
-    sprintf(legTitle,     "#eta #in [%.3f,%.3f]", eta_bins_edge[eta_bins + eta_bins_fe - JER_cor_FE_data_hist.size() + m], eta_bins_edge[eta_bins + eta_bins_fe - JER_cor_FE_data_hist.size() + m+1]);
+    sprintf(legTitle,     "#eta #in [%.3f,%.3f]", eta_bins_edge[eta_bin + eta_bins_fe - JER_cor_FE_data_hist.size() + m], eta_bins_edge[eta_bin + eta_bins_fe - JER_cor_FE_data_hist.size() + m+1]);
     // leg->SetHeader(legTitle,"");
     tdrHeader(leg,legTitle);
     leg->AddEntry(JER_cor_FE_data_hist.at(m),label_data,"lep");
@@ -1928,7 +2017,7 @@ for( unsigned int m = 0; m < JER_FE_scale_hist.size(); m++ ){
 
   char legTitle[100];
   TLegend *leg = tdrLeg(0.6,0.15,0.9,0.35);
-  sprintf(legTitle, "#eta #in [%.3f,%.3f]",eta_bins_edge[eta_bins + eta_bins_fe - JER_scale_hist.size() + m], eta_bins_edge[eta_bins + eta_bins_fe - JER_scale_hist.size() + m+1]);
+  sprintf(legTitle, "#eta #in [%.3f,%.3f]",eta_bins_edge[eta_bin + eta_bins_fe - JER_scale_hist.size() + m], eta_bins_edge[eta_bin + eta_bins_fe - JER_scale_hist.size() + m+1]);
   // leg->SetHeader(legTitle,"");
   tdrHeader(leg,legTitle);
   leg->SetTextFont(42);  leg->SetTextSize(0.05);
@@ -1999,8 +2088,8 @@ for( unsigned int m = 0; m < forward_hist.size(); m++ ){
       sprintf(name_mcgen,   "gen,  %.4f+-%.4f", forward_gen_width.at(m).at(p).at(r), forward_gen_width_error.at(m).at(p).at(r));
       sprintf(name_data,    "data, %.4f+-%.4f", forward_width_data.at(m).at(p).at(r), forward_width_error_data.at(m).at(p).at(r));
       sprintf(legTitle,     "#eta #in [%.3f,%.3f], p_{T} #in [%.0f,%.0f] GeV",
-      eta_bins_edge[eta_bins + eta_bins_fe - forward_hist.size() + m],
-      eta_bins_edge[eta_bins + eta_bins_fe - forward_hist.size() + m+1],
+      eta_bins_edge[eta_bin + eta_bins_fe - forward_hist.size() + m],
+      eta_bins_edge[eta_bin + eta_bins_fe - forward_hist.size() + m+1],
       p_bins_edge_FT[p], p_bins_edge_FT[p+1]);
 
       TLegend *leg = tdrLeg(0.5,0.7,0.95,0.9);

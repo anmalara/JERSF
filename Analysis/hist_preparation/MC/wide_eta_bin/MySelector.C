@@ -143,8 +143,8 @@ void MySelector::SlaveBegin(TTree * /*tree*/){
   EtaFtControlBinsNo = 8;   // fw method bins with normal triggers
   EtaFtBinsNo = 3;          // fw method bins with fw triggers
 
-  PtBinsNo = n_pt_bins_Si;
-  PtFTBinsNo = n_pt_bins_Si;
+  PtBinsNo = n_pt_bins_Di;
+  PtFTBinsNo = n_pt_bins_Di;
   AlphaBinsNo = 6;
 
   // I define histograms for the "normal" JER calculation
@@ -414,8 +414,8 @@ Bool_t MySelector::Process(Long64_t entry){
 
   MakeWeight();
   //2017
-  std::vector<int> p_bins(pt_bins_Si, pt_bins_Si + sizeof(pt_bins_Si)/sizeof(int));
-  std::vector<int> p_bins_FT(pt_bins_Si, pt_bins_Si + sizeof(pt_bins_Si)/sizeof(int));
+  std::vector<int> p_bins(pt_bins_Di, pt_bins_Di + sizeof(pt_bins_Di)/sizeof(int));
+  std::vector<int> p_bins_FT(pt_bins_Di, pt_bins_Di + sizeof(pt_bins_Di)/sizeof(int));
   std::vector<double> eta_bins_all(eta_bins, eta_bins + sizeof(eta_bins)/sizeof(double));
   std::vector<double> eta_ref_down(eta_bins+10, eta_bins + sizeof(eta_bins)/sizeof(double)-1);
   std::vector<double> eta_ref_up(eta_bins+11, eta_bins + sizeof(eta_bins)/sizeof(double));

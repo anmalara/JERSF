@@ -28,6 +28,7 @@
 #include <TH2.h>
 #include <TStyle.h>
 #include <algorithm>
+#include <iostream>
 
 bool sortFunct( MyJet a, MyJet b) { return ( a.Pt() > b.Pt() ); }
 
@@ -115,7 +116,7 @@ void MySelector::SlaveBegin(TTree * /*tree*/){
   EtaFtBinsNo = 3;          // fw method bins with fw triggers
 
   PtBinsNo = n_pt_bins_Si;
-  PtFTBinsNo = n_pt_bins_Si;
+  PtFTBinsNo = n_pt_bins_Si_HF;
   AlphaBinsNo = 6;
 
   // I define histograms for the "normal" JER calculation
@@ -290,12 +291,14 @@ Bool_t MySelector::Process(Long64_t entry){
 
   //2017
   std::vector<int> p_bins(pt_bins_Si, pt_bins_Si + sizeof(pt_bins_Si)/sizeof(int));
-  std::vector<int> p_bins_FT(pt_bins_Si, pt_bins_Si + sizeof(pt_bins_Si)/sizeof(int));
+  std::vector<int> p_bins_FT(pt_bins_Si_HF, pt_bins_Si_HF + sizeof(pt_bins_Si_HF)/sizeof(int));
   std::vector<double> eta_bins_all(eta_bins, eta_bins + sizeof(eta_bins)/sizeof(double));
   std::vector<double> eta_ref_down(eta_bins+10, eta_bins + sizeof(eta_bins)/sizeof(double)-1);
   std::vector<double> eta_ref_up(eta_bins+11, eta_bins + sizeof(eta_bins)/sizeof(double));
   std::vector<double> eta_bins_control(eta_bins+3, eta_bins + sizeof(eta_bins)/sizeof(double)-3);
   eta_bins_control.insert(eta_bins_control.begin(), 0.);
+  p_bins.push_back(1500);
+  p_bins_FT.push_back(1500);
   double alpha_bins [] = { 0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3 };
 
 
@@ -316,7 +319,7 @@ Bool_t MySelector::Process(Long64_t entry){
       }
     }
   }
-  if(pass_trigger_hf){
+  if(!pass_trigger_hf){ // FIXME this is only a temporal solution
     for( int i = 0; i < PtFTBinsNo; i++ ){
       if(p_bins_FT[i] <= pt_ave && p_bins_FT[i + 1] >= pt_ave){
         ftrigger[i] = true;
@@ -454,6 +457,7 @@ Bool_t MySelector::Process(Long64_t entry){
                   if ( alpha < alpha_bins[ m+1 ] ){
                     double asy = asymmetry;
                     if ((TMath::Abs( probejet_eta ) > 0. && TMath::Abs( probejet_eta ) < s_eta_barr && TMath::Abs( barreljet_eta ) > eta_ref_down[r] && TMath::Abs( barreljet_eta ) < eta_ref_up[r])) { asy = - asymmetry;}
+                    // std::cout << "help " << ftrigger[k] << " " << asy << std::endl;
                     forward_hist.at(r).at(k).at(m) -> Fill( asy , weight );
                     forward_pt_hist.at(r).at(k).at(m) -> Fill( 0.5 * ( jet1_pt + jet2_pt ), weight );
                     forward_rho_hist.at(r).at(k).at(m) -> Fill( rho, weight );

@@ -27,29 +27,15 @@
 #include "UHH2/JER2017/include/JER2017Selections.h"
 #include "UHH2/JER2017/include/JER2017Hists.h"
 #include "UHH2/JER2017/include/selection.h"
-// #include "UHH2/JER2017/include/jet_corrections.h"
-// #include "UHH2/JER2017/include/mc_weight.h"
 #include "UHH2/JER2017/include/constants.h"
-// #include "UHH2/JER2017/include/TSetTree.h"
-
-//#include "UHH2/JER2017/include/dijet_event.h"
-
-//#include "UHH2/JER2017/include/pileup_data.h"
-//#include "UHH2/JER2017/include/data_corrections.h"
 #include "TClonesArray.h"
 #include "TString.h"
 #include "Riostream.h"
 #include "TFile.h"
 #include "TTree.h"
-// #include "TBranch.h"
 
-//TTree   *fCurrentTree;
-// Int_t   Runnr;
-// Int_t   Eventnr;
-//TFile   *fCurrentTreeFile;
 using namespace std;
 using namespace uhh2;
-
 
 class JER2017Module: public uhh2::AnalysisModule {
 
@@ -59,8 +45,10 @@ public:
   ~JER2017Module();
 
 protected:
+
   // correctors
   std::unique_ptr<JetCorrector> jet_corrector, jet_corrector_B, jet_corrector_C, jet_corrector_D, jet_corrector_E, jet_corrector_F;
+  std::unique_ptr<TopJetCorrector> topjet_corrector, topjet_corrector_B, topjet_corrector_C, topjet_corrector_D, topjet_corrector_E, topjet_corrector_F;
   std::unique_ptr<GenericJetResolutionSmearer> jetER_smearer;
 
   // cleaners
@@ -69,11 +57,9 @@ protected:
   std::unique_ptr<MuonCleaner>     muoSR_cleaner;
   std::unique_ptr<ElectronCleaner> eleSR_cleaner;
 
-
   // selections
   std::unique_ptr<uhh2::Selection> lumi_sel;
   std::unique_ptr<uhh2::AndSelection> metfilters_sel;
-  //    std::unique_ptr<uhh2::AndSelection> trigger_sel;
   std::unique_ptr<uhh2::Selection> trigger40_sel;
   std::unique_ptr<uhh2::Selection> trigger60_sel;
   std::unique_ptr<uhh2::Selection> trigger80_sel;
@@ -93,10 +79,6 @@ protected:
   //// Data/MC scale factors
   std::unique_ptr<uhh2::AnalysisModule> pileupSF;
   unique_ptr<AnalysisModule>  Jet_printer, GenParticles_printer;
-
-
-
-
 
 
   Event::Handle<int> tt_hf_trigger; Event::Handle<int> tt_bl_trigger;
@@ -144,8 +126,6 @@ protected:
   Event::Handle<int> tt_no_mc_spikes;//number of jets
 
 
-
-
   std::unique_ptr<JECAnalysisHists> h_nocuts, h_sel, h_dijet, h_match, h_final;
   std::unique_ptr<JECAnalysisHists> h_trg40, h_trg60, h_trg80, h_trg140, h_trg200,h_trg260,h_trg320,h_trg400, h_trg450,h_trg500;
   std::unique_ptr<JECAnalysisHists> h_trgHF60, h_trgHF80,h_trgHF100, h_trgHF160,h_trgHF220, h_trgHF300;
@@ -155,12 +135,11 @@ protected:
   std::unique_ptr<JECRunnumberHists> h_runnr_input;
   uhh2bacon::Selection sel;
 
-  bool debug;
-  bool no_genp;
-  bool isMC, split_JEC_DATA, split_JEC_MC, ClosureTest, apply_weights, apply_lumiweights, apply_unflattening, apply_METoverPt_cut, apply_EtaPhi_cut, apply_EtaPhi_HCAL, do_only_centraltriggers, do_only_forwardtriggers, do_fulltriggers, trigger_central, trigger_fwd;
+  bool debug, no_genp;
+  bool isMC, isTopCollection, ClosureTest, apply_weights, apply_lumiweights, apply_unflattening, apply_METoverPt_cut, apply_EtaPhi_cut, apply_EtaPhi_HCAL, do_only_centraltriggers, do_only_forwardtriggers, do_fulltriggers, trigger_central, trigger_fwd, DO_Pu_ReWeighting;
   double lumiweight;
-  string jetLabel, PtBinsTrigger;
-  TString dataset_version, JEC_Version;
+  string PtBinsTrigger, SysType_PU;
+  TString dataset_version, JEC_Version, jetLabel;
   JetId Jet_PFID;
   int n_evt;
   std::unique_ptr<TFile> f_weights;
@@ -177,25 +156,27 @@ protected:
 
 };
 
-JER2017Module::JER2017Module(uhh2::Context & ctx) :
-sel(ctx)
-{
-
+JER2017Module::JER2017Module(uhh2::Context & ctx) : sel(ctx) {
 
   //for(auto & kv : ctx.get_all()){
   //  cout << " " << kv.first << " = " << kv.second << endl;
   //}
+
   no_genp=false;
   cout << "start" << endl;
   TString name_weights = ctx.get("MC_Weights_Path");
+  dataset_version = ctx.get("dataset_version");
+  jetLabel = ctx.get("JetLabel");
   isMC = (ctx.get("dataset_type") == "MC");
+  isTopCollection = jetLabel.Contains("AK8");
+  string2bool(ctx.get("use_sframe_weight", "true"));
   apply_weights = (ctx.get("Apply_Weights") == "true" && isMC);
   cout << "Dataset is " << ((isMC) ? " mc " : " data") << endl;
   cout << ((apply_weights) ? " Applying weights" : " NOT applying weights ") << endl;
   cout << "Applying weights:" << apply_weights << endl;
 
   //#############################################  Filters  #########################################################
-  //// COMMON MODULES
+  // COMMON MODULES
   if(!isMC) lumi_sel.reset(new LumiSelection(ctx));
   /* MET filters */
   if(!isMC) {
@@ -213,12 +194,10 @@ sel(ctx)
   }
   //Jet cleaner
   Jet_PFID = JetPFID(JetPFID::WP_TIGHT);
-  // jetcleaner.reset(new JetCleaner(ctx, Jet_PFID));
   jetcleaner.reset(new JetCleaner(ctx, AndId<Jet>(Jet_PFID, PtEtaCut(10,5))));
 
   //Lepton cleaner
   const     MuonId muoSR(AndId<Muon>    (MuonID(Muon::CutBasedIdTight),PtEtaCut  (15, 2.4)));
-  // const ElectronId eleSR(AndId<Electron>(ElectronID_PHYS14_25ns_tight , PtEtaSCCut(15, 2.4)));
   const ElectronId eleSR(AndId<Electron>(ElectronID_MVA_Fall17_loose_iso , PtEtaSCCut(15, 2.4)));
 
   muoSR_cleaner.reset(new     MuonCleaner(muoSR));
@@ -278,9 +257,6 @@ sel(ctx)
 
 
   //#############################################  Jet Correction  ##################################################
-  jetLabel = ctx.get("JetLabel");
-  dataset_version = ctx.get("dataset_version");
-  //ClosureTest = true; // Always do closure. If not, this is for computing residuals, and we want to just apply corrections as they are!
   ClosureTest = (ctx.get("ClosureTest") == "true");
   apply_METoverPt_cut = (ctx.get("METoverPt_cut") == "true");
   apply_EtaPhi_cut = (ctx.get("EtaPhi_cut") == "true");
@@ -292,138 +268,107 @@ sel(ctx)
   do_fulltriggers = (ctx.get("Triggers") == "full" || ctx.get("Triggers") == "Full");
   if(do_only_forwardtriggers + do_only_centraltriggers + do_fulltriggers != 1) throw runtime_error("Invalid specification of triggers to be used. Not == 1 value is true.");
 
-  split_JEC_MC   = false; //Different MC corrections only existed for Spring16_25ns_V8*
-  split_JEC_DATA = true;
-
   std::vector<std::string> JEC_corr,       JEC_corr_B,       JEC_corr_C,       JEC_corr_D,       JEC_corr_E,       JEC_corr_F;
   std::vector<std::string> JEC_corr_L1RC,  JEC_corr_B_L1RC,  JEC_corr_C_L1RC,  JEC_corr_D_L1RC,  JEC_corr_E_L1RC,  JEC_corr_F_L1RC;
 
-  #define MAKE_JEC_VARS_CLOSURE(jecv)                         \
-  if(JEC_Version == #jecv){                                   \
-    JEC_corr_B      = JERFiles::jecv##_B_L123_AK4PFchs_DATA;  \
-    JEC_corr_C      = JERFiles::jecv##_C_L123_AK4PFchs_DATA;  \
-    JEC_corr_D      = JERFiles::jecv##_D_L123_AK4PFchs_DATA;  \
-    JEC_corr_E      = JERFiles::jecv##_E_L123_AK4PFchs_DATA;  \
-    JEC_corr_F      = JERFiles::jecv##_F_L123_AK4PFchs_DATA;  \
-    JEC_corr_B_L1RC = JERFiles::jecv##_B_L1RC_AK4PFchs_DATA;  \
-    JEC_corr_C_L1RC = JERFiles::jecv##_C_L1RC_AK4PFchs_DATA;	\
-    JEC_corr_D_L1RC = JERFiles::jecv##_D_L1RC_AK4PFchs_DATA;	\
-    JEC_corr_E_L1RC = JERFiles::jecv##_E_L1RC_AK4PFchs_DATA;	\
-    JEC_corr_F_L1RC = JERFiles::jecv##_F_L1RC_AK4PFchs_DATA;  \
-  }                                                           \
+
+  #define MAKE_JEC(jecv,jetLabel)         					                    \
+  if(JEC_Version == #jecv){                                             \
+    JEC_corr_B      = JERFiles::jecv##_B_L123_##jetLabel##_DATA;        \
+    JEC_corr_C      = JERFiles::jecv##_C_L123_##jetLabel##_DATA;        \
+    JEC_corr_D      = JERFiles::jecv##_D_L123_##jetLabel##_DATA;        \
+    JEC_corr_E      = JERFiles::jecv##_E_L123_##jetLabel##_DATA;        \
+    JEC_corr_F      = JERFiles::jecv##_F_L123_##jetLabel##_DATA;        \
+    JEC_corr_B_L1RC = JERFiles::jecv##_B_L1RC_##jetLabel##_DATA;        \
+    JEC_corr_C_L1RC = JERFiles::jecv##_C_L1RC_##jetLabel##_DATA;        \
+    JEC_corr_D_L1RC = JERFiles::jecv##_D_L1RC_##jetLabel##_DATA;        \
+    JEC_corr_E_L1RC = JERFiles::jecv##_E_L1RC_##jetLabel##_DATA;        \
+    JEC_corr_F_L1RC = JERFiles::jecv##_F_L1RC_##jetLabel##_DATA;        \
+  }                                                                     \
+
+  #define MAKE_JEC_NORES(jecv,jetLabel)         					              \
+  if(JEC_Version == #jecv){                                             \
+    JEC_corr_B      = JERFiles::jecv##_B_L123_noRes_##jetLabel##_DATA;  \
+    JEC_corr_C      = JERFiles::jecv##_C_L123_noRes_##jetLabel##_DATA;  \
+    JEC_corr_D      = JERFiles::jecv##_D_L123_noRes_##jetLabel##_DATA;  \
+    JEC_corr_E      = JERFiles::jecv##_E_L123_noRes_##jetLabel##_DATA;  \
+    JEC_corr_F      = JERFiles::jecv##_F_L123_noRes_##jetLabel##_DATA;  \
+    JEC_corr_B_L1RC = JERFiles::jecv##_B_L1RC_noRes_##jetLabel##_DATA;  \
+    JEC_corr_C_L1RC = JERFiles::jecv##_C_L1RC_noRes_##jetLabel##_DATA;  \
+    JEC_corr_D_L1RC = JERFiles::jecv##_D_L1RC_noRes_##jetLabel##_DATA;  \
+    JEC_corr_E_L1RC = JERFiles::jecv##_E_L1RC_noRes_##jetLabel##_DATA;  \
+    JEC_corr_F_L1RC = JERFiles::jecv##_F_L1RC_noRes_##jetLabel##_DATA;  \
+  }                                                                     \
+
+  #define MAKE_JEC_MC(jecv,jetLabel)					                          \
+  if(JEC_Version == #jecv){                                             \
+    JEC_corr      = JERFiles::jecv##_L123_##jetLabel##_MC;              \
+    JEC_corr_L1RC = JERFiles::jecv##_L1RC_##jetLabel##_MC;              \
+  }                                                                     \
 
 
-  #define MAKE_JEC_VARS_NO_CLOSURE(jecv)					                  \
-  if(JEC_Version == #jecv){                                         \
-    JEC_corr_B      = JERFiles::jecv##_B_L123_AK4PFchs_DATA;  \
-    JEC_corr_C      = JERFiles::jecv##_C_L123_AK4PFchs_DATA;  \
-    JEC_corr_D      = JERFiles::jecv##_D_L123_AK4PFchs_DATA;  \
-    JEC_corr_E      = JERFiles::jecv##_E_L123_AK4PFchs_DATA;  \
-    JEC_corr_F      = JERFiles::jecv##_F_L123_AK4PFchs_DATA;  \
-    JEC_corr_B_L1RC = JERFiles::jecv##_B_L1RC_AK4PFchs_DATA;        \
-    JEC_corr_C_L1RC = JERFiles::jecv##_C_L1RC_AK4PFchs_DATA;        \
-    JEC_corr_D_L1RC = JERFiles::jecv##_D_L1RC_AK4PFchs_DATA;        \
-    JEC_corr_E_L1RC = JERFiles::jecv##_E_L1RC_AK4PFchs_DATA;        \
-    JEC_corr_F_L1RC = JERFiles::jecv##_F_L1RC_AK4PFchs_DATA;        \
-  }                                                                 \
-
-  #define MAKE_JEC_VARS_MC(jecv)					              \
-  if(JEC_Version == #jecv){                             \
-    JEC_corr      = JERFiles::jecv##_L123_AK4PFchs_MC;  \
-    JEC_corr_L1RC = JERFiles::jecv##_L1RC_AK4PFchs_MC;  \
-    cout << "This is MC, JECs used are: ";              \
-    for(unsigned int i=0; i<JEC_corr.size(); i++) cout << JEC_corr[i] << ", ";\
-    cout << endl;\
-  }                                                     \
-
-  if(jetLabel == "AK4CHS"){
-    if(isMC){//for MC
-      //JEC-Version:V4
-      // MAKE_JEC_VARS_MC(Fall17_17Nov2017_V4)
-      // else MAKE_JEC_VARS_MC(Fall17_17Nov2017_V5)
-      // else MAKE_JEC_VARS_MC(Fall17_17Nov2017_V6)
-      // else MAKE_JEC_VARS_MC(Fall17_17Nov2017_V7)
-      if(JEC_Version == "Fall17_17Nov2017_V7"){
-        JEC_corr          = JERFiles::Fall17_17Nov2017_V4_L123_AK4PFchs_MC;//noRes only for DATA ;), only one version for MC for deriving Summer16_23Sep2016
-        JEC_corr_L1RC     = JERFiles::Fall17_17Nov2017_V4_L1RC_AK4PFchs_MC;
-        cout << "This is MC, JECs used are: ";
-        for(unsigned int i=0; i<JEC_corr.size(); i++) cout << JEC_corr[i] << ", ";
-        cout << endl;
-      } else if(JEC_Version == "Fall17_17Nov2017_V10"){
-        JEC_corr          = JERFiles::Fall17_17Nov2017_V10_L123_AK4PFchs_MC;//noRes only for DATA ;), only one version for MC for deriving Summer16_23Sep2016
-        JEC_corr_L1RC     = JERFiles::Fall17_17Nov2017_V10_L1RC_AK4PFchs_MC;
-        cout << "This is MC, JECs used are: ";
-        for(unsigned int i=0; i<JEC_corr.size(); i++) cout << JEC_corr[i] << ", ";
-        cout << endl;
-      }
+  if(isMC){ //L123 for MC
+    if (jetLabel == "AK4CHS") {
+      MAKE_JEC_MC(Fall17_17Nov2017_V4, AK4PFchs)
+      else MAKE_JEC_MC(Fall17_17Nov2017_V6, AK4PFchs)
+      else MAKE_JEC_MC(Fall17_17Nov2017_V10, AK4PFchs)
       else throw runtime_error("In JER2017Module.cxx: Invalid JEC_Version for deriving residuals on AK4CHS, MC specified ("+JEC_Version+") ");
-    }//MC
-    else { //for DATA
-      //JEC-Version: V7
-      if(!ClosureTest){
-        //residuals
-        MAKE_JEC_VARS_NO_CLOSURE(Fall17_17Nov2017_V5)
-        else MAKE_JEC_VARS_NO_CLOSURE(Fall17_17Nov2017_V6)
-        else MAKE_JEC_VARS_NO_CLOSURE(Fall17_17Nov2017_V7)
-        else MAKE_JEC_VARS_NO_CLOSURE(Fall17_17Nov2017_V10)
-        else throw runtime_error("In AnalysisModule_DiJetTrg.cxx: Invalid JEC_Version for deriving residuals on AK4CHS, DATA specified.");
-      }
-      else{
-        MAKE_JEC_VARS_CLOSURE(Fall17_17Nov2017_V4)
-        else MAKE_JEC_VARS_CLOSURE(Fall17_17Nov2017_V5)
-        else MAKE_JEC_VARS_CLOSURE(Fall17_17Nov2017_V6)
-        else MAKE_JEC_VARS_CLOSURE(Fall17_17Nov2017_V7)
-        else MAKE_JEC_VARS_CLOSURE(Fall17_17Nov2017_V10)
-        else throw runtime_error("In AnalysisModule_DiJetTrg.cxx: Invalid JEC_Version for closure test on AK4CHS, DATA specified.");
-      }
-    }//DATA
-  }//AK4CHS
+    }
+    else if (jetLabel == "AK8PUPPI") {
+      MAKE_JEC_MC(Fall17_17Nov2017_V6, AK8PFPuppi)
+      else throw runtime_error("In JER2017Module.cxx: Invalid JEC_Version for deriving residuals on AK4CHS, MC specified ("+JEC_Version+") ");
+    }
+    else throw runtime_error("In JER2017Module.cxx: Invalid jetLabel: "+jetLabel+" ");
+  }//MC
+  else { //L123 + L2L3Res for Data
+    if (jetLabel == "AK4CHS") {
+      MAKE_JEC(Fall17_17Nov2017_V5, AK4PFchs)
+      else MAKE_JEC(Fall17_17Nov2017_V6, AK4PFchs)
+      else MAKE_JEC(Fall17_17Nov2017_V7, AK4PFchs)
+      else MAKE_JEC(Fall17_17Nov2017_V10, AK4PFchs)
+      else throw runtime_error("In JER2017Module.cxx: Invalid JEC_Version for deriving residuals on "+JEC_Version+", DATA specified.");
+    }
+    else if (jetLabel == "AK8PUPPI") {
+      MAKE_JEC(Fall17_17Nov2017_V6, AK8PFPuppi)
+      else throw runtime_error("In JER2017Module.cxx: Invalid JEC_Version for deriving residuals on "+JEC_Version+", DATA specified.");
+    }
+    else throw runtime_error("In JER2017Module.cxx: Invalid jetLabel: "+jetLabel+" ");
+
+  }//DATA
+
 
   if(jetLabel == "AK4CHS"){
     //DATA
     if(!isMC){
-      if(split_JEC_DATA){ //these only exist for DATA
-        // jet_corrector_B.reset(new JetCorrector(ctx, JEC_corr_B,  JEC_corr_B_L1RC));
-        // jet_corrector_C.reset(new JetCorrector(ctx, JEC_corr_C,  JEC_corr_C_L1RC));
-        // jet_corrector_D.reset(new JetCorrector(ctx, JEC_corr_D,  JEC_corr_D_L1RC));
-        // jet_corrector_E.reset(new JetCorrector(ctx, JEC_corr_E,  JEC_corr_E_L1RC));
-        // jet_corrector_F.reset(new JetCorrector(ctx, JEC_corr_F,  JEC_corr_F_L1RC));
-        jet_corrector_B.reset(new JetCorrector(ctx, JEC_corr_B));
-        jet_corrector_C.reset(new JetCorrector(ctx, JEC_corr_C));
-        jet_corrector_D.reset(new JetCorrector(ctx, JEC_corr_D));
-        jet_corrector_E.reset(new JetCorrector(ctx, JEC_corr_E));
-        jet_corrector_F.reset(new JetCorrector(ctx, JEC_corr_F));
-        JLC_B.reset(new JetLeptonCleaner(ctx, JEC_corr_B));
-        JLC_C.reset(new JetLeptonCleaner(ctx, JEC_corr_C));
-        JLC_D.reset(new JetLeptonCleaner(ctx, JEC_corr_D));
-        JLC_E.reset(new JetLeptonCleaner(ctx, JEC_corr_E));
-        JLC_F.reset(new JetLeptonCleaner(ctx, JEC_corr_F));
-      }
-      else{
-        jet_corrector.reset(new JetCorrector(ctx, JEC_corr, JEC_corr_L1RC));
-        jetleptoncleaner.reset(new JetLeptonCleaner(ctx, JEC_corr));
-      }
+      jet_corrector_B.reset(new JetCorrector(ctx, JEC_corr_B));
+      jet_corrector_C.reset(new JetCorrector(ctx, JEC_corr_C));
+      jet_corrector_D.reset(new JetCorrector(ctx, JEC_corr_D));
+      jet_corrector_E.reset(new JetCorrector(ctx, JEC_corr_E));
+      jet_corrector_F.reset(new JetCorrector(ctx, JEC_corr_F));
+      JLC_B.reset(new JetLeptonCleaner(ctx, JEC_corr_B));
+      JLC_C.reset(new JetLeptonCleaner(ctx, JEC_corr_C));
+      JLC_D.reset(new JetLeptonCleaner(ctx, JEC_corr_D));
+      JLC_E.reset(new JetLeptonCleaner(ctx, JEC_corr_E));
+      JLC_F.reset(new JetLeptonCleaner(ctx, JEC_corr_F));
     }
+    else if(isMC){//MC : only one version of JECs exists
+      jet_corrector.reset(new JetCorrector(ctx, JEC_corr, JEC_corr_L1RC));
+      jetleptoncleaner.reset(new JetLeptonCleaner(ctx, JEC_corr));
+    }
+  }
 
-    //MC
-    //For MC: only one version of JECs exists
-    else if(isMC){
-      if(split_JEC_MC){
-        jet_corrector_B.reset(new JetCorrector(ctx, JEC_corr_B,  JEC_corr_B_L1RC));
-        jet_corrector_C.reset(new JetCorrector(ctx, JEC_corr_C,  JEC_corr_C_L1RC));
-        jet_corrector_D.reset(new JetCorrector(ctx, JEC_corr_D,  JEC_corr_D_L1RC));
-        jet_corrector_E.reset(new JetCorrector(ctx, JEC_corr_E,  JEC_corr_E_L1RC));
-        jet_corrector_F.reset(new JetCorrector(ctx, JEC_corr_F,  JEC_corr_F_L1RC));
-        JLC_B.reset(new JetLeptonCleaner(ctx, JEC_corr_B));
-        JLC_C.reset(new JetLeptonCleaner(ctx, JEC_corr_C));
-        JLC_D.reset(new JetLeptonCleaner(ctx, JEC_corr_D));
-        JLC_E.reset(new JetLeptonCleaner(ctx, JEC_corr_E));
-        JLC_F.reset(new JetLeptonCleaner(ctx, JEC_corr_F));
-      }
-      else{
-        jet_corrector.reset(new JetCorrector(ctx, JEC_corr, JEC_corr_L1RC));
-        jetleptoncleaner.reset(new JetLeptonCleaner(ctx, JEC_corr));
-      }
+  if(jetLabel == "AK8PUPPI"){
+    //DATA
+    if(!isMC){
+      topjet_corrector_B.reset(new TopJetCorrector(ctx, JEC_corr_B));
+      topjet_corrector_C.reset(new TopJetCorrector(ctx, JEC_corr_C));
+      topjet_corrector_D.reset(new TopJetCorrector(ctx, JEC_corr_D));
+      topjet_corrector_E.reset(new TopJetCorrector(ctx, JEC_corr_E));
+      topjet_corrector_F.reset(new TopJetCorrector(ctx, JEC_corr_F));
+    }
+    else if(isMC){//MC : only one version of JECs exists
+      jet_corrector.reset(new JetCorrector(ctx, JEC_corr, JEC_corr_L1RC));
+      // jetleptoncleaner.reset(new JetLeptonCleaner(ctx, JEC_corr));
     }
   }
 
@@ -441,9 +386,11 @@ sel(ctx)
 
   //output
   ctx.undeclare_all_event_output();
-  // //pileup (define it after undeclaring all other variables to keep the weights in the output)
-  // Do pileup reweighting
-  //pileupSF.reset(new MCPileupReweight(ctx));
+
+  // Do pileup reweighting (define it after undeclaring all other variables to keep the weights in the output)
+  DO_Pu_ReWeighting = string2bool(ctx.get("DO_Pu_ReWeighting"));
+  SysType_PU = ctx.get("SysType_PU");
+  if (DO_Pu_ReWeighting) pileupSF.reset(new MCPileupReweight(ctx,SysType_PU));
 
   //    tt_dijet_event = ctx.declare_event_output<dijet_event>("dijet");
   //Store only vars needed for the dijet analysis
@@ -504,7 +451,6 @@ sel(ctx)
   tt_integrated_lumi = ctx.declare_event_output<float>("integrated_lumi");
 
   // MC:
-
   tt_genjet1_pt = ctx.declare_event_output<float>("genjet1_pt");
   tt_genjet2_pt = ctx.declare_event_output<float>("genjet2_pt");
   tt_genjet3_pt = ctx.declare_event_output<float>("genjet3_pt");
@@ -581,62 +527,7 @@ sel(ctx)
 
   debug = false;
   n_evt = 0;
-  // if(apply_weights){
-  //   if(isMC && dataset_version.Contains("RunBCD")){
-  //     if(dataset_version.Contains("_Fwd"))
-  //     name_weights += "MC_ReWeights_FWD_RunBCD.root";
-  //     else if(dataset_version.Contains("_Flat"))
-  //     name_weights += "MC_ReWeights_CENTRAL_RunBCD.root";
-  //     else
-  //     name_weights += "MC_ReWeights_RunBCD.root";
-  //   }
-  //   else if(isMC && dataset_version.Contains("RunEFearly")){
-  //     if(dataset_version.Contains("_Fwd"))
-  //     name_weights += "MC_ReWeights_FWD_RunEFearly.root";
-  //     else if(dataset_version.Contains("_Flat"))
-  //     name_weights += "MC_ReWeights_CENTRAL_RunEFearly.root";
-  //     else
-  //     name_weights += "MC_ReWeights_RunEFearly.root";
-  //   }
-  //   else if(isMC && dataset_version.Contains("RunFlateG")){
-  //     if(dataset_version.Contains("_Fwd"))
-  //     name_weights += "MC_ReWeights_FWD_RunFlateG.root";
-  //     else if(dataset_version.Contains("_Flat"))
-  //     name_weights += "MC_ReWeights_CENTRAL_RunFlateG.root";
-  //     else
-  //     name_weights += "MC_ReWeights_RunFlateG.root";
-  //   }
-  //   else if(isMC && dataset_version.Contains("RunH")){
-  //     if(dataset_version.Contains("_Fwd"))
-  //     name_weights += "MC_ReWeights_FWD_RunH.root";
-  //     else if(dataset_version.Contains("_Flat"))
-  //     name_weights += "MC_ReWeights_CENTRAL_RunH.root";
-  //     else
-  //     name_weights += "MC_ReWeights_RunH.root";
-  //   }
-  //   f_weights.reset(new TFile(name_weights,"READ"));
-  //   cout << "Name of weights is" << name_weights << endl;
-  // }
-  //    if(apply_weights){
-  //      if(isMC && dataset_version.Contains("RunBCDEFGH")){
-  //	name_weights += "MC_ReWeights_RunBCDEFGH.root";
-  //      }
-  //      else if(isMC && dataset_version.Contains("RunBCD")){
-  //	name_weights += "MC_ReWeights_RunBCD.root";
-  //      }
-  //      else if(isMC && dataset_version.Contains("RunEFearly")){
-  //	name_weights += "MC_ReWeights_RunEFearly.root";
-  //      }
-  //      else if(isMC && dataset_version.Contains("RunFlateG")){
-  //	name_weights += "MC_ReWeights_RunFlateG.root";
-  //      }
-  //      else if(isMC && dataset_version.Contains("RunH")){
-  //	name_weights += "MC_ReWeights_RunH.root";
-  //      }
-  //      cout << "using weight-file: " << name_weights << endl;
-  //      f_weights.reset(new TFile(name_weights,"READ"));
-  //    }
-  //
+
   apply_lumiweights = (ctx.get("Apply_Lumiweights") == "true" && isMC);
   apply_unflattening = (ctx.get("Apply_Unflattening") == "true" && isMC);
   if(apply_weights && apply_lumiweights) throw runtime_error("In JER2017Module.cxx: 'apply_weights' and 'apply_lumiweights' are set 'true' simultaneously. This won't work, please decide on one");
@@ -690,8 +581,6 @@ sel(ctx)
   upper_binborders_runnrs.push_back(last_entry); //this is not exactly an UPPER limit because it is equal to the highest possible entry, not greater than it...created exception for this case.
   lumi_in_bins.push_back(ilumi_current_bin);
 
-
-
 };
 
 
@@ -704,12 +593,20 @@ JER2017Module::~JER2017Module() {
 
 bool JER2017Module::process(Event & event) {
 
+  #define ak8jets event.topjets
+  #define ak4jets event.jets
 
   n_evt++;
   //cout << endl << "++++++++++ NEW EVENT +++++++++" << endl << endl;
 
   //Dump Input
   // h_input->fill(event);
+
+  // Do pileup reweighting
+  if (DO_Pu_ReWeighting){
+    bool pass_reweighting = pileupSF->process(event);
+     if(!pass_reweighting) return false;
+  }
 
   //LEPTON selection
   muoSR_cleaner->process(event);
@@ -723,14 +620,12 @@ bool JER2017Module::process(Event & event) {
   if (event.electrons->size()>0 || event.muons->size()>0) return false; //TEST lepton cleaning
 
 
-
-  /* CMS-certified luminosity sections */
+  // CMS-certified luminosity sections
   if(event.isRealData){
     if(!lumi_sel->passes(event)){
       return false; //????
     }
   }
-
 
   // MET filters
   if (!isMC) {
@@ -757,57 +652,36 @@ bool JER2017Module::process(Event & event) {
     event_in_lumibin = distance(upper_binborders_runnrs.begin(), it); //find how many elements of the vector of binborders are smaller than 'it', this is the bin to be filled
     fill_event_integrated_lumi = lumi_in_bins.at(event_in_lumibin);
   }
-  int n_jets_beforeCleaner = event.jets->size();
+  int n_jets_beforeCleaner = isTopCollection ?  ak8jets->size() : ak4jets->size();
   //JetID
   if(jetLabel == "AK4CHS" || jetLabel == "AK8CHS") jetcleaner->process(event);
-  int n_jets_afterCleaner = event.jets->size();
+  int n_jets_afterCleaner = isTopCollection ?  ak8jets->size() : ak4jets->size();
   //discard events if not all jets fulfill JetID instead of just discarding single jets
   if (n_jets_beforeCleaner != n_jets_afterCleaner) return false;
-  sort_by_pt<Jet>(*event.jets);
+  if (isTopCollection) sort_by_pt<TopJet>(*ak8jets);
+  else sort_by_pt<Jet>(*ak4jets);
   //h_cleaner->fill(event);
 
-  const int jet_n = event.jets->size();
+  const int jet_n = isTopCollection ?  ak8jets->size() : ak4jets->size();
   if(jet_n<2) return false;
-  // Jet* jetraw1 = &event.jets->at(0);// leading jet
-  // Jet* jetraw2 = &event.jets->at(1);// sub-leading jet
-  // float jetraw1_pt = jetraw1->pt(); float jetraw2_pt = jetraw2->pt();
-  //cout << "jetpt1 raw is " << jetraw1_pt << endl;
-  //cout << "jetpt2 raw is " << jetraw2_pt << endl;
-  // float pt_averaw = (jetraw1_pt + jetraw2_pt)/2.;
-  //cout << "raw pt_average for " << n_evt << " is " << pt_averaw << endl;
+
   bool apply_B = false;
   bool apply_C = false;
   bool apply_D = false;
   bool apply_E = false;
   bool apply_F = false;
-
   bool apply_global = false;
 
   if(!isMC){
-    //DATA
-    if(split_JEC_DATA){
-      //split JEC
-      if(s_runnr_A < event.run && event.run <= s_runnr_B)  apply_B = true;
-      else if(event.run <= s_runnr_C)         apply_C = true;
-      else if(event.run <= s_runnr_D)         apply_D = true;
-      else if(event.run <= s_runnr_E)         apply_E = true;
-      else if(event.run <= s_runnr_F)         apply_F = true;
-      else throw runtime_error("AnalysisModule: run number not covered by if-statements in process-routine.");
-    }
-    else{
-      //not split JEC
-      apply_global = true;
-    }
+    if(s_runnr_A < event.run && event.run <= s_runnr_B)  apply_B = true;
+    else if(event.run <= s_runnr_C)         apply_C = true;
+    else if(event.run <= s_runnr_D)         apply_D = true;
+    else if(event.run <= s_runnr_E)         apply_E = true;
+    else if(event.run <= s_runnr_F)         apply_F = true;
+    else throw runtime_error("AnalysisModule: run number not covered by if-statements in process-routine.");
   }
   else if(isMC){
-    //MC
-    if(split_JEC_MC){
-      throw runtime_error("AnalysisModule split_JEC_MC not implemented or run number not covered by if-statements in process-routine.");
-    }
-    else{
-      //not split JEC
-      apply_global = true;
-    }
+    apply_global = true;
   }
 
   if(apply_B+apply_C+apply_D+apply_E+apply_F+apply_global != 1) throw runtime_error("In JER2017Module.cxx: Sum of apply_* when applying JECs is not == 1. Fix this.");
@@ -863,13 +737,15 @@ bool JER2017Module::process(Event & event) {
   //   jet_corrector->correct_met(event,true);
   // }
 
-  Jet* jet1 = &event.jets->at(0);// leading jet
-  Jet* jet2 = &event.jets->at(1);// sub-leading jet
+  if (isTopCollection) sort_by_pt<TopJet>(*ak8jets);
+  else sort_by_pt<Jet>(*ak4jets);
+
+  Jet* jet1 = isTopCollection ?  &ak8jets->at(0) : &ak4jets->at(0);// leading jet
+  Jet* jet2 = isTopCollection ?  &ak8jets->at(1) : &ak4jets->at(1);// sub-leading jet
   float jet1_pt = jet1->pt(); float jet2_pt = jet2->pt();
   float pt_ave = (jet1_pt + jet2_pt)/2.;
 
   Jet* jet_barrel = jet1; Jet* jet_probe = jet2;
-
 
   //// HLT selection
   bool pass_trigger_bl=false; bool pass_trigger_hf=false;
@@ -888,54 +764,33 @@ bool JER2017Module::process(Event & event) {
     for (int i = 0; i < n_pt_bins_Di_HF; i++) trgHF_thresh.push_back(pt_bins_Di_HF[i]);
   }
 
-  std::cout << "PtBinsTrigger " << PtBinsTrigger << std::endl;
-  for (int i = 0; i < n_pt_bins_Si; i++) std::cout << trg_thresh[i] << " - ";
-  std::cout << std::endl;
-  for (int i = 0; i < n_pt_bins_Si_HF; i++) std::cout << trgHF_thresh[i] << " - ";
-  std::cout << std::endl;
-
   if(event.isRealData){
 
     bool eta_cut_bool = std::max(abs(jet1->eta()),abs(jet2->eta())) <  eta_cut;
-    // if(!trigger_fwd) eta_cut_bool = true;
-    std::cout << "eta_cut_bool " << eta_cut_bool << std::endl;
-    std::cout << "pt_ave " << pt_ave << std::endl;
-    // std::cout << "do_only_forwardtriggers " << do_only_forwardtriggers << std::endl;
-    // std::cout << "do_only_centraltriggers " << do_only_centraltriggers << std::endl;
-    // std::cout << "do_fulltriggers " << do_fulltriggers << std::endl;
-    std::cout << "trigger_central " << trigger_central << std::endl;
-    std::cout << "trigger_fwd " << trigger_fwd << std::endl;
+    if(!trigger_fwd && trigger_central) {
+      eta_cut_bool = true;
+      pass_trigger_hf = true;
+    }
+    if(!trigger_central && trigger_fwd){
+      eta_cut_bool = false;
+      pass_trigger_bl = true;
+    }
 
     if (eta_cut_bool && trigger_central) {
-      std::cout << "eta_cut_bool && trigger_central" << std::endl;
       if (PtBinsTrigger == "Single") {
-        std::cout << "Single" << std::endl;
-        for (int i = 0; i < n_pt_bins_Si; i++) std::cout << trg_thresh[i] << " - ";
-        std::cout << std::endl;
         pass_trigger40        = (trigger40_sel->passes(event)         && pt_ave>trg_thresh[0]   && pt_ave<trg_thresh[1]);
         pass_trigger60        = (trigger60_sel->passes(event)         && pt_ave>trg_thresh[1]   && pt_ave<trg_thresh[2]);
-        pass_trigger140       = (trigger140_sel->passes(event)        && pt_ave>trg_thresh[2]   && pt_ave<trg_thresh[3]);
-        pass_trigger200       = (trigger200_sel->passes(event)        && pt_ave>trg_thresh[3]   && pt_ave<trg_thresh[4]);
-        pass_trigger320       = (trigger320_sel->passes(event)        && pt_ave>trg_thresh[4]   && pt_ave<trg_thresh[5]);
-        pass_trigger400       = (trigger400_sel->passes(event)        && pt_ave>trg_thresh[5]   && pt_ave<trg_thresh[6]);
-        pass_trigger450       = (trigger450_sel->passes(event)        && pt_ave>trg_thresh[6]   && pt_ave<trg_thresh[7]);
-        pass_trigger500       = (trigger500_sel->passes(event)        && pt_ave>trg_thresh[7]);
-        pass_trigger_bl = (pass_trigger40 || pass_trigger60 || pass_trigger140 || pass_trigger200 || pass_trigger320 || pass_trigger400 || pass_trigger450 || pass_trigger500);
-
-        std::cout << "trigger40_sel->passes(event)" << trigger40_sel->passes(event) << '\n';
-        std::cout << "trigger60_sel->passes(event)" << trigger60_sel->passes(event) << '\n';
-        std::cout << "trigger140_sel->passes(event)" << trigger140_sel->passes(event) << '\n';
-        std::cout << "trigger200_sel->passes(event)" << trigger200_sel->passes(event) << '\n';
-        std::cout << "trigger320_sel->passes(event)" << trigger320_sel->passes(event) << '\n';
-        std::cout << "trigger400_sel->passes(event)" << trigger400_sel->passes(event) << '\n';
-        std::cout << "trigger450_sel->passes(event)" << trigger450_sel->passes(event) << '\n';
-        std::cout << "trigger500_sel->passes(event)" << trigger500_sel->passes(event) << '\n';
-        std::cout << "pass_trigger_bl" << pass_trigger_bl << '\n';
+        pass_trigger80        = (trigger80_sel->passes(event)         && pt_ave>trg_thresh[2]   && pt_ave<trg_thresh[3]);
+        pass_trigger140       = (trigger140_sel->passes(event)        && pt_ave>trg_thresh[3]   && pt_ave<trg_thresh[4]);
+        pass_trigger200       = (trigger200_sel->passes(event)        && pt_ave>trg_thresh[4]   && pt_ave<trg_thresh[5]);
+        pass_trigger260       = (trigger260_sel->passes(event)        && pt_ave>trg_thresh[5]   && pt_ave<trg_thresh[6]);
+        pass_trigger320       = (trigger320_sel->passes(event)        && pt_ave>trg_thresh[6]   && pt_ave<trg_thresh[7]);
+        pass_trigger400       = (trigger400_sel->passes(event)        && pt_ave>trg_thresh[7]   && pt_ave<trg_thresh[8]);
+        pass_trigger450       = (trigger450_sel->passes(event)        && pt_ave>trg_thresh[8]   && pt_ave<trg_thresh[9]);
+        pass_trigger500       = (trigger500_sel->passes(event)        && pt_ave>trg_thresh[9]);
+        pass_trigger_bl = (pass_trigger40 || pass_trigger60 || pass_trigger80 || pass_trigger140 || pass_trigger200 || pass_trigger260 || pass_trigger320 || pass_trigger400 || pass_trigger450 || pass_trigger500);
       }
       else if (PtBinsTrigger == "DiJet") {
-        std::cout << "DiJet" << std::endl;
-        for (int i = 0; i < n_pt_bins_Di; i++) std::cout << trg_thresh[i] << " - ";
-        std::cout << std::endl;
         pass_trigger40        = (trigger40_sel->passes(event)         && pt_ave>trg_thresh[0]   && pt_ave<trg_thresh[1]);
         pass_trigger60        = (trigger60_sel->passes(event)         && pt_ave>trg_thresh[1]   && pt_ave<trg_thresh[2]);
         pass_trigger80        = (trigger80_sel->passes(event)         && pt_ave>trg_thresh[2]   && pt_ave<trg_thresh[3]);
@@ -946,70 +801,33 @@ bool JER2017Module::process(Event & event) {
         pass_trigger400       = (trigger400_sel->passes(event)        && pt_ave>trg_thresh[7]   && pt_ave<trg_thresh[8]);
         pass_trigger500       = (trigger500_sel->passes(event)        && pt_ave>trg_thresh[8]);
         pass_trigger_bl = (pass_trigger40 || pass_trigger60 || pass_trigger80 || pass_trigger140 || pass_trigger200 || pass_trigger260 || pass_trigger320 || pass_trigger400 || pass_trigger500);
-
-        std::cout << "trigger40_sel->passes(event)" << trigger40_sel->passes(event) << '\n';
-        std::cout << "trigger60_sel->passes(event)" << trigger60_sel->passes(event) << '\n';
-        std::cout << "trigger80_sel->passes(event)" << trigger80_sel->passes(event) << '\n';
-        std::cout << "trigger140_sel->passes(event)" << trigger140_sel->passes(event) << '\n';
-        std::cout << "trigger200_sel->passes(event)" << trigger200_sel->passes(event) << '\n';
-        std::cout << "trigger260_sel->passes(event)" << trigger260_sel->passes(event) << '\n';
-        std::cout << "trigger320_sel->passes(event)" << trigger320_sel->passes(event) << '\n';
-        std::cout << "trigger400_sel->passes(event)" << trigger400_sel->passes(event) << '\n';
-        std::cout << "trigger500_sel->passes(event)" << trigger500_sel->passes(event) << '\n';
-        std::cout << "pass_trigger_bl" << pass_trigger_bl << '\n';
       }
     }
     if (!eta_cut_bool && trigger_fwd ) {
-      std::cout << "!eta_cut_bool && trigger_fwd" << std::endl;
       if (PtBinsTrigger == "Single") {
-        std::cout << "Single" << std::endl;
-        for (int i = 0; i < n_pt_bins_Si_HF; i++) std::cout << trgHF_thresh[i] << " - ";
-        std::cout << std::endl;
         pass_trigger60_HFJEC  = (trigger60_HFJEC_sel->passes(event)   && pt_ave>trgHF_thresh[0] && pt_ave<trgHF_thresh[1]);
         pass_trigger80_HFJEC  = (trigger80_HFJEC_sel->passes(event)   && pt_ave>trgHF_thresh[1] && pt_ave<trgHF_thresh[2]);
         pass_trigger100_HFJEC = (trigger100_HFJEC_sel->passes(event)  && pt_ave>trgHF_thresh[2] && pt_ave<trgHF_thresh[3]);
         pass_trigger160_HFJEC = (trigger160_HFJEC_sel->passes(event)  && pt_ave>trgHF_thresh[3] && pt_ave<trgHF_thresh[4]);
         pass_trigger220_HFJEC = (trigger220_HFJEC_sel->passes(event)  && pt_ave>trgHF_thresh[4] && pt_ave<trgHF_thresh[5]);
-        pass_trigger300_HFJEC = (trigger300_HFJEC_sel->passes(event)  && pt_ave>trgHF_thresh[5] && pt_ave<trgHF_thresh[6]);
+        pass_trigger300_HFJEC = (trigger300_HFJEC_sel->passes(event)  && pt_ave>trgHF_thresh[5]);
         pass_trigger_hf = (pass_trigger60_HFJEC || pass_trigger80_HFJEC || pass_trigger100_HFJEC || pass_trigger160_HFJEC || pass_trigger220_HFJEC || pass_trigger300_HFJEC);
-
-        std::cout << "trigger60_HFJEC_sel->passes(event)" << trigger60_HFJEC_sel->passes(event) << '\n';
-        std::cout << "trigger80_HFJEC_sel->passes(event)" << trigger80_HFJEC_sel->passes(event) << '\n';
-        std::cout << "trigger100_HFJEC_sel->passes(event)" << trigger100_HFJEC_sel->passes(event) << '\n';
-        std::cout << "trigger160_HFJEC_sel->passes(event)" << trigger160_HFJEC_sel->passes(event) << '\n';
-        std::cout << "trigger220_HFJEC_sel->passes(event)" << trigger220_HFJEC_sel->passes(event) << '\n';
-        std::cout << "trigger300_HFJEC_sel->passes(event)" << trigger300_HFJEC_sel->passes(event) << '\n';
-        std::cout << "pass_trigger_hf" << pass_trigger_hf << '\n';
       }
       else if (PtBinsTrigger == "DiJet") {
-        std::cout << "DiJet" << std::endl;
-        for (int i = 0; i < n_pt_bins_Di_HF; i++) std::cout << trgHF_thresh[i] << " - ";
-        std::cout << std::endl;
         pass_trigger60_HFJEC  = (trigger60_HFJEC_sel->passes(event)   && pt_ave>trgHF_thresh[0] && pt_ave<trgHF_thresh[1]);
         pass_trigger80_HFJEC  = (trigger80_HFJEC_sel->passes(event)   && pt_ave>trgHF_thresh[1] && pt_ave<trgHF_thresh[2]);
         pass_trigger100_HFJEC = (trigger100_HFJEC_sel->passes(event)  && pt_ave>trgHF_thresh[2] && pt_ave<trgHF_thresh[3]);
         pass_trigger160_HFJEC = (trigger160_HFJEC_sel->passes(event)  && pt_ave>trgHF_thresh[3] && pt_ave<trgHF_thresh[4]);
         pass_trigger220_HFJEC = (trigger220_HFJEC_sel->passes(event)  && pt_ave>trgHF_thresh[4] && pt_ave<trgHF_thresh[5]);
-        pass_trigger300_HFJEC = (trigger300_HFJEC_sel->passes(event)  && pt_ave>trgHF_thresh[5] && pt_ave<trgHF_thresh[6]);
+        pass_trigger300_HFJEC = (trigger300_HFJEC_sel->passes(event)  && pt_ave>trgHF_thresh[5]);
         pass_trigger_hf = (pass_trigger60_HFJEC || pass_trigger80_HFJEC || pass_trigger100_HFJEC || pass_trigger160_HFJEC || pass_trigger220_HFJEC || pass_trigger300_HFJEC);
-
-        std::cout << "trigger60_HFJEC_sel->passes(event)" << trigger60_HFJEC_sel->passes(event) << '\n';
-        std::cout << "trigger80_HFJEC_sel->passes(event)" << trigger80_HFJEC_sel->passes(event) << '\n';
-        std::cout << "trigger100_HFJEC_sel->passes(event)" << trigger100_HFJEC_sel->passes(event) << '\n';
-        std::cout << "trigger160_HFJEC_sel->passes(event)" << trigger160_HFJEC_sel->passes(event) << '\n';
-        std::cout << "trigger220_HFJEC_sel->passes(event)" << trigger220_HFJEC_sel->passes(event) << '\n';
-        std::cout << "trigger300_HFJEC_sel->passes(event)" << trigger300_HFJEC_sel->passes(event) << '\n';
-        std::cout << "pass_trigger_hf" << pass_trigger_hf << '\n';
       }
     }
-    std::cout << "pass_trigger_bl" << pass_trigger_bl << '\n';
-    std::cout << "pass_trigger_hf" << pass_trigger_hf << '\n';
 
     if(!(pass_trigger_bl || pass_trigger_hf)){
       return false;
     }
   }
-
 
   //read or calculated values for dijet events
   float gen_pthat = 0; //pt hat (from QCD simulation) //todo!
@@ -1048,7 +866,7 @@ bool JER2017Module::process(Event & event) {
 
   float alpha_p = 0;
   if(jet_n>2){
-    jet3 = &event.jets->at(2);
+    jet3 = isTopCollection ?  &ak8jets->at(2) : &ak4jets->at(2);
     jet3_pt = jet3->pt();
     auto factor_raw3 = jet3->JEC_factor_raw();
     jet3_ptRaw = jet3_pt*factor_raw3;
@@ -1068,47 +886,15 @@ bool JER2017Module::process(Event & event) {
   float B = (met.Px()*pt.Px() + met.Py()*pt.Py())/((probejet_pt + barreljet_pt) * sqrt(pt.Px()*pt.Px() + pt.Py()*pt.Py())); //vec_MET*vec_ptbarr/(2ptave*ptbarr)
   float jets_pt = 0;
   for(int i=2;i<jet_n;i++){
-    jets_pt += ((Jet*)&event.jets->at(i))->pt();
+    if (isTopCollection) jets_pt += ((TopJet*)&ak8jets->at(i))->pt();
+    else jets_pt += ((Jet*)&ak4jets->at(i))->pt();
   }
-  //cout << " event "<<event.event<<" | run "<<event.run<<" | ";
-  //cout << "baconpt1 " << jet1_pt << " | baconpt2 " << jet2_pt << " | baconpt3 " << jet3_pt << " | ";
-  //cout << "baconptraw1 " << jet1_ptRaw << " | baconptraw2 " << jet2_ptRaw << " | baconptraw3 " << jet3_ptRaw << " | ";
-  //cout << "baconjetpt1before is " << jetraw1_pt << " | ";
-  //cout << "baconjetpt2before is " << jetraw2_pt << " | ";
-  //cout << " alpha " << alpha << " | asym " << asymmetry << endl;
-  //cout << "pts: " << jet1_pt << ", " << jet2_pt << " and " << jet3_pt << endl;
-  //cout << "raw pts: " << jet1_ptRaw << ", " << jet2_ptRaw << ", " << " and " << jet3_ptRaw << endl;
-  //cout << " alpha " << alpha << " and asym " << asymmetry << endl;
   int flavor = 0;
   //separate flat and fwd samples at |eta| = 2.853
   if(dataset_version.Contains("_Fwd") && fabs(probejet_eta) < eta_cut && isMC) return false;
   if((dataset_version.Contains("_Flat")) && fabs(probejet_eta) >= eta_cut && isMC) return false;
 
-  //obtain weights from MC reweighting
-  //    if(apply_weights && isMC){
-  // TH2D* h_weights = (TH2D*)f_weights->Get("pt_ave_data");
-  // int idx_x=0;
-  // int idx_y=0;
-  // while(pt_ave > idx_x*5) idx_x++;
-  // while(fabs(probejet_eta) > eta_range[idx_y]) idx_y++;
-  // event.weight *= h_weights->GetBinContent(idx_x, idx_y);
 
-  //      TH1D* h_weights = (TH1D*)f_weights->Get("pt_ave_binned_data");
-  //      int idx=0;
-  //      if(dataset_version.Contains("_Fwd")){
-  //	double bins[7] = {100,126,152,250,316,433,1000};
-  //	while(pt_ave > bins[idx]) idx++;
-  //      }
-  //      else{
-  //	double bins[10] = {51,73,95,163,230,299,365,453,566,1000};
-  //	while(pt_ave > bins[idx]) idx++;
-  //      }
-  //      if(idx == 0) return false;
-  //      event.weight *= h_weights->GetBinContent(idx);
-  //    }
-  //
-  //
-  //cout << "weight was" << event.weight << endl;
   if(apply_weights && isMC){
     int idx=0;
     int idy=0;
@@ -1181,10 +967,10 @@ bool JER2017Module::process(Event & event) {
   //      double additional_weight = pow(gen_pthat/15,-6);
   //      event.weight *= additional_weight;
   //    }
-  double had_n_Efrac = event.jets->at(0).neutralHadronEnergyFraction();
-  double had_ch_Efrac = event.jets->at(0).chargedHadronEnergyFraction();
-  double mu_Efrac = event.jets->at(0).muonEnergyFraction();
-  double ph_Efrac = event.jets->at(0).photonEnergyFraction();
+  double had_n_Efrac = isTopCollection ?  ak8jets->at(0).neutralHadronEnergyFraction() : ak4jets->at(0).neutralHadronEnergyFraction();
+  double had_ch_Efrac = isTopCollection ?  ak8jets->at(0).chargedHadronEnergyFraction() : ak4jets->at(0).chargedHadronEnergyFraction();
+  double mu_Efrac = isTopCollection ?  ak8jets->at(0).muonEnergyFraction() : ak4jets->at(0).muonEnergyFraction();
+  double ph_Efrac = isTopCollection ?  ak8jets->at(0).photonEnergyFraction() : ak4jets->at(0).photonEnergyFraction();
   float onoffDummy =0.;
 
   //fill the containers
@@ -1497,8 +1283,8 @@ bool JER2017Module::process(Event & event) {
     //matching gen- and reco-jets
     for(unsigned int i=0; i<event.genjets->size(); i++){
       double dR_min = 99999; int idx_matching_jet = -1;
-      for(unsigned int j=0; j<event.jets->size(); j++){
-        double dR = deltaR(event.jets->at(j), event.genjets->at(i));
+      for(unsigned int j=0; isTopCollection? j<ak8jets->size(): j<ak4jets->size(); j++){
+        double dR = isTopCollection ? deltaR(ak8jets->at(j), event.genjets->at(i)) : deltaR(ak4jets->at(j), event.genjets->at(i));
         if(debug) cout << "dR between GenJet " << i << " and RecoJet " << j << ": " << dR << endl;
         if(dR<dR_min){
           dR_min = dR;
@@ -1590,7 +1376,13 @@ bool JER2017Module::process(Event & event) {
       if(idx_jet_matching_genjet[i] == 0) idx_corresponding_genjet = i;
     }
     double response_jet1 = -1;
-    if(idx_corresponding_genjet != -1) response_jet1 = event.jets->at(0).pt() / event.genjets->at(idx_corresponding_genjet).pt();
+    if(idx_corresponding_genjet != -1){
+      if (isTopCollection) {
+        response_jet1 = ak8jets->at(0).pt() / event.genjets->at(idx_corresponding_genjet).pt();
+      } else {
+        response_jet1 = ak4jets->at(0).pt() / event.genjets->at(idx_corresponding_genjet).pt();
+      }
+    }
 
 
     event.set(tt_response_leadingjet,response_jet1);

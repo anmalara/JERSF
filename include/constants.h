@@ -11,18 +11,18 @@ constexpr static float s_delta_phi = 2.7;
 // 2017 JER
 //Pt bins
 /* //SingleJet central triggers highest ------------- */
-const int n_pt_bins_Si = 12;
-const double pt_bins_Si[n_pt_bins_Si] = { 40 , 72 , 95 , 160, 226, 283, 344, 443, 577, 606, 1000, 2000 };
-/* //DiJet central triggers highest ------------- */
-const int n_pt_bins_Di = 12;
-const double pt_bins_Di[n_pt_bins_Di] = {51, 73, 85, 97, 179, 307, 370, 434, 520, 649, 1000, 2000};
-
+const int n_pt_bins_Si = 10;
+const double pt_bins_Si[n_pt_bins_Si]       = { 40, 72,  95, 160, 226, 283, 344, 443, 577, 606};
 /* //SingleJet HF triggers highest ------------- */
-const int n_pt_bins_Si_HF = 8;
-const double pt_bins_Si_HF[n_pt_bins_Si_HF] = { 73, 93, 113,  176,  239,  318,  1000, 2000};
+const int n_pt_bins_Si_HF = 10;
+const double pt_bins_Si_HF[n_pt_bins_Si_HF] = { 40, 72,  95, 160, 226, 283, 344, 443, 577, 606};
+
+/* //DiJet central triggers highest ------------- */
+const int n_pt_bins_Di = 9;
+const double pt_bins_Di[n_pt_bins_Di]       = { 73, 85,  97, 179, 307, 370, 434, 520, 649};
 /* //DiJet HF triggers highest ------------- */
-const int n_pt_bins_Di_HF = 8;
-const double pt_bins_Di_HF[n_pt_bins_Di_HF] = { 73, 93, 113,  176,  239,  318,  1000, 2000};
+const int n_pt_bins_Di_HF = 6;
+const double pt_bins_Di_HF[n_pt_bins_Di_HF] = { 73, 93, 113, 176, 239, 318 };
 
 /* //Eta bins ------------- */
 const int n_eta_bins = 14;
@@ -38,11 +38,13 @@ constexpr static int s_runnr_F = 306462; //up to this one, including this one
 
 constexpr static float s_asymm = 1.; //FIXME change back to 0.7?
 
-constexpr static float s_Pt_AveMC_cut   =40;
+constexpr static float s_Pt_AveMC_cut = 40;
 const double eta_cut = 2.853;
 
-//Old stuff not checked
 
+
+
+//Old stuff not checked
 
 // cut on the asymmetry for events with two jets  |(j2->pt - j1->pt /(j2->pt + j1->pt)| < 0.2
 /* constexpr static float s_asymm = 0.2; */
@@ -59,7 +61,6 @@ constexpr static float s_n_Pv_xy = 2.0;
 
 //2017
 // taken from https://twiki.cern.ch/twiki/bin/view/CMS/PdmV2017Analysis
-
 
 constexpr static float s_lumi_HF_60 = 19.605;
 constexpr static float s_lumi_HF_80 = 28.773;

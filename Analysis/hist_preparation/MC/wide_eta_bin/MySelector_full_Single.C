@@ -421,6 +421,8 @@ Bool_t MySelector::Process(Long64_t entry){
   std::vector<double> eta_ref_up(eta_bins+11, eta_bins + sizeof(eta_bins)/sizeof(double));
   std::vector<double> eta_bins_control(eta_bins+3, eta_bins + sizeof(eta_bins)/sizeof(double)-3);
   eta_bins_control.insert(eta_bins_control.begin(), 0.);
+  p_bins.push_back(1500);
+  p_bins_FT.push_back(1500);
   double alpha_bins [] = { 0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3 };
 
 

@@ -64,13 +64,10 @@ then
   export LABEL_LUMI_INV_FB="[MC 94X] Run2017DEF 26.95 fb^{-1}"
 elif [ "$run" = "RunBCDEF" ]
 then
-  export LABEL_LUMI_INV_FB="[MC 94X] (2017 41.3 fb^{-1}"
+  export LABEL_LUMI_INV_FB="[MC 94X] 2017 41.3 fb^{-1}"
 else
   export LABEL_LUMI_INV_FB="[MC 94X] (2017)"
 fi
-
-echo "exit"
-
 
 export MC_LABEL=$QUOTES$LABELMC$QUOTES
 export DATA_LABEL=$QUOTES$LABELDATA$QUOTES
@@ -78,6 +75,7 @@ export MC=$QUOTES$MCFILE$QUOTES
 export DATA=$QUOTES$DATAFILE$QUOTES
 export LUMI_LABEL=$QUOTES$LABEL_LUMI_INV_FB$QUOTES
 export ORIGIN="SF13invfb_smeared_pythia_vs_pythia"
+export TRIGGER=$QUOTES$trigger$QUOTES
 
 echo "Using data file "$DATA
 echo "Using MC file "$MC
@@ -86,7 +84,7 @@ echo "Using MC label "$MC_LABEL
 
 root -b -l << EOF
 .L iterFit_full.C++
-mainRun(false,${MC},${DATA},${LUMI_LABEL},${MC_LABEL},${DATA_LABEL})
+mainRun(false,${MC},${DATA},${LUMI_LABEL},${MC_LABEL},${DATA_LABEL}, ${TRIGGER})
 .q
 EOF
 cd ../../..

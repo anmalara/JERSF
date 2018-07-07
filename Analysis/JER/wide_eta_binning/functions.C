@@ -484,7 +484,10 @@ void def_fill_widths( TString name1, std::vector< std::vector< TH1F* > > &widths
       for( unsigned int p = 0; p < Widths.at(m).size(); p++ )
       {
          TString name_width_fe1 = name1;
-         name_width_fe1 += "_eta"; name_width_fe1 += m+1; name_width_fe1 += "_pt"; name_width_fe1 += p+1;
+         name_width_fe1 += "_eta";
+         if (name1.Contains("_fe")) { name_width_fe1 += m+2; }
+         else{ name_width_fe1 += m+1; }
+         name_width_fe1 += "_pt"; name_width_fe1 += p+1;
          TH1F *h1 = new TH1F( name_width_fe1, name_width_fe1, 50, 0, 0.35 );
          h1 ->GetYaxis()->SetTitle("#sigma_{A}");	h1 ->GetXaxis()->SetTitle("#alpha_{max}"); h1 ->GetYaxis()->SetTitleOffset(1.);
          h1 -> Sumw2();
@@ -1049,14 +1052,15 @@ void histLinCorFit( std::vector< std::vector< std::vector< double > > > Widths,
    void fill_hist( TString name1, std::vector< TH1F* > &output, std::vector< std::vector< double > > Widths, std::vector< std::vector< double > > WidthsError, std::vector< std::vector< std::vector< double > > > pt_binning, double range, int shift2 = 0)
    {
       int shift = 0;
-
-      //	if (Widths.size() == 4 ) shift = 1;
-      //	if (Widths.size() == 5 ) shift = 2;
-
+      if (name1.Contains("SF_")) {
+      // if (true) {
+         if (name1.Contains("_FE")) { shift = 3; }
+         else{ shift = 1; }
+      }
       for( unsigned int m = 0; m <  Widths.size(); m++ )
       {
          TString name_width_fe1 = name1;
-         name_width_fe1 += m+shift;
+         name_width_fe1 += (m+shift);
          TH1F *h1 = new TH1F( name_width_fe1, name_width_fe1, 1000, 0, 1000 );
          //std::cout << name1 << std::endl;;
          if(strncmp(name1, "SF", strlen("SF"))){
@@ -1493,15 +1497,9 @@ void chi2_linear(Int_t& npar, Double_t* grad, Double_t& fval, Double_t* p, Int_t
 
 
 
-void histWidthAsym2( std::vector< std::vector< std::vector< TH1F* > > > &Asymmetry , std::vector< std::vector< std::vector< double > > > &Widths, std::vector< std::vector< std::vector< double > > > &WidthsError , bool fill_all )
-{
-   double yq_IQW[2],xq_IQW[2];
+void histWidthAsym2( std::vector< std::vector< std::vector< TH1F* > > > &Asymmetry , std::vector< std::vector< std::vector< double > > > &Widths, std::vector< std::vector< std::vector< double > > > &WidthsError , bool fill_all ){
    double asym;
    double asymerr;
-   // Decide where to truncate
-   xq_IQW[0] = 0.0;
-   xq_IQW[1] = truncate_fraction;
-
 
    for( unsigned int m = 0; m < Asymmetry.size(); m++ )
    {
@@ -1517,30 +1515,28 @@ void histWidthAsym2( std::vector< std::vector< std::vector< TH1F* > > > &Asymmet
             asym = Asymmetry.at(m).at(p).at(r)->GetRMS();
             asymerr = Asymmetry.at(m).at(p).at(r)->GetRMSError();
 
+            const int n_pt_bins_Si = 10;
+            const double pt_bins_Si[n_pt_bins_Si]       = { 40, 72,  95, 160, 226, 283, 344, 443, 577, 606};
+            /* //SingleJet HF triggers highest ------------- */
+            const int n_pt_bins_Si_HF = 10;
+            const double pt_bins_Si_HF[n_pt_bins_Si_HF] = { 40, 72,  95, 160, 226, 283, 344, 443, 577, 606};
+
+            /* //DiJet central triggers highest ------------- */
+            const int n_pt_bins_Di = 9;
+            const double pt_bins_Di[n_pt_bins_Di]       = { 73, 85,  97, 179, 307, 370, 434, 520, 649};
+            /* //DiJet HF triggers highest ------------- */
+            const int n_pt_bins_Di_HF = 6;
+            const double pt_bins_Di_HF[n_pt_bins_Di_HF] = { 73, 93, 113, 176, 239, 318 };
+
+
+
             if(!fill_all){
-               if (Asymmetry.at(m).size()==9){
-                  if( p == 0 && r < 4) { asym = 0.; asymerr = 0.; };
-                  if( p == 1 && r < 3) { asym = 0.; asymerr = 0.; };
-                  if( p == 2 && r < 2) { asym = 0.; asymerr = 0.; };
-                  if( p == 3 && r < 1) { asym = 0.; asymerr = 0.; };
-                  if( p == 4 && r < 1) { asym = 0.; asymerr = 0.; };
-               }
-               if (Asymmetry.at(m).size()==6){
-                  if( p == 0 && r < 3) { asym = 0.; asymerr = 0.; };
-                  if( p == 1 && r < 2) { asym = 0.; asymerr = 0.; };
-                  if( p == 2 && r < 1) { asym = 0.; asymerr = 0.; };
-                  if( p == 3 && r < 1) { asym = 0.; asymerr = 0.; };
-               }
-               if (Asymmetry.size()==10){
-                  if( m == 6 && p == 8 && r == 0) { asym = 0.; asymerr = 0.; };
-                  if( m == 7 && p == 8 && r == 0) { asym = 0.; asymerr = 0.; };
-                  if( m == 8 && p == 5 && r == 0) { asym = 0.; asymerr = 0.; };
-                  if( m == 8 && p > 5 ) { asym = 0.; asymerr = 0.; };
-                  if( m == 9 && p > 4 ) { asym = 0.; asymerr = 0.; };
-               }
-               if (Asymmetry.size()==11){
-                  if( m == 9 && p == 5 && r == 0) { asym = 0.; asymerr = 0.; };
-               }
+               if( p == 0 && r < 4) { asym = 0.; asymerr = 0.; };
+               if( p == 1 && r < 3) { asym = 0.; asymerr = 0.; };
+               if( p == 2 && r < 2) { asym = 0.; asymerr = 0.; };
+               if( p == 3 && r < 1) { asym = 0.; asymerr = 0.; };
+               if( p == 4 && r < 1) { asym = 0.; asymerr = 0.; };
+
             }
             temp1.push_back( asym );
             temp_error1.push_back( asymerr );

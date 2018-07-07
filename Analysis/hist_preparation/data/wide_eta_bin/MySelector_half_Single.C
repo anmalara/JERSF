@@ -115,7 +115,7 @@ void MySelector::SlaveBegin(TTree * /*tree*/){
   EtaFtBinsNo = 3;          // fw method bins with fw triggers
 
   PtBinsNo = n_pt_bins_Si;
-  PtFTBinsNo = n_pt_bins_Si;
+  PtFTBinsNo = n_pt_bins_Si_HF;
   AlphaBinsNo = 6;
 
   // I define histograms for the "normal" JER calculation
@@ -290,7 +290,7 @@ Bool_t MySelector::Process(Long64_t entry){
 
   //2017
   std::vector<int> p_bins(pt_bins_Si, pt_bins_Si + sizeof(pt_bins_Si)/sizeof(int));
-  std::vector<int> p_bins_FT(pt_bins_Si, pt_bins_Si + sizeof(pt_bins_Si)/sizeof(int));
+  std::vector<int> p_bins_FT(pt_bins_Si_HF, pt_bins_Si_HF + sizeof(pt_bins_Si_HF)/sizeof(int));
   std::vector<double> eta_bins_all(eta_bins, eta_bins + sizeof(eta_bins)/sizeof(double));
   std::vector<double> eta_ref_down(eta_bins+10, eta_bins + sizeof(eta_bins)/sizeof(double)-1);
   std::vector<double> eta_ref_up(eta_bins+11, eta_bins + sizeof(eta_bins)/sizeof(double));
@@ -316,7 +316,7 @@ Bool_t MySelector::Process(Long64_t entry){
       }
     }
   }
-  if(pass_trigger_hf){
+  if(!pass_trigger_hf){ // FIXME this is only a temporal solution
     for( int i = 0; i < PtFTBinsNo; i++ ){
       if(p_bins_FT[i] <= pt_ave && p_bins_FT[i + 1] >= pt_ave){
         ftrigger[i] = true;
