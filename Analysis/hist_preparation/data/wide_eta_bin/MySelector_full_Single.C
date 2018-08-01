@@ -23,12 +23,15 @@
 // Root > T->Process("MySelector.C+")
 //
 
-#include "MySelector.h"
-#include "../../../../include/constants.h"
+#include <iostream>
+#include <algorithm>
 #include <TH2.h>
 #include <TStyle.h>
-#include <algorithm>
-#include <iostream>
+#include <TLorentzVector.h>
+#include <TRandom3.h>
+#include "MySelector.h"
+#include "MyJet.h"
+#include "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/JER2017/include/constants.h"
 
 bool sortFunct( MyJet a, MyJet b) { return ( a.Pt() > b.Pt() ); }
 
@@ -84,12 +87,12 @@ void MySelector::SlaveBegin(TTree * /*tree*/){
   h_FEJet1Pt = new TH1F( "FEJet1Pt" , "Inclusive FEJet 1 Pt" , 50 , 0 , 2000 );
   h_FEJet1Pt -> SetXTitle( "Pt_1[GeV]" );
   h_FEJet1Pt -> Sumw2();
-  // histograms.push_back(h_FEJet1Pt);
+  histograms.push_back(h_FEJet1Pt);
 
   h_FEJet2Pt = new TH1F( "FEJet2Pt" , "Inclusive FEJet 2 Pt" , 50 , 0 , 2000 );
   h_FEJet2Pt -> SetXTitle( "Pt_2[GeV]" );
   h_FEJet2Pt -> Sumw2();
-  // histograms.push_back(h_FEJet2Pt);
+  histograms.push_back(h_FEJet2Pt);
 
   h_FEJet3Pt = new TH1F( "FEJet3Pt" , "Inclusive FEJet 3 Pt" , 50 , 0 , 2000 );
   h_FEJet3Pt -> SetXTitle( "Pt_3[GeV]" );
@@ -108,7 +111,6 @@ void MySelector::SlaveBegin(TTree * /*tree*/){
   h_alpha_select = new TH1F( "Alpha" , "#alpha after selection" , 80, 0., 0.8 );
   h_alpha_select -> SetXTitle( "#alpha" );
   h_alpha_select -> Sumw2();
-
 
   EtaBinsNo = 10;            // st method bins
   EtaForwardBinsNo = 3;     // st method bins with fw triggers ?
@@ -288,10 +290,9 @@ Bool_t MySelector::Process(Long64_t entry){
 
   BuildEvent();
 
-
   //2017
-  std::vector<int> p_bins(pt_bins_Si, pt_bins_Si + sizeof(pt_bins_Si)/sizeof(int));
-  std::vector<int> p_bins_FT(pt_bins_Si_HF, pt_bins_Si_HF + sizeof(pt_bins_Si_HF)/sizeof(int));
+  std::vector<int> p_bins(pt_bins_Si, pt_bins_Si + sizeof(pt_bins_Si)/sizeof(double));
+  std::vector<int> p_bins_FT(pt_bins_Si_HF, pt_bins_Si_HF + sizeof(pt_bins_Si_HF)/sizeof(double));
   std::vector<double> eta_bins_all(eta_bins, eta_bins + sizeof(eta_bins)/sizeof(double));
   std::vector<double> eta_ref_down(eta_bins+10, eta_bins + sizeof(eta_bins)/sizeof(double)-1);
   std::vector<double> eta_ref_up(eta_bins+11, eta_bins + sizeof(eta_bins)/sizeof(double));
@@ -299,13 +300,12 @@ Bool_t MySelector::Process(Long64_t entry){
   eta_bins_control.insert(eta_bins_control.begin(), 0.);
   p_bins.push_back(1500);
   p_bins_FT.push_back(1500);
-  double alpha_bins [] = { 0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3 };
+
+  std::vector<double> alpha_bins;
+  alpha_bins.push_back(0.05); alpha_bins.push_back(0.1);  alpha_bins.push_back(0.15); alpha_bins.push_back(0.20); alpha_bins.push_back(0.25); alpha_bins.push_back(0.3);
 
 
   // Triggers are called by index of this list
-
-
-
   bool trigger[PtBinsNo];
   bool ftrigger[PtFTBinsNo];
 
@@ -319,7 +319,7 @@ Bool_t MySelector::Process(Long64_t entry){
       }
     }
   }
-  if(!pass_trigger_hf){ // FIXME this is only a temporal solution
+  if(pass_trigger_hf){ // FIXME this is only a temporal solution
     for( int i = 0; i < PtFTBinsNo; i++ ){
       if(p_bins_FT[i] <= pt_ave && p_bins_FT[i + 1] >= pt_ave){
         ftrigger[i] = true;
@@ -335,7 +335,7 @@ Bool_t MySelector::Process(Long64_t entry){
 
   h_PU -> Fill( npuIT, 1 );
 
-  double jet_threshold = 15;
+  double jet_threshold=15;
 
   double alpha_raw;
 
@@ -416,6 +416,12 @@ Bool_t MySelector::Process(Long64_t entry){
               TMath::Abs( probejet_eta ) < eta_bins_control[r+1]) ){
                 for ( int m = 0 ; m < AlphaBinsNo ; m++ ){
                   if ( alpha < alpha_bins[ m+1 ] ){
+                    double Delta_R_radiation;
+                    if ((TMath::Abs( barreljet_eta ) > 0. && TMath::Abs( barreljet_eta ) < s_eta_barr && TMath::Abs( probejet_eta ) > eta_bins_control[r] && TMath::Abs( probejet_eta ) < eta_bins_control[r+1])) { Delta_R_radiation = TMath::Sqrt(TMath::Power( barreljet_eta - jet3_eta,2) + TMath::Power(TVector2::Phi_mpi_pi( barreljet_phi - jet3_phi),2)); }
+                    if ((TMath::Abs( probejet_eta ) > 0. && TMath::Abs( probejet_eta ) < s_eta_barr && TMath::Abs( barreljet_eta ) > eta_bins_control[r] && TMath::Abs( barreljet_eta ) < eta_bins_control[r+1])) { Delta_R_radiation = TMath::Sqrt(TMath::Power( probejet_eta - jet3_eta,2) + TMath::Power(TVector2::Phi_mpi_pi( probejet_phi - jet3_phi),2)); }
+                    if (false) continue;
+                    // if (Delta_R_radiation < 1.0) continue;
+                    // if (Delta_R_radiation < 1.0) continue;
                     double asy = asymmetry;
                     if ((TMath::Abs( probejet_eta ) > 0. && TMath::Abs( probejet_eta ) < s_eta_barr && TMath::Abs( barreljet_eta ) > eta_bins_control[r] && TMath::Abs( barreljet_eta ) < eta_bins_control[r+1])) { asy = - asymmetry;}
                     if ( (((rand()%2)+1)==1) && r ==0 ) { asy = - asy;}
@@ -455,9 +461,14 @@ Bool_t MySelector::Process(Long64_t entry){
               TMath::Abs( probejet_eta ) < eta_ref_up[r]) ){
                 for ( int m = 0 ; m < AlphaBinsNo; m++ ){
                   if ( alpha < alpha_bins[ m+1 ] ){
+                    double Delta_R_radiation;
+                    if ((TMath::Abs( barreljet_eta ) > 0. && TMath::Abs( barreljet_eta ) < s_eta_barr && TMath::Abs( probejet_eta ) > eta_ref_down[r] && TMath::Abs( probejet_eta ) < eta_ref_up[r])) { Delta_R_radiation = TMath::Sqrt(TMath::Power( barreljet_eta - jet3_eta,2) + TMath::Power(TVector2::Phi_mpi_pi( barreljet_phi - jet3_phi),2)); }
+                    if ((TMath::Abs( probejet_eta ) > 0. && TMath::Abs( probejet_eta ) < s_eta_barr && TMath::Abs( barreljet_eta ) > eta_ref_down[r] && TMath::Abs( barreljet_eta ) < eta_ref_up[r])) { Delta_R_radiation = TMath::Sqrt(TMath::Power( probejet_eta - jet3_eta,2) + TMath::Power(TVector2::Phi_mpi_pi( probejet_phi - jet3_phi),2)); }
+                    if (false) continue;
+                    // if (Delta_R_radiation < 1.0) continue;
+                    // if (Delta_R_radiation > 1.0) continue;
                     double asy = asymmetry;
                     if ((TMath::Abs( probejet_eta ) > 0. && TMath::Abs( probejet_eta ) < s_eta_barr && TMath::Abs( barreljet_eta ) > eta_ref_down[r] && TMath::Abs( barreljet_eta ) < eta_ref_up[r])) { asy = - asymmetry;}
-                    // std::cout << "help " << ftrigger[k] << " " << asy << std::endl;
                     forward_hist.at(r).at(k).at(m) -> Fill( asy , weight );
                     forward_pt_hist.at(r).at(k).at(m) -> Fill( 0.5 * ( jet1_pt + jet2_pt ), weight );
                     forward_rho_hist.at(r).at(k).at(m) -> Fill( rho, weight );

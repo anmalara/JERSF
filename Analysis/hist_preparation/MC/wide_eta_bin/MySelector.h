@@ -17,28 +17,20 @@
 #include <sstream>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TH3F.h>
 #include <TMath.h>
 #include <TDirectory.h>
-
 #include "MyJet.h"
-
-
-// Header file for the classes stored in the TTree if any.
 #include <vector>
 
-// Fixed size dimensions of array or collections stored in the TTree if any.
-const Int_t kMaxp4 = 164;
-const Int_t kMaxgen_p4 = 164;
 
 double Weight( std::string filename );
 
 class MySelector : public TSelector {
-  public :
+  public:
 
   TTree *fChain;   //!pointer to the analyzed TTree or TChain
-
   // Declaration of leaf types
-
   Float_t         weight;
   Float_t         weight_pu;
   Float_t         weight_pu_down;
@@ -50,6 +42,12 @@ class MySelector : public TSelector {
   Float_t jet1_pt;
   Float_t jet2_pt;
   Float_t jet3_pt;
+  Float_t jet1_eta;
+  Float_t jet2_eta;
+  Float_t jet3_eta;
+  Float_t jet1_phi;
+  Float_t jet2_phi;
+  Float_t jet3_phi;
   Float_t barreljet_phi;
   Float_t barreljet_eta;
   Float_t barreljet_pt;
@@ -64,6 +62,12 @@ class MySelector : public TSelector {
   TBranch *b_jet1_pt;
   TBranch *b_jet2_pt;
   TBranch *b_jet3_pt;
+  TBranch *b_jet1_eta;
+  TBranch *b_jet2_eta;
+  TBranch *b_jet3_eta;
+  TBranch *b_jet1_phi;
+  TBranch *b_jet2_phi;
+  TBranch *b_jet3_phi;
   TBranch *b_probejet_phi;
   TBranch *b_probejet_eta;
   TBranch *b_probejet_pt;
@@ -79,6 +83,8 @@ class MySelector : public TSelector {
   Float_t genjet1_pt;
   Float_t genjet2_pt;
   Float_t genjet3_pt;
+  Float_t genjet3_eta;
+  Float_t genjet3_phi;
   Float_t barrelgenjet_phi;
   Float_t barrelgenjet_eta;
   Float_t barrelgenjet_pt;
@@ -92,6 +98,8 @@ class MySelector : public TSelector {
   TBranch *b_genjet1_pt;
   TBranch *b_genjet2_pt;
   TBranch *b_genjet3_pt;
+  TBranch *b_genjet3_eta;
+  TBranch *b_genjet3_phi;
   TBranch *b_probegenjet_phi;
   TBranch *b_probegenjet_eta;
   TBranch *b_probegenjet_pt;
@@ -131,9 +139,6 @@ class MySelector : public TSelector {
   void BuildEvent();
   void MakeWeight();
 
-  std::vector<std::vector<double> > resolutions, scalefactors;
-  std::vector <double> pileup_weight_factors;
-
   int TotalEvents, unmachedJets, unmatchegGenJets;
   int EtaForwardBinsNo;
   int EtaBinsNo;
@@ -159,10 +164,32 @@ class MySelector : public TSelector {
   std::vector< std::vector< std::vector< TH1F* > > > forward_rho_hist_dijet, forward_gen_rho_hist_dijet;
   std::vector< std::vector< std::vector< TH1F* > > > asymmetries_rho_all, asymmetries_gen_rho_all;
 
+  std::vector< std::vector< std::vector< TH1F* > > > MC_Truth_asymmetries_all, MC_Truth_forward_hist, MC_Truth_forward_hist_dijet;
+  std::vector< std::vector< std::vector< TH2F* > > > dR_all, dR_forward_hist, dR_forward_hist_dijet;
+  std::vector< std::vector< std::vector< TH2F* > > > gen_dR_all, gen_dR_forward_hist, gen_dR_forward_hist_dijet;
 
-  std::vector< std::vector< std::vector< TH1F* > > > MC_Truth_asymmetries_all,
-  MC_Truth_forward_hist,
-  MC_Truth_forward_hist_dijet;
+  std::vector< std::vector< std::vector< TH2F* > > > dR_probe_all, dR_probe_forward_hist, dR_probe_forward_hist_dijet;
+  std::vector< std::vector< std::vector< TH2F* > > > gen_dR_probe_all, gen_dR_probe_forward_hist, gen_dR_probe_forward_hist_dijet;
+  std::vector< std::vector< std::vector< TH2F* > > > dR_barrel_all, dR_barrel_forward_hist, dR_barrel_forward_hist_dijet;
+  std::vector< std::vector< std::vector< TH2F* > > > gen_dR_barrel_all, gen_dR_barrel_forward_hist, gen_dR_barrel_forward_hist_dijet;
+
+  std::vector< std::vector< std::vector< TH2F* > > > eta_probe_all, eta_probe_forward_hist, eta_probe_forward_hist_dijet;
+  std::vector< std::vector< std::vector< TH2F* > > > gen_eta_probe_all, gen_eta_probe_forward_hist, gen_eta_probe_forward_hist_dijet;
+  std::vector< std::vector< std::vector< TH2F* > > > eta_barrel_all, eta_barrel_forward_hist, eta_barrel_forward_hist_dijet;
+  std::vector< std::vector< std::vector< TH2F* > > > gen_eta_barrel_all, gen_eta_barrel_forward_hist, gen_eta_barrel_forward_hist_dijet;
+
+  std::vector< std::vector< std::vector< TH2F* > > > phi_probe_all, phi_probe_forward_hist, phi_probe_forward_hist_dijet;
+  std::vector< std::vector< std::vector< TH2F* > > > gen_phi_probe_all, gen_phi_probe_forward_hist, gen_phi_probe_forward_hist_dijet;
+  std::vector< std::vector< std::vector< TH2F* > > > phi_barrel_all, phi_barrel_forward_hist, phi_barrel_forward_hist_dijet;
+  std::vector< std::vector< std::vector< TH2F* > > > gen_phi_barrel_all, gen_phi_barrel_forward_hist, gen_phi_barrel_forward_hist_dijet;
+
+  std::vector< std::vector< std::vector< TH3F* > > > dR3_all, dR3_forward_hist, dR3_forward_hist_dijet;
+  std::vector< std::vector< std::vector< TH3F* > > > gen_dR3_all, gen_dR3_forward_hist, gen_dR3_forward_hist_dijet;
+
+  std::vector< std::vector< std::vector< std::vector< TH2F* > > > > asy_dR_barrel_all, asy_dR_barrel_forward_hist, asy_dR_barrelforward_hist_dijet;
+  std::vector< std::vector< std::vector< std::vector< TH2F* > > > > asy_dR_probe_all, asy_dR_probe_forward_hist, asy_dR_probe_forward_hist_dijet;
+  std::vector< std::vector< std::vector< std::vector< TH2F* > > > > gen_asy_dR_barrel_all, gen_asy_dR_barrel_forward_hist, gen_asy_dR_barrelforward_hist_dijet;
+  std::vector< std::vector< std::vector< std::vector< TH2F* > > > > gen_asy_dR_probe_all, gen_asy_dR_probe_forward_hist, gen_asy_dR_probe_forward_hist_dijet;
 
   std::vector< std::vector< TH1F* > > alpha_spectrum, forward_alpha_spectrum, forward_alpha_spectrum_dijet;
 
@@ -185,8 +212,6 @@ class MySelector : public TSelector {
   TH1F *h_FEJet1Pt;
   TH1F *h_FEJet2Pt;
   TH1F *h_FEJet3Pt;
-
-  // ClassDef(MySelector,0);
 };
 
 #endif
@@ -201,101 +226,11 @@ void MySelector::Init(TTree *tree){
   // Init() will be called many times when running on PROOF
   // (once per file to be processed).
 
-  // Set object pointer
-
-  std::ifstream myfile, myfileSF;
-  myfile.open("/nfs/dust/cms/user/niedziem/resolutions_input/Fall17_17Nov2017_V4_MC_PtResolution_ak4pfchsl1l2l3.txt");
-  myfileSF.open("/nfs/dust/cms/user/sonnevej/resolutions_input/scalefactors/Spring16_25nsV6_MC_SF_AK4PFchs13invfb_pythiaHTbinnedfrom200.txt");
-
-  std::string temp;
-
-  while (std::getline(myfile, temp)) {
-    std::istringstream buffer(temp);
-    // Read MC Res line by line (two files opened above)
-    // Each line is read word by word into a vector
-    std::vector<double> line((std::istream_iterator<double>(buffer)),
-    std::istream_iterator<double>());
-
-    resolutions.push_back(line);
-  }
-  while (std::getline(myfileSF, temp)) {
-    std::istringstream buffer(temp);
-    std::vector<double> line((std::istream_iterator<double>(buffer)),
-    std::istream_iterator<double>());
-
-    scalefactors.push_back(line);
-  }
-
-  for( int k = 0; k < scalefactors.size(); k++ ){
-    std::cout << "etamin: " << scalefactors[k][0];
-    std::cout << "-- etamax: " << scalefactors[k][1];
-    std::cout << "-- SF:" << scalefactors[k][3] << std::endl;
-  }
-  for( int k = 0; k < scalefactors.size(); k++ ){
-    std::cout << "etamin: " << scalefactors[k][0];
-    std::cout << "-- etamax: " << scalefactors[k][1];
-    std::cout << "-- SF: " << scalefactors[k][3] << std::endl;
-  }
-
-
-  // Get pileup weights
-  // Warning: It is assumed that the input histograms each
-  // have 60 integer bins.
-  // It is also assumed that they are at the location below.
-  TH1F* h_pileup_mc;
-  TH1F* h_pileup_data;
-  TFile* pileup_mc = new TFile ("/nfs/dust/cms/user/sonnevej/resolutions_input/pileup_mc.root");
-  TFile* pileup_data = new TFile ("/nfs/dust/cms/user/sonnevej/resolutions_input/pileup_data.root");
-
-  h_pileup_mc = (TH1F*) pileup_mc -> Get("PileUp");
-  h_pileup_data = (TH1F*) pileup_data -> Get("pileup");
-  if(!h_pileup_data)
-  {
-    h_pileup_data = (TH1F*) pileup_data -> Get("PileUp");
-  }
-  if(!h_pileup_mc)
-  {
-    h_pileup_mc = (TH1F*) pileup_mc -> Get("pileup");
-  }
-
-  h_pileup_data->Scale(1/h_pileup_data->Integral());
-  h_pileup_mc->Scale(1/h_pileup_mc->Integral());
-  std::cout << " integral " << std::endl;
-
-  unsigned    bin = 0;
-  //unsigned    bin_data_max = 0;
-  unsigned    bin_data = 0;
-  double mc_pu_weight = 1.;
-  double data_pu_weight = 1.;
-  double ratio = 1.;
-  //double total_data = 0.;
-  //double total_mc = 0.;
-  for ( int i = 0; i < 61; i++)
-  {
-    std::cout << " finding bin content " << i << std::endl;
-    bin = h_pileup_mc -> FindBin(i);
-    bin_data = h_pileup_data -> FindBin(i);
-    mc_pu_weight = h_pileup_mc -> GetBinContent(bin);
-    data_pu_weight = h_pileup_data -> GetBinContent(bin);
-
-    std::cout << "bin" << bin << ": wt " << mc_pu_weight << "\t,//pu = " << i << "bin content mc= " << std::endl;
-    std::cout << "bin" << bin_data << ": wt " << data_pu_weight << "\t,//pu = " << i << "bin content data= " << std::endl;
-
-    ratio = data_pu_weight/mc_pu_weight;
-    std::cout << ratio << "\t\t // " << i << "\tPU weight" << std::endl;
-
-    pileup_weight_factors.push_back(ratio);
-  }
-
-  pileup_mc -> Close();
-  pileup_data -> Close();
-
   // Set branch addresses and branch pointers
   if (!tree) return;
   fChain = tree;
   fChain->SetMakeClass(1);
 
-  //TFile *currentFile = tree->GetCurrentFile();
   TFile* currentFile = ((TChain*)fChain)->GetFile();
 
   fChain->SetBranchAddress("Njet", &njet, &b_njet);
@@ -303,6 +238,12 @@ void MySelector::Init(TTree *tree){
   fChain->SetBranchAddress("jet1_pt", &jet1_pt, &b_jet1_pt);
   fChain->SetBranchAddress("jet2_pt", &jet2_pt, &b_jet2_pt);
   fChain->SetBranchAddress("jet3_pt", &jet3_pt, &b_jet3_pt);
+  fChain->SetBranchAddress("jet1_eta", &jet1_eta, &b_jet1_eta);
+  fChain->SetBranchAddress("jet2_eta", &jet2_eta, &b_jet2_eta);
+  fChain->SetBranchAddress("jet3_eta", &jet3_eta, &b_jet3_eta);
+  fChain->SetBranchAddress("jet1_phi", &jet1_phi, &b_jet1_phi);
+  fChain->SetBranchAddress("jet2_phi", &jet2_phi, &b_jet2_phi);
+  fChain->SetBranchAddress("jet3_phi", &jet3_phi, &b_jet3_phi);
   fChain->SetBranchAddress("barreljet_phi", &barreljet_phi, &b_barreljet_phi);
   fChain->SetBranchAddress("barreljet_eta", &barreljet_eta, &b_barreljet_eta);
   fChain->SetBranchAddress("barreljet_pt", &barreljet_pt, &b_barreljet_pt);
@@ -316,6 +257,8 @@ void MySelector::Init(TTree *tree){
   fChain->SetBranchAddress("genjet1_pt", &genjet1_pt, &b_genjet1_pt);
   fChain->SetBranchAddress("genjet2_pt", &genjet2_pt, &b_genjet2_pt);
   fChain->SetBranchAddress("genjet3_pt", &genjet3_pt, &b_genjet3_pt);
+  fChain->SetBranchAddress("genjet3_eta", &genjet3_eta, &b_genjet3_eta);
+  fChain->SetBranchAddress("genjet3_phi", &genjet3_phi, &b_genjet3_phi);
   fChain->SetBranchAddress("barrelgenjet_phi", &barrelgenjet_phi, &b_barrelgenjet_phi);
   fChain->SetBranchAddress("barrelgenjet_eta", &barrelgenjet_eta, &b_barrelgenjet_eta);
   fChain->SetBranchAddress("barrelgenjet_pt", &barrelgenjet_pt, &b_barrelgenjet_pt);
@@ -329,7 +272,7 @@ void MySelector::Init(TTree *tree){
   fChain->SetBranchAddress("weight_pu_down", &weight_pu_down, &b_weight_pu_down);
   fChain->SetBranchAddress("weight_pu_up", &weight_pu_up, &b_weight_pu_up);
   fChain->SetBranchAddress("rho", &rho, &b_rho);
-
+  fChain->SetBranchAddress("nPU", &npuIT, &b_npuIT);
 }
 
 Bool_t MySelector::Notify(){
@@ -339,10 +282,7 @@ Bool_t MySelector::Notify(){
   // to the generated code, but the routine can be extended by the
   // user if needed. The return value is currently not used.
 
-
   TFile *currentFile = fChain->GetCurrentFile();
-  fChain->SetBranchAddress("nPU", &npuIT, &b_npuIT);
-
   return kTRUE;
 }
 

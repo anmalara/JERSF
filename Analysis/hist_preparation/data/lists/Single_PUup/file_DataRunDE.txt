@@ -1,0 +1,2 @@
+/nfs/dust/cms/user/amalara/sframe_all/JER2017_Data/Single/uhh2.AnalysisModuleRunner.DATA.DATA_RunD_promptReco_2017.root
+/nfs/dust/cms/user/amalara/sframe_all/JER2017_Data/Single/uhh2.AnalysisModuleRunner.DATA.DATA_RunE_promptReco_2017.root

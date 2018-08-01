@@ -19,32 +19,29 @@
 #include <TH2F.h>
 #include <TMath.h>
 #include <TDirectory.h>
-
 #include "MyJet.h"
-
-
-// Header file for the classes stored in the TTree if any.
 #include <vector>
 
-// Fixed size dimensions of array or collections stored in the TTree if any.
-const Int_t kMaxp4 = 164;
-const Int_t kMaxgen_p4 = 164;
 
 double Weight( std::string filename );
 
 class MySelector : public TSelector {
-  public :
+  public:
 
   TTree *fChain;   //!pointer to the analyzed TTree or TChain
-
   // Declaration of leaf types
-
   Int_t           npuIT;
   Int_t njet;
   Float_t pt_ave;
   Float_t jet1_pt;
   Float_t jet2_pt;
   Float_t jet3_pt;
+  Float_t jet1_eta;
+  Float_t jet2_eta;
+  Float_t jet3_eta;
+  Float_t jet1_phi;
+  Float_t jet2_phi;
+  Float_t jet3_phi;
   Float_t barreljet_phi;
   Float_t barreljet_eta;
   Float_t probejet_phi;
@@ -60,6 +57,12 @@ class MySelector : public TSelector {
   TBranch *b_jet1_pt;
   TBranch *b_jet2_pt;
   TBranch *b_jet3_pt;
+  TBranch *b_jet1_eta;
+  TBranch *b_jet2_eta;
+  TBranch *b_jet3_eta;
+  TBranch *b_jet1_phi;
+  TBranch *b_jet2_phi;
+  TBranch *b_jet3_phi;
   TBranch *b_probejet_phi;
   TBranch *b_probejet_eta;
   TBranch *b_barreljet_phi;
@@ -139,8 +142,6 @@ class MySelector : public TSelector {
   TH1F *h_FEJet1Pt;
   TH1F *h_FEJet2Pt;
   TH1F *h_FEJet3Pt;
-
-  // ClassDef(MySelector,0);
 };
 
 #endif
@@ -155,14 +156,11 @@ void MySelector::Init(TTree *tree){
   // Init() will be called many times when running on PROOF
   // (once per file to be processed).
 
-
-
   // Set branch addresses and branch pointers
   if (!tree) return;
   fChain = tree;
   fChain->SetMakeClass(1);
 
-  //TFile *currentFile = tree->GetCurrentFile();
   TFile* currentFile = ((TChain*)fChain)->GetFile();
 
   fChain->SetBranchAddress("Njet", &njet, &b_njet);
@@ -170,6 +168,12 @@ void MySelector::Init(TTree *tree){
   fChain->SetBranchAddress("jet1_pt", &jet1_pt, &b_jet1_pt);
   fChain->SetBranchAddress("jet2_pt", &jet2_pt, &b_jet2_pt);
   fChain->SetBranchAddress("jet3_pt", &jet3_pt, &b_jet3_pt);
+  fChain->SetBranchAddress("jet1_eta", &jet1_eta, &b_jet1_eta);
+  fChain->SetBranchAddress("jet2_eta", &jet2_eta, &b_jet2_eta);
+  fChain->SetBranchAddress("jet3_eta", &jet3_eta, &b_jet3_eta);
+  fChain->SetBranchAddress("jet1_phi", &jet1_phi, &b_jet1_phi);
+  fChain->SetBranchAddress("jet2_phi", &jet2_phi, &b_jet2_phi);
+  fChain->SetBranchAddress("jet3_phi", &jet3_phi, &b_jet3_phi);
   fChain->SetBranchAddress("barreljet_phi", &barreljet_phi, &b_barreljet_phi);
   fChain->SetBranchAddress("barreljet_eta", &barreljet_eta, &b_barreljet_eta);
   fChain->SetBranchAddress("probejet_phi", &probejet_phi, &b_probejet_phi);
@@ -179,7 +183,6 @@ void MySelector::Init(TTree *tree){
   fChain->SetBranchAddress("hf_trigger", &pass_trigger_hf, &b_pass_trigger_hf);
   fChain->SetBranchAddress("bl_trigger", &pass_trigger_bl, &b_pass_trigger_bl);
   fChain->SetBranchAddress("rho", &rho, &b_rho);
-
 }
 
 Bool_t MySelector::Notify(){
@@ -188,7 +191,6 @@ Bool_t MySelector::Notify(){
   // is started when using PROOF. It is normally not necessary to make changes
   // to the generated code, but the routine can be extended by the
   // user if needed. The return value is currently not used.
-
 
   TFile *currentFile = fChain->GetCurrentFile();
   fChain->SetBranchAddress("nPU", &npuIT, &b_npuIT);

@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE JobConfiguration PUBLIC "" "JobConfig.dtd"[
+
+<!-- Generic Value -->
+<!ENTITY NEVT                       "-1">
+<!ENTITY CACHEABLE                  "False">
+<!ENTITY OUTDIR                     "/nfs/dust/cms/user/amalara/sframe_all/JER2017_PtBinnedQCD">
+
+<!-- Cleaning Cuts -->
+<!ENTITY APPLY_EtaPhi_cut           "true">     <!--Apply Eta Phi cleaning during ECAL problems -->
+<!ENTITY APPLY_EtaPhi_HCAL          "true">     <!--Apply Eta Phi cleaning during HCAL problems -->
+<!-- Directory for hotjet map -->
+<!ENTITY CUT_DIR                    "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/hotjets/">
+
+<!-- Trigger -->
+<!ENTITY TRIGGERS                   "central">  <!-- forward, central, full -->
+<!ENTITY TRIGGER_CENTRAL            "true">     <!--Trigger Flag -->
+<!ENTITY TRIGGER_FWD                "false">    <!--Trigger Flag -->
+<!ENTITY PtBinsTrigger              "Single">   <!-- Single, DiJet -->
+
+<!-- MC PuReweighting -->
+<!ENTITY DO_PU_REWEIGHTING          "true">    <!-- true, false -->
+<!ENTITY SYSTYPE_PU                 "central">    <!-- central, up, down -->
+<!ENTITY PILEUP_DIRECTORY           "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/data/MyMCPileupHistogram_QCDPt470to600.root">
+<!ENTITY PILEUP_DIRECTORY_DATA      "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/data/MyDataPileupHistogram.root">
+<!ENTITY PILEUP_DIRECTORY_DATA_UP   "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/data/MyDataPileupHistogram_72383.root">
+<!ENTITY PILEUP_DIRECTORY_DATA_DOWN "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/data/MyDataPileupHistogram_66017.root">
+
+<!-- Jet Variables -->
+<!ENTITY JEC_VERSION                "Fall17_17Nov2017_V10">
+<!ENTITY JETLABEL                   "AK4CHS"> <!-- AK4CHS - AK4PUPPI --> <!-- AK8CHS - AK8PUPPI -->
+
+<!-- Systematic uncertainties -->
+<!ENTITY JERSMEAR_DIRECTION         "nominal">  <!--nominal/down/up -->
+<!ENTITY JECSMEAR_DIRECTION         "nominal">  <!--nominal/down/up -->
+
+<!-- unused -->
+<!ENTITY APPLY_LUMIWEIGHTS          "false">
+<!ENTITY APPLY_UNFLATTENING         "false">
+<!ENTITY APPLY_METoverPTcut         "false">    <!--Apply MET Cut-->
+<!ENTITY b_closuretest              "true">     <!-- if set to false it runs without residual corrections -->
+<!ENTITY APPLY_WEIGHTS              "false">
+<!ENTITY WEIGHT_PATH                "/nfs/dust/cms/user/multh/JEC/2016ReReco/Residuals/Summer16_03Feb2017_V3/AK4CHS/MC_Reweighted_chsMET_NewTriggerSetup_ForWeights/">
+
+
+<!-- MC Samples -->
+<!ENTITY QCDPt15to30      SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/MC_QCD_Ptbinned_15to30_woHOTVR_woXCONE.xml">
+<!ENTITY QCDPt30to50      SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/MC_QCD_Ptbinned_30to50_woHOTVR_woXCONE.xml">
+<!ENTITY QCDPt50to80      SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/MC_QCD_Ptbinned_50to80_woHOTVR_woXCONE.xml">
+<!ENTITY QCDPt80to120     SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/MC_QCD_Ptbinned_80to120_woHOTVR_woXCONE.xml">
+<!ENTITY QCDPt120to170    SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/MC_QCD_Ptbinned_120to170_woHOTVR_woXCONE.xml">
+<!ENTITY QCDPt170to300    SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/MC_QCD_Ptbinned_170to300_woHOTVR_woXCONE.xml">
+<!ENTITY QCDPt300to470    SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/MC_QCD_Ptbinned_300to470_woHOTVR_woXCONE.xml">
+<!ENTITY QCDPt470to600    SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/MC_QCD_Ptbinned_470to600_woHOTVR_woXCONE.xml">
+<!ENTITY QCDPt600to800    SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/MC_QCD_Ptbinned_600to800_woHOTVR_woXCONE.xml">
+<!ENTITY QCDPt800to1000   SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/MC_QCD_Ptbinned_800to1000_woHOTVR_woXCONE.xml">
+<!ENTITY QCDPt1000to1400  SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/MC_QCD_Ptbinned_1000to1400_woHOTVR_woXCONE.xml">
+<!ENTITY QCDPt1400to1800  SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/MC_QCD_Ptbinned_1400to1800_woHOTVR_woXCONE.xml">
+<!ENTITY QCDPt1800to2400  SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/MC_QCD_Ptbinned_1800to2400_woHOTVR_woXCONE.xml">
+<!ENTITY QCDPt2400to3200  SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/MC_QCD_Ptbinned_2400to3200_woHOTVR_woXCONE.xml">
+<!ENTITY QCDPt3200toInf   SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/MC_QCD_Ptbinned_3200toInf_woHOTVR_woXCONE.xml">
+
+<!-- <!ENTITY PROOFdir            "/nfs/dust/cms/user/multh/.proof2"> -->
+
+]>
+
+
+<!--
+<ConfigParse NEventsBreak="0" FileSplit="60" AutoResubmit="5"/>
+<ConfigSGE RAM ="4" DISK ="3" Mail="andrea.malara@desy.de" Notification="as" Workdir="workdir_JER2017_PtBinnedQCDPt470to600_Single"/>
+-->
+
+<!-- OutputLevel controls which messages are printed; set to VERBOSE or DEBUG for more verbosity, to WARNING or ERROR for less -->
+<JobConfiguration JobName="ExampleCycleJob" OutputLevel="INFO">
+  <Library Name="libSUHH2JER2017"/>
+  <Package Name="SUHH2JER2017.par" />
+
+  <Cycle Name="uhh2::AnalysisModuleRunner" OutputDirectory="&OUTDIR;/" PostFix="" TargetLumi="8496.0" >
+
+    <!-- MC -->
+    <!-- <InputData Type="MC" Version="QCDPt15to30"     Lumi="0.01076363523" NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &QCDPt15to30;      <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData> -->
+    <!-- <InputData Type="MC" Version="QCDPt30to50"     Lumi="0.01076363523" NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &QCDPt30to50;      <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData> -->
+    <!-- <InputData Type="MC" Version="QCDPt50to80"     Lumi="0.9993129143"  NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &QCDPt50to80;      <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData> -->
+    <!-- <InputData Type="MC" Version="QCDPt80to120"    Lumi="10.418276"     NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &QCDPt80to120;     <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData> -->
+    <!-- <InputData Type="MC" Version="QCDPt120to170"   Lumi="56.97440883"   NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &QCDPt120to170;    <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData> -->
+    <!-- <InputData Type="MC" Version="QCDPt170to300"   Lumi="253.4669839"   NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &QCDPt170to300;    <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData> -->
+    <!-- <InputData Type="MC" Version="QCDPt300to470"   Lumi="6811.328391"   NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &QCDPt300to470;    <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData> -->
+    <InputData Type="MC" Version="QCDPt470to600"   Lumi="40788.71027"   NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &QCDPt470to600;    <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
+    <!-- <InputData Type="MC" Version="QCDPt600to800"   Lumi="339997.5709"   NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &QCDPt600to800;    <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData> -->
+    <!-- <InputData Type="MC" Version="QCDPt800to1000"  Lumi="1165340.848"   NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &QCDPt300to470;    <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData> -->
+    <!-- <InputData Type="MC" Version="QCDPt1000to1400" Lumi="2075989.722"   NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &QCDPt800to1000;   <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData> -->
+    <!-- <InputData Type="MC" Version="QCDPt1400to1800" Lumi="6727751.736"   NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &QCDPt1000to1400;  <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData> -->
+    <!-- <InputData Type="MC" Version="QCDPt1800to2400" Lumi="25438182.4"    NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &QCDPt1800to2400;  <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData> -->
+    <!-- <InputData Type="MC" Version="QCDPt2400to3200" Lumi="279733404"     NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &QCDPt2400to3200;  <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData> -->
+    <!-- <InputData Type="MC" Version="QCDPt3200toInf"  Lumi="4657487383"    NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &QCDPt3200toInf;   <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData> -->
+    <!--
+  -->
+  <UserConfig>
+    <!-- define which collections to read from the input. Only specify what you need to save I/O time -->
+    <Item Name="PrimaryVertexCollection"    Value="offlineSlimmedPrimaryVertices" />
+    <Item Name="ElectronCollection"         Value="slimmedElectronsUSER" />
+    <Item Name="MuonCollection"             Value="slimmedMuonsUSER" />
+    <Item Name="TauCollection"              Value="slimmedTaus" />
+    <Item Name="JetCollection"              Value="slimmedJets" />  <!-- slimmedJet: AK4CHS  -->  <!-- updatedPatJetsSlimmedJetsPuppi:AK4PUPPI -->
+    <Item Name="TopJetCollection"           Value="packedPatJetsAk8CHSJets_SoftDropCHS" />  <!-- patJetsSlimmedJetsAK8: AK8CHS -->
+    <Item Name="METName"                    Value="slimmedMETs" />
+    <Item Name="GenParticleCollection"      Value="GenParticles"/>
+    <Item Name="GenJetCollection"           Value="slimmedGenJets"/>
+
+    <!-- tell AnalysisModuleRunner NOT to use the MC event weight from SFrame; rather let
+    MCLumiWeight (called via CommonModules) calculate the MC event weight. The MC
+    event weight assigned by MCLumiWeight is InputData.Lumi / Cycle.TargetLumi. -->
+    <Item Name="use_sframe_weight"          Value="false"/>
+
+    <Item Name="lumi_file"                  Value="/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/data/Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON_v1_normTag.root"/>
+    <Item Name="lumihists_lumi_per_bin"     Value="500."/> <!-- used in UHH2/common/include/LuminosityHists.h -->
+
+    <!-- Jet Variables -->
+    <Item Name="JetLabel"                   Value="&JETLABEL;"/>
+    <Item Name="JEC_Version"                Value="&JEC_VERSION;"/>
+
+    <!-- Systematic uncertainties -->
+    <Item Name="jersmear_direction"         Value="&JERSMEAR_DIRECTION;"/>  <!--used only in UHH2/common/include/JetCorrections.cxx -->
+    <Item Name="jecsmear_direction"         Value="&JECSMEAR_DIRECTION;"/>  <!--used only in UHH2/common/include/JetCorrections.cxx -->
+
+    <Item Name="EtaPhi_cut"                 Value="&APPLY_EtaPhi_cut;"/>
+    <Item Name="Cut_dir"                    Value="&CUT_DIR;"/> <!--used only in selection.cxx -->
+    <Item Name="EtaPhi_HCAL"                Value="&APPLY_EtaPhi_HCAL;"/>
+
+    <!-- Triggers -->
+    <Item Name="Triggers"                   Value="&TRIGGERS;"/>
+    <Item Name="Trigger_Central"            Value="&TRIGGER_CENTRAL;"/>
+    <Item Name="Trigger_FWD"                Value="&TRIGGER_FWD;"/>
+    <Item Name="PtBinsTrigger"              Value="&PtBinsTrigger;"/>
+
+    <!-- MC PuReweighting -->
+    <Item Name="DO_Pu_ReWeighting"          Value="&DO_PU_REWEIGHTING;"/>
+    <Item Name="SysType_PU"                 Value="&SYSTYPE_PU;"/>
+    <Item Name="pileup_directory"           Value="&PILEUP_DIRECTORY;"/>            <!--used only in UHH2/common/include/MCWeight.h -->
+    <Item Name="pileup_directory_data"      Value="&PILEUP_DIRECTORY_DATA;"/>       <!--used only in UHH2/common/include/MCWeight.h -->
+    <Item Name="pileup_directory_data_up"   Value="&PILEUP_DIRECTORY_DATA_UP;"/>    <!--used only in UHH2/common/include/MCWeight.h -->
+    <Item Name="pileup_directory_data_down" Value="&PILEUP_DIRECTORY_DATA_DOWN;"/>  <!--used only in UHH2/common/include/MCWeight.h -->
+
+
+    <!-- unused -->
+    <Item Name="ClosureTest"                Value="&b_closuretest;"/>
+    <Item Name="Apply_Lumiweights"          Value="&APPLY_LUMIWEIGHTS;"/>
+    <Item Name="Apply_Unflattening"         Value="&APPLY_UNFLATTENING;"/>
+    <Item Name="Apply_Weights"              Value="&APPLY_WEIGHTS;"/>
+    <Item Name="MC_Weights_Path"            Value="&WEIGHT_PATH;"/>
+    <Item Name="METoverPt_cut"              Value="&APPLY_METoverPTcut;"/>
+
+    <!-- the class name of the AnalysisModule subclasses to run: -->
+    <Item Name="AnalysisModule"             Value="JER2017Module" />
+
+  </UserConfig>
+</Cycle>
+</JobConfiguration>

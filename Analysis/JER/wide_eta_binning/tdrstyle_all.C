@@ -1,10 +1,10 @@
 // Collect all the #includes here
-#include "TROOT.h"
+// #include "TROOT.h"
 #include "TGraph.h"
+#include "TGraphErrors.h"
+#include "TMath.h"
 #include "TLegend.h"
-
 #include "TStyle.h"
-
 #include "TPad.h"
 #include "TLatex.h"
 #include "TLine.h"
@@ -23,6 +23,7 @@
 #include "TH1D.h"
 
 #include <iostream>
+#include <algorithm>
 
 const bool kSquare = true;
 const bool kRectangular = false;
@@ -184,11 +185,11 @@ void findExtreme_gr(std::vector<TGraphErrors*> vec, double *x_min, double *x_max
 
 // tdrGrid: Turns the grid lines on (true) or off (false)
 
-void tdrGrid(bool gridOn) {
-	TStyle *tdrStyle = (TStyle*)gROOT->FindObject("tdrStyle"); assert(tdrStyle);
-	tdrStyle->SetPadGridX(gridOn);
-	tdrStyle->SetPadGridY(gridOn);
-}
+// void tdrGrid(bool gridOn) {
+// 	TStyle *tdrStyle = (TStyle*)gROOT->FindObject("tdrStyle"); assert(tdrStyle);
+// 	tdrStyle->SetPadGridX(gridOn);
+// 	tdrStyle->SetPadGridY(gridOn);
+// }
 
 // fixOverlay: Redraws the axis
 

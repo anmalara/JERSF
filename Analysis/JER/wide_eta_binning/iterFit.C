@@ -1,4 +1,7 @@
 #include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
 #include <TChain.h>
 #include <TCanvas.h>
 #include <TF1.h>
@@ -7,7 +10,6 @@
 #include <TFile.h>
 #include <TLine.h>
 #include <TStyle.h>
-#include <string>
 #include <TMath.h>
 #include <TLegend.h>
 #include <TPaveStats.h>

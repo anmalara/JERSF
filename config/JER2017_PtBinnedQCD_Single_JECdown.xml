@@ -19,7 +19,7 @@
 <!ENTITY PtBinsTrigger              "Single">   <!-- Single, DiJet -->
 
 <!-- MC PuReweighting -->
-<!ENTITY DO_PU_REWEIGHTING          "false">    <!-- true, false -->
+<!ENTITY DO_PU_REWEIGHTING          "true">    <!-- true, false -->
 <!ENTITY SYSTYPE_PU                 "central">    <!-- central, up, down -->
 <!ENTITY PILEUP_DIRECTORY           "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/data/MyMCPileupHistogram.root">
 <!ENTITY PILEUP_DIRECTORY_DATA      "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/data/MyDataPileupHistogram.root">
@@ -102,7 +102,7 @@
     <Item Name="MuonCollection"             Value="slimmedMuonsUSER" />
     <Item Name="TauCollection"              Value="slimmedTaus" />
     <Item Name="JetCollection"              Value="slimmedJets" />  <!-- slimmedJet: AK4CHS  -->  <!-- updatedPatJetsSlimmedJetsPuppi:AK4PUPPI -->
-    <Item Name="TopJetCollection"           Value="packedPatJetsAk8CHSJets_SoftDropCHS" />  <!-- updatedPatJetsPatJetsAK8PFPUPPI: AK8PUPPI -->  <!-- patJetsSlimmedJetsAK8: AK8CHS -->
+    <Item Name="TopJetCollection"           Value="packedPatJetsAk8CHSJets_SoftDropCHS" />  <!-- patJetsSlimmedJetsAK8: AK8CHS -->
     <Item Name="METName"                    Value="slimmedMETs" />
     <Item Name="GenParticleCollection"      Value="GenParticles"/>
     <Item Name="GenJetCollection"           Value="slimmedGenJets"/>
@@ -112,7 +112,7 @@
     event weight assigned by MCLumiWeight is InputData.Lumi / Cycle.TargetLumi. -->
     <Item Name="use_sframe_weight"          Value="false"/>
 
-    <Item Name="lumi_file"                  Value="/nfs/dust/cms/user/amalara/WorkingArea/94X/CMSSW_9_4_1/src/UHH2/common/data/Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON.root"/>
+    <Item Name="lumi_file"                  Value="/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/data/Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON_v1_normTag.root"/>
     <Item Name="lumihists_lumi_per_bin"     Value="500."/> <!-- used in UHH2/common/include/LuminosityHists.h -->
 
     <!-- Jet Variables -->
@@ -123,7 +123,6 @@
     <Item Name="jersmear_direction"         Value="&JERSMEAR_DIRECTION;"/>  <!--used only in UHH2/common/include/JetCorrections.cxx -->
     <Item Name="jecsmear_direction"         Value="&JECSMEAR_DIRECTION;"/>  <!--used only in UHH2/common/include/JetCorrections.cxx -->
 
-    <Item Name="METoverPt_cut"              Value="&APPLY_METoverPTcut;"/>
     <Item Name="EtaPhi_cut"                 Value="&APPLY_EtaPhi_cut;"/>
     <Item Name="Cut_dir"                    Value="&CUT_DIR;"/> <!--used only in selection.cxx -->
     <Item Name="EtaPhi_HCAL"                Value="&APPLY_EtaPhi_HCAL;"/>
@@ -150,9 +149,6 @@
     <Item Name="Apply_Weights"              Value="&APPLY_WEIGHTS;"/>
     <Item Name="MC_Weights_Path"            Value="&WEIGHT_PATH;"/>
     <Item Name="METoverPt_cut"              Value="&APPLY_METoverPTcut;"/>
-    <Item Name="EtaPhi_cut"                 Value="&APPLY_EtaPhi_cut;"/>
-    <Item Name="Cut_dir"                    Value="&CUT_DIR;"/> <!--used only in selection.cxx -->
-    <Item Name="EtaPhi_HCAL"                Value="&APPLY_EtaPhi_HCAL;"/>
 
     <!-- the class name of the AnalysisModule subclasses to run: -->
     <Item Name="AnalysisModule"             Value="JER2017Module" />

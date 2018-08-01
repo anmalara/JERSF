@@ -7,18 +7,17 @@
 
 run=$1
 MC_samp=$2
-trigger=$3
+trigger2=$3
 distr=$4
-
 dir=file/${trigger}/${run}_${distr}
+trigger=$5
 
-
+echo $dir
 
 rm -fr $dir
 mkdir -p $dir
 cp iterFit*.C $dir
 cp functions.C $dir
-#cp plotting/tdrstyle_mod15.C $dir
 cp tdrstyle_all.C $dir
 cd $dir
 pwd
@@ -28,6 +27,7 @@ mkdir -p pdfy/SFs
 mkdir -p pdfy/NSC_SFs
 mkdir -p pdfy/JERs
 mkdir -p pdfy/widths
+mkdir -p pdfy/maps
 mkdir -p ClosureTest
 mkdir -p output
 mkdir -p output/asymmetries
@@ -35,7 +35,7 @@ mkdir -p output/asymmetries
 export QUOTES='"'
 export LABELMC="MC"
 export LABELDATA="Data"
-export MCFILE=/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/JER2017/Analysis/hist_preparation/MC/wide_eta_bin/file/$trigger/${MC_samp}_${distr}_${trigger}/histograms_mc_incl_full.root
+export MCFILE=/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/JER2017/Analysis/hist_preparation/MC/wide_eta_bin/file/$trigger/${MC_samp}_${distr}/histograms_mc_incl_full.root
 export DATAFILE=/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/JER2017/Analysis/hist_preparation/data/wide_eta_bin/file/$trigger/${run}_${distr}/histograms_data_incl_full.root
 
 
@@ -75,7 +75,7 @@ export MC=$QUOTES$MCFILE$QUOTES
 export DATA=$QUOTES$DATAFILE$QUOTES
 export LUMI_LABEL=$QUOTES$LABEL_LUMI_INV_FB$QUOTES
 export ORIGIN="SF13invfb_smeared_pythia_vs_pythia"
-export TRIGGER=$QUOTES$trigger$QUOTES
+export TRIGGER=$QUOTES$trigger2$QUOTES
 
 echo "Using data file "$DATA
 echo "Using MC file "$MC
@@ -87,4 +87,4 @@ root -b -l << EOF
 mainRun(false,${MC},${DATA},${LUMI_LABEL},${MC_LABEL},${DATA_LABEL}, ${TRIGGER})
 .q
 EOF
-cd ../../..
+cd /nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/JER2017/Analysis/JER/wide_eta_binning

@@ -23,19 +23,21 @@
 // Root > T->Process("MySelector.C+")
 //
 
-#include "MySelector.h"
-#include "../../../../include/constants.h"
+#include <iostream>
+#include <algorithm>
 #include <TH2.h>
+#include <TH3.h>
 #include <TStyle.h>
 #include <TLorentzVector.h>
 #include <TRandom3.h>
+#include "MySelector.h"
 #include "MyJet.h"
+#include "../../../../include/constants.h"
 
 bool sortFunct( MyJet a, MyJet b) { return ( a.Pt() > b.Pt() ); }
 
 void MySelector::BuildEvent(){
 }
-
 
 void MySelector::MakeWeight(){
 
@@ -143,17 +145,21 @@ void MySelector::SlaveBegin(TTree * /*tree*/){
   EtaFtControlBinsNo = 8;   // fw method bins with normal triggers
   EtaFtBinsNo = 3;          // fw method bins with fw triggers
 
-  PtBinsNo = n_pt_bins_Di;
-  PtFTBinsNo = n_pt_bins_Di;
+  PtBinsNo = n_pt_bins_Si;
+  PtFTBinsNo = n_pt_bins_Si_HF;
   AlphaBinsNo = 6;
 
   // I define histograms for the "normal" JER calculation
 
   for( int m = 0; m < EtaBinsNo; m++ ){
     std::vector< std::vector< TH1F* > > temp2, temp2pt, temp2rho, temp2pt3, gen_temp2rho, gen_temp2pt3, gen_temp2, gen_temp2pt, temp2_MCTruth;
+    std::vector< std::vector< TH2F* > > temp2_dR, gen_temp2_dR, temp2_dR_probe, gen_temp2_dR_probe, temp2_dR_barrel, gen_temp2_dR_barrel;
     std::vector< TH1F* > alpha_temp2;
+    std::vector< std::vector< TH3F* > > temp2_dR3, gen_temp2_dR3 ;
     for( int p = 0; p < PtBinsNo; p++ ){
       std::vector< TH1F* > temp1, temp1pt, temp1rho, temp1pt3, gen_temp1rho, gen_temp1pt3, gen_temp1, gen_temp1pt, temp1_MCTruth;
+      std::vector< TH2F* > temp1_dR, gen_temp1_dR, temp1_dR_probe, gen_temp1_dR_probe, temp1_dR_barrel, gen_temp1_dR_barrel;
+      std::vector< TH3F* > temp1_dR3, gen_temp1_dR3 ;
       char name_alpha[100];
       sprintf(name_alpha, "alpha_eta%d_pt_%d",m ,p );
       TH1F *h1_alpha = new TH1F( name_alpha, name_alpha, 80, 0., 0.8 );
@@ -169,7 +175,15 @@ void MySelector::SlaveBegin(TTree * /*tree*/){
         TString gen_name_fw_rho = "gen_asymmrho_"; gen_name_fw_rho += "probe"; gen_name_fw_rho += m+1; gen_name_fw_rho += "_pt"; gen_name_fw_rho += p+1; gen_name_fw_rho += "_alpha"; gen_name_fw_rho += r+1;
         TString gen_name_fw_pt3 = "gen_asymmpt3_"; gen_name_fw_pt3 += "probe"; gen_name_fw_pt3 += m+1; gen_name_fw_pt3 += "_pt"; gen_name_fw_pt3 += p+1; gen_name_fw_pt3 += "_alpha"; gen_name_fw_pt3 += r+1;
         TString name_MCTruth = "mctruth_"; name_MCTruth += "eta"; name_MCTruth += (m+1); name_MCTruth += "_pt"; name_MCTruth += (p+1); name_MCTruth += "_alpha"; name_MCTruth += (r+1);
-        TH1F *h1 = new TH1F( name_fw, name_fw, 80, 0, 0.8 );
+        TString name_dR = "dR_"; name_dR += "eta"; name_dR += m+1; name_dR += "_pt"; name_dR += p+1; name_dR += "_alpha"; name_dR += r+1;
+        TString gen_name_dR = "gen_dR_"; gen_name_dR += "eta"; gen_name_dR += m+1; gen_name_dR += "_pt"; gen_name_dR += p+1; gen_name_dR += "_alpha"; gen_name_dR += r+1;
+        TString name_dR_probe = "dR_probe_"; name_dR_probe += "eta"; name_dR_probe += m+1; name_dR_probe += "_pt"; name_dR_probe += p+1; name_dR_probe += "_alpha"; name_dR_probe += r+1;
+        TString gen_name_dR_probe = "gen_dR_probe_"; gen_name_dR_probe += "eta"; gen_name_dR_probe += m+1; gen_name_dR_probe += "_pt"; gen_name_dR_probe += p+1; gen_name_dR_probe += "_alpha"; gen_name_dR_probe += r+1;
+        TString name_dR_barrel = "dR_barrel_"; name_dR_barrel += "eta"; name_dR_barrel += m+1; name_dR_barrel += "_pt"; name_dR_barrel += p+1; name_dR_barrel += "_alpha"; name_dR_barrel += r+1;
+        TString gen_name_dR_barrel = "gen_dR_barrel_"; gen_name_dR_barrel += "eta"; gen_name_dR_barrel += m+1; gen_name_dR_barrel += "_pt"; gen_name_dR_barrel += p+1; gen_name_dR_barrel += "_alpha"; gen_name_dR_barrel += r+1;
+        TString name_dR3 = "dR3_"; name_dR3 += "eta"; name_dR3 += m+1; name_dR3 += "_pt"; name_dR3 += p+1; name_dR3 += "_alpha"; name_dR3 += r+1;
+        TString gen_name_dR3 = "gen_dR3_"; gen_name_dR3 += "eta"; gen_name_dR3 += m+1; gen_name_dR3 += "_pt"; gen_name_dR3 += p+1; gen_name_dR3 += "_alpha"; gen_name_dR3 += r+1;
+        TH1F *h1 = new TH1F( name_fw, name_fw, 160, -0.8, 0.8 );
         h1 ->GetYaxis()->SetTitle("a.u.");    h1 ->GetXaxis()->SetTitle("Asymmetry");
         h1 -> Sumw2(); temp1.push_back(h1);
         TH1F *h2 = new TH1F( name_fw_pt, name_fw_pt, 50, 0, 1500 );
@@ -181,7 +195,7 @@ void MySelector::SlaveBegin(TTree * /*tree*/){
         TH1F *h4 = new TH1F( name_fw_pt3, name_fw_pt3, 50, 0, 1500 );
         h4 ->GetYaxis()->SetTitle("a.u.");    h4 ->GetXaxis()->SetTitle("Pt[GeV]");
         h4 -> Sumw2(); temp1pt3.push_back(h4);
-        TH1F *gen_h1 = new TH1F( gen_name_fw, gen_name_fw, 80, 0, 0.8 );
+        TH1F *gen_h1 = new TH1F( gen_name_fw, gen_name_fw, 160, -0.8, 0.8 );
         gen_h1 ->GetYaxis()->SetTitle("a.u.");    gen_h1 ->GetXaxis()->SetTitle("Asymmetry");
         gen_h1 -> Sumw2(); gen_temp1.push_back(gen_h1);
         TH1F *gen_h2 = new TH1F( gen_name_fw_pt, gen_name_fw_pt, 50, 0, 1500 );
@@ -196,22 +210,52 @@ void MySelector::SlaveBegin(TTree * /*tree*/){
         TH1F *h1_MCTruth = new TH1F( name_MCTruth, name_MCTruth, 200, 0, 2.0 );
         h1_MCTruth ->GetYaxis()->SetTitle("a.u.");    h1_MCTruth ->GetXaxis()->SetTitle("Response");
         h1_MCTruth -> Sumw2(); temp1_MCTruth.push_back(h1_MCTruth);
+        TH2F *h2_dR = new TH2F( name_dR, name_dR, 60, 0, 6.0, 60, 0, 6.0 );
+        h2_dR ->GetXaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    h2_dR ->GetYaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");
+        h2_dR -> Sumw2(); temp1_dR.push_back(h2_dR);
+        TH2F *gen_h2_dR = new TH2F( gen_name_dR, gen_name_dR, 60, 0, 6.0, 60, 0, 6.0 );
+        gen_h2_dR ->GetXaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    gen_h2_dR ->GetYaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");
+        gen_h2_dR -> Sumw2(); gen_temp1_dR.push_back(gen_h2_dR);
+        TH2F *h2_dR_probe = new TH2F( name_dR_probe, name_dR_probe, 60, 0, 6.0, 160, -0.8, 0.8 );
+        h2_dR_probe ->GetXaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");    h2_dR_probe ->GetYaxis()->SetTitle("Asymmetry");
+        h2_dR_probe -> Sumw2(); temp1_dR_probe.push_back(h2_dR_probe);
+        TH2F *gen_h2_dR_probe = new TH2F( gen_name_dR_probe, gen_name_dR_probe, 60, 0, 6.0, 160, -0.8, 0.8 );
+        gen_h2_dR_probe ->GetXaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");    gen_h2_dR_probe ->GetYaxis()->SetTitle("Asymmetry");
+        gen_h2_dR_probe -> Sumw2(); gen_temp1_dR_probe.push_back(gen_h2_dR_probe);
+        TH2F *h2_dR_barrel = new TH2F( name_dR_barrel, name_dR_barrel, 60, 0, 6.0, 160, -0.8, 0.8 );
+        h2_dR_barrel ->GetXaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    h2_dR_barrel ->GetYaxis()->SetTitle("Asymmetry");
+        h2_dR_barrel -> Sumw2(); temp1_dR_barrel.push_back(h2_dR_barrel);
+        TH2F *gen_h2_dR_barrel = new TH2F( gen_name_dR_barrel, gen_name_dR_barrel, 60, 0, 6.0, 160, -0.8, 0.8 );
+        gen_h2_dR_barrel ->GetXaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    gen_h2_dR_barrel ->GetYaxis()->SetTitle("Asymmetry");
+        gen_h2_dR_barrel -> Sumw2(); gen_temp1_dR_barrel.push_back(gen_h2_dR_barrel);
+        TH3F *h3_dR3 = new TH3F( name_dR3, name_dR3, 160, -0.8, 0.8, 60, 0, 6.0, 60, 0, 6.0 );
+        h3_dR3 ->GetXaxis()->SetTitle("Asymmetry");    h3_dR3 ->GetYaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    h3_dR3 ->GetZaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");
+        h3_dR3 -> Sumw2(); temp1_dR3.push_back(h3_dR3);
+        TH3F *gen_h3_dR3 = new TH3F( gen_name_dR3, gen_name_dR3, 160, -0.8, 0.8, 60, 0, 6.0, 60, 0, 6.0 );
+        gen_h3_dR3 ->GetXaxis()->SetTitle("Asymmetry");    gen_h3_dR3 ->GetYaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    gen_h3_dR3 ->GetZaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");
+        gen_h3_dR3 -> Sumw2(); gen_temp1_dR3.push_back(gen_h3_dR3);
       }
       temp2.push_back(temp1); temp2pt.push_back(temp1pt); temp2rho.push_back(temp1rho);  temp2pt3.push_back(temp1pt3);
       gen_temp2.push_back(gen_temp1); gen_temp2pt.push_back(gen_temp1pt); gen_temp2rho.push_back(gen_temp1rho); gen_temp2pt3.push_back(gen_temp1pt3);
-      temp2_MCTruth.push_back(temp1_MCTruth);
+      temp2_MCTruth.push_back(temp1_MCTruth); temp2_dR.push_back(temp1_dR); gen_temp2_dR.push_back(gen_temp1_dR); temp2_dR_probe.push_back(temp1_dR_probe); gen_temp2_dR_probe.push_back(gen_temp1_dR_probe); temp2_dR_barrel.push_back(temp1_dR_barrel); gen_temp2_dR_barrel.push_back(gen_temp1_dR_barrel);
+      temp2_dR3.push_back(temp1_dR3); gen_temp2_dR3.push_back(gen_temp1_dR3);
     }
     asymmetries_all.push_back(temp2); asymmetries_pt_all.push_back(temp2pt); asymmetries_rho_all.push_back(temp2rho); asymmetries_pt3_all.push_back(temp2pt3);
     asymmetries_gen_all.push_back(gen_temp2); asymmetries_gen_pt_all.push_back(gen_temp2pt); asymmetries_gen_rho_all.push_back(gen_temp2rho); asymmetries_gen_pt3_all.push_back(gen_temp2pt3);
-    MC_Truth_asymmetries_all.push_back(temp2_MCTruth);
+    MC_Truth_asymmetries_all.push_back(temp2_MCTruth); dR_all.push_back(temp2_dR); gen_dR_all.push_back(gen_temp2_dR); dR_probe_all.push_back(temp2_dR_probe); gen_dR_probe_all.push_back(gen_temp2_dR_probe); dR_barrel_all.push_back(temp2_dR_barrel); gen_dR_barrel_all.push_back(gen_temp2_dR_barrel);
+    dR3_all.push_back(temp2_dR3); gen_dR3_all.push_back(gen_temp2_dR3);
     alpha_spectrum.push_back(alpha_temp2);
   }
 
   for( int m = 0; m < EtaForwardBinsNo; m++ ){
     std::vector< std::vector< TH1F* > > temp2, temp2pt, temp2rho, temp2pt3, gen_temp2rho, gen_temp2pt3, gen_temp2, gen_temp2pt, temp2_MCTruth;
+    std::vector< std::vector< TH2F* > > temp2_dR, gen_temp2_dR, temp2_dR_probe, gen_temp2_dR_probe, temp2_dR_barrel, gen_temp2_dR_barrel;
     std::vector< TH1F* > alpha_temp2;
+    std::vector< std::vector< TH3F* > > temp2_dR3, gen_temp2_dR3 ;
     for( int p = 0; p < PtFTBinsNo; p++ ){
       std::vector< TH1F* > temp1, temp1pt, temp1rho, temp1pt3, gen_temp1rho, gen_temp1pt3, gen_temp1, gen_temp1pt, temp1_MCTruth;
+      std::vector< TH2F* > temp1_dR, gen_temp1_dR, temp1_dR_probe, gen_temp1_dR_probe, temp1_dR_barrel, gen_temp1_dR_barrel;
+      std::vector< TH3F* > temp1_dR3, gen_temp1_dR3 ;
       char name_alpha[100];
       sprintf(name_alpha, "alpha_eta%d_pt_%d",m+ EtaBinsNo ,p );
       TH1F *h1_alpha = new TH1F( name_alpha, name_alpha, 80, 0., 0.8 );
@@ -227,7 +271,15 @@ void MySelector::SlaveBegin(TTree * /*tree*/){
         TString gen_name_fw_rho = "gen_asymmrho_"; gen_name_fw_rho += "probe"; gen_name_fw_rho += m+1+EtaBinsNo; gen_name_fw_rho += "_pt"; gen_name_fw_rho += p+1; gen_name_fw_rho += "_alpha"; gen_name_fw_rho += r+1;
         TString gen_name_fw_pt3 = "gen_asymmpt3_"; gen_name_fw_pt3 += "probe"; gen_name_fw_pt3 += m+1+EtaBinsNo; gen_name_fw_pt3 += "_pt"; gen_name_fw_pt3 += p+1; gen_name_fw_pt3 += "_alpha"; gen_name_fw_pt3 += r+1;
         TString name_MCTruth = "mctruth_"; name_MCTruth += "eta"; name_MCTruth += ( m + 1 + EtaBinsNo ); name_MCTruth += "_pt"; name_MCTruth += (p+1); name_MCTruth += "_alpha"; name_MCTruth += (r+1);
-        TH1F *h1 = new TH1F( name_fw, name_fw, 80, 0, 0.8 );
+        TString name_dR = "dR_"; name_dR += "eta"; name_dR += ( m + 1 + EtaBinsNo ); name_dR += "_pt"; name_dR += (p+1); name_dR += "_alpha"; name_dR += (r+1);
+        TString gen_name_dR = "gen_dR_"; gen_name_dR += "eta"; gen_name_dR += ( m + 1 + EtaBinsNo ); gen_name_dR += "_pt"; gen_name_dR += (p+1); gen_name_dR += "_alpha"; gen_name_dR += (r+1);
+        TString name_dR_probe = "dR_probe_"; name_dR_probe += "eta"; name_dR_probe += ( m + 1 + EtaBinsNo ); name_dR_probe += "_pt"; name_dR_probe += (p+1); name_dR_probe += "_alpha"; name_dR_probe += (r+1);
+        TString gen_name_dR_probe = "gen_dR_probe_"; gen_name_dR_probe += "eta"; gen_name_dR_probe += ( m + 1 + EtaBinsNo ); gen_name_dR_probe += "_pt"; gen_name_dR_probe += (p+1); gen_name_dR_probe += "_alpha"; gen_name_dR_probe += (r+1);
+        TString name_dR_barrel = "dR_barrel_"; name_dR_barrel += "eta"; name_dR_barrel += ( m + 1 + EtaBinsNo ); name_dR_barrel += "_pt"; name_dR_barrel += (p+1); name_dR_barrel += "_alpha"; name_dR_barrel += (r+1);
+        TString gen_name_dR_barrel = "gen_dR_barrel_"; gen_name_dR_barrel += "eta"; gen_name_dR_barrel += ( m + 1 + EtaBinsNo ); gen_name_dR_barrel += "_pt"; gen_name_dR_barrel += (p+1); gen_name_dR_barrel += "_alpha"; gen_name_dR_barrel += (r+1);
+        TString name_dR3 = "dR3_"; name_dR3 += "eta"; name_dR3 += ( m + 1 + EtaBinsNo ); name_dR3 += "_pt"; name_dR3 += (p+1); name_dR3 += "_alpha"; name_dR3 += (r+1);
+        TString gen_name_dR3 = "gen_dR3_"; gen_name_dR3 += "eta"; gen_name_dR3 += ( m + 1 + EtaBinsNo ); gen_name_dR3 += "_pt"; gen_name_dR3 += (p+1); gen_name_dR3 += "_alpha"; gen_name_dR3 += (r+1);
+        TH1F *h1 = new TH1F( name_fw, name_fw, 160, -0.8, 0.8 );
         h1 ->GetYaxis()->SetTitle("a.u.");    h1 ->GetXaxis()->SetTitle("Asymmetry");
         h1 -> Sumw2(); temp1.push_back(h1);
         TH1F *h2 = new TH1F( name_fw_pt, name_fw_pt, 50, 0, 1500 );
@@ -239,7 +291,7 @@ void MySelector::SlaveBegin(TTree * /*tree*/){
         TH1F *h4 = new TH1F( name_fw_pt3, name_fw_pt3, 50, 0, 1500 );
         h4 ->GetYaxis()->SetTitle("a.u.");    h4 ->GetXaxis()->SetTitle("Pt[GeV]");
         h4 -> Sumw2(); temp1pt3.push_back(h4);
-        TH1F *gen_h1 = new TH1F( gen_name_fw, gen_name_fw, 80, 0, 0.8 );
+        TH1F *gen_h1 = new TH1F( gen_name_fw, gen_name_fw, 160, -0.8, 0.8 );
         gen_h1 ->GetYaxis()->SetTitle("a.u.");    gen_h1 ->GetXaxis()->SetTitle("Asymmetry");
         gen_h1 -> Sumw2(); gen_temp1.push_back(gen_h1);
         TH1F *gen_h2 = new TH1F( gen_name_fw_pt, gen_name_fw_pt, 50, 0, 1500 );
@@ -254,14 +306,40 @@ void MySelector::SlaveBegin(TTree * /*tree*/){
         TH1F *h1_MCTruth = new TH1F( name_MCTruth, name_MCTruth, 200, 0, 2.0 );
         h1_MCTruth ->GetYaxis()->SetTitle("a.u.");    h1_MCTruth ->GetXaxis()->SetTitle("Response");
         h1_MCTruth -> Sumw2(); temp1_MCTruth.push_back(h1_MCTruth);
+        TH2F *h2_dR = new TH2F( name_dR, name_dR, 60, 0, 6.0, 60, 0, 6.0 );
+        h2_dR ->GetXaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    h2_dR ->GetYaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");
+        h2_dR -> Sumw2(); temp1_dR.push_back(h2_dR);
+        TH2F *gen_h2_dR = new TH2F( gen_name_dR, gen_name_dR, 60, 0, 6.0, 60, 0, 6.0 );
+        gen_h2_dR ->GetXaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    gen_h2_dR ->GetYaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");
+        gen_h2_dR -> Sumw2(); gen_temp1_dR.push_back(gen_h2_dR);
+        TH2F *h2_dR_probe = new TH2F( name_dR_probe, name_dR_probe, 60, 0, 6.0, 160, -0.8, 0.8 );
+        h2_dR_probe ->GetXaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");    h2_dR_probe ->GetYaxis()->SetTitle("Asymmetry");
+        h2_dR_probe -> Sumw2(); temp1_dR_probe.push_back(h2_dR_probe);
+        TH2F *gen_h2_dR_probe = new TH2F( gen_name_dR_probe, gen_name_dR_probe, 60, 0, 6.0, 160, -0.8, 0.8 );
+        gen_h2_dR_probe ->GetXaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");    gen_h2_dR_probe ->GetYaxis()->SetTitle("Asymmetry");
+        gen_h2_dR_probe -> Sumw2(); gen_temp1_dR_probe.push_back(gen_h2_dR_probe);
+        TH2F *h2_dR_barrel = new TH2F( name_dR_barrel, name_dR_barrel, 60, 0, 6.0, 160, -0.8, 0.8 );
+        h2_dR_barrel ->GetXaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    h2_dR_barrel ->GetYaxis()->SetTitle("Asymmetry");
+        h2_dR_barrel -> Sumw2(); temp1_dR_barrel.push_back(h2_dR_barrel);
+        TH2F *gen_h2_dR_barrel = new TH2F( gen_name_dR_barrel, gen_name_dR_barrel, 60, 0, 6.0, 160, -0.8, 0.8 );
+        gen_h2_dR_barrel ->GetXaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    gen_h2_dR_barrel ->GetYaxis()->SetTitle("Asymmetry");
+        gen_h2_dR_barrel -> Sumw2(); gen_temp1_dR_barrel.push_back(gen_h2_dR_barrel);
+        TH3F *h3_dR3 = new TH3F( name_dR3, name_dR3, 160, -0.8, 0.8, 60, 0, 6.0, 60, 0, 6.0 );
+        h3_dR3 ->GetXaxis()->SetTitle("Asymmetry");    h3_dR3 ->GetYaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    h3_dR3 ->GetZaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");
+        h3_dR3 -> Sumw2(); temp1_dR3.push_back(h3_dR3);
+        TH3F *gen_h3_dR3 = new TH3F( gen_name_dR3, gen_name_dR3, 160, -0.8, 0.8, 60, 0, 6.0, 60, 0, 6.0 );
+        gen_h3_dR3 ->GetXaxis()->SetTitle("Asymmetry");    gen_h3_dR3 ->GetYaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    gen_h3_dR3 ->GetZaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");
+        gen_h3_dR3 -> Sumw2(); gen_temp1_dR3.push_back(gen_h3_dR3);
       }
       temp2.push_back(temp1); temp2pt.push_back(temp1pt); temp2rho.push_back(temp1rho);  temp2pt3.push_back(temp1pt3);
       gen_temp2.push_back(gen_temp1); gen_temp2pt.push_back(gen_temp1pt); gen_temp2rho.push_back(gen_temp1rho); gen_temp2pt3.push_back(gen_temp1pt3);
-      temp2_MCTruth.push_back(temp1_MCTruth);
+      temp2_MCTruth.push_back(temp1_MCTruth); temp2_dR.push_back(temp1_dR); gen_temp2_dR.push_back(gen_temp1_dR); temp2_dR_probe.push_back(temp1_dR_probe); gen_temp2_dR_probe.push_back(gen_temp1_dR_probe); temp2_dR_barrel.push_back(temp1_dR_barrel); gen_temp2_dR_barrel.push_back(gen_temp1_dR_barrel);
+      temp2_dR3.push_back(temp1_dR3); gen_temp2_dR3.push_back(gen_temp1_dR3);
     }
     asymmetries_all.push_back(temp2); asymmetries_pt_all.push_back(temp2pt); asymmetries_rho_all.push_back(temp2rho); asymmetries_pt3_all.push_back(temp2pt3);
     asymmetries_gen_all.push_back(gen_temp2); asymmetries_gen_pt_all.push_back(gen_temp2pt); asymmetries_gen_rho_all.push_back(gen_temp2rho); asymmetries_gen_pt3_all.push_back(gen_temp2pt3);
-    MC_Truth_asymmetries_all.push_back(temp2_MCTruth);
+    MC_Truth_asymmetries_all.push_back(temp2_MCTruth); dR_all.push_back(temp2_dR); gen_dR_all.push_back(gen_temp2_dR); dR_probe_all.push_back(temp2_dR_probe); gen_dR_probe_all.push_back(gen_temp2_dR_probe); dR_barrel_all.push_back(temp2_dR_barrel); gen_dR_barrel_all.push_back(gen_temp2_dR_barrel);
+    dR3_all.push_back(temp2_dR3); gen_dR3_all.push_back(gen_temp2_dR3);
     alpha_spectrum.push_back(alpha_temp2);
   }
 
@@ -269,9 +347,13 @@ void MySelector::SlaveBegin(TTree * /*tree*/){
 
   for( int m = 0; m < EtaFtBinsNo; m++ ){
     std::vector< std::vector< TH1F* > > temp2, temp2pt, temp2rho, temp2pt3, gen_temp2rho, gen_temp2pt3, gen_temp2, gen_temp2pt, temp2_MCTruth;
+    std::vector< std::vector< TH2F* > > temp2_dR, gen_temp2_dR, temp2_dR_probe, gen_temp2_dR_probe, temp2_dR_barrel, gen_temp2_dR_barrel, temp2_eta_probe, gen_temp2_eta_probe, temp2_eta_barrel, gen_temp2_eta_barrel, temp2_phi_probe, gen_temp2_phi_probe, temp2_phi_barrel, gen_temp2_phi_barrel;
     std::vector< TH1F* > alpha_temp2;
+    std::vector< std::vector< TH3F* > > temp2_dR3, gen_temp2_dR3 ;
     for( int p = 0; p < PtFTBinsNo; p++ ){
       std::vector< TH1F* > temp1, temp1pt, temp1rho, temp1pt3, gen_temp1rho, gen_temp1pt3, gen_temp1, gen_temp1pt, temp1_MCTruth;
+      std::vector< TH2F* > temp1_dR, gen_temp1_dR, temp1_dR_probe, gen_temp1_dR_probe, temp1_dR_barrel, gen_temp1_dR_barrel, temp1_eta_probe, gen_temp1_eta_probe, temp1_eta_barrel, gen_temp1_eta_barrel, temp1_phi_probe, gen_temp1_phi_probe, temp1_phi_barrel, gen_temp1_phi_barrel;
+      std::vector< TH3F* > temp1_dR3, gen_temp1_dR3 ;
       char name_alpha[100];
       sprintf(name_alpha, "forward_alpha_eta%d_pt_%d",m + 2 + EtaFtControlBinsNo ,p );
       TH1F *h1_alpha = new TH1F( name_alpha, name_alpha, 80, 0., 0.8 );
@@ -286,8 +368,24 @@ void MySelector::SlaveBegin(TTree * /*tree*/){
         TString gen_name_fw_pt = "gen_forwardpt_"; gen_name_fw_pt += "probe"; gen_name_fw_pt += m+2+EtaFtControlBinsNo; gen_name_fw_pt += "_pt"; gen_name_fw_pt += p+1; gen_name_fw_pt += "_alpha"; gen_name_fw_pt += r+1;
         TString gen_name_fw_rho = "gen_forwardrho_"; gen_name_fw_rho += "probe"; gen_name_fw_rho += m+2+EtaFtControlBinsNo; gen_name_fw_rho += "_pt"; gen_name_fw_rho += p+1; gen_name_fw_rho += "_alpha"; gen_name_fw_rho += r+1;
         TString gen_name_fw_pt3 = "gen_forwardpt3_"; gen_name_fw_pt3 += "probe"; gen_name_fw_pt3 += m+2+EtaFtControlBinsNo; gen_name_fw_pt3 += "_pt"; gen_name_fw_pt3 += p+1; gen_name_fw_pt3 += "_alpha"; gen_name_fw_pt3 += r+1;
-        TString name_MCTruth = "mctruth_forward_probe"; name_MCTruth += m+2+EtaFtControlBinsNo ; name_MCTruth += "_pt"; name_MCTruth += p+1; name_MCTruth += "_alpha"; name_MCTruth += r+1;
-        TH1F *h1 = new TH1F( name_fw, name_fw, 80, 0, 0.8 );
+        TString name_MCTruth = "mctruth_forward_"; name_MCTruth += "probe"; name_MCTruth += m+2+EtaFtControlBinsNo ; name_MCTruth += "_pt"; name_MCTruth += p+1; name_MCTruth += "_alpha"; name_MCTruth += r+1;
+        TString name_dR = "dR_forward_"; name_dR += "probe"; name_dR += m+2+EtaFtControlBinsNo ; name_dR += "_pt"; name_dR += p+1; name_dR += "_alpha"; name_dR += r+1;
+        TString gen_name_dR = "gen_dR_forward_"; gen_name_dR += "probe"; gen_name_dR += m+2+EtaFtControlBinsNo ; gen_name_dR += "_pt"; gen_name_dR += p+1; gen_name_dR += "_alpha"; gen_name_dR += r+1;
+        TString name_dR_probe = "dR_probe_forward_"; name_dR_probe += "probe"; name_dR_probe += m+2+EtaFtControlBinsNo ; name_dR_probe += "_pt"; name_dR_probe += p+1; name_dR_probe += "_alpha"; name_dR_probe += r+1;
+        TString gen_name_dR_probe = "gen_dR_probe_forward_"; gen_name_dR_probe += "probe"; gen_name_dR_probe += m+2+EtaFtControlBinsNo ; gen_name_dR_probe += "_pt"; gen_name_dR_probe += p+1; gen_name_dR_probe += "_alpha"; gen_name_dR_probe += r+1;
+        TString name_dR_barrel = "dR_barrel_forward_"; name_dR_barrel += "probe"; name_dR_barrel += m+2+EtaFtControlBinsNo ; name_dR_barrel += "_pt"; name_dR_barrel += p+1; name_dR_barrel += "_alpha"; name_dR_barrel += r+1;
+        TString gen_name_dR_barrel = "gen_dR_barrel_forward_"; gen_name_dR_barrel += "probe"; gen_name_dR_barrel += m+2+EtaFtControlBinsNo ; gen_name_dR_barrel += "_pt"; gen_name_dR_barrel += p+1; gen_name_dR_barrel += "_alpha"; gen_name_dR_barrel += r+1;
+        TString name_eta_probe = "eta_probe_forward_"; name_eta_probe += "probe"; name_eta_probe += m+2+EtaFtControlBinsNo ; name_eta_probe += "_pt"; name_eta_probe += p+1; name_eta_probe += "_alpha"; name_eta_probe += r+1;
+        TString gen_name_eta_probe = "gen_eta_probe_forward_"; gen_name_eta_probe += "probe"; gen_name_eta_probe += m+2+EtaFtControlBinsNo ; gen_name_eta_probe += "_pt"; gen_name_eta_probe += p+1; gen_name_eta_probe += "_alpha"; gen_name_eta_probe += r+1;
+        TString name_eta_barrel = "eta_barrel_forward_"; name_eta_barrel += "probe"; name_eta_barrel += m+2+EtaFtControlBinsNo ; name_eta_barrel += "_pt"; name_eta_barrel += p+1; name_eta_barrel += "_alpha"; name_eta_barrel += r+1;
+        TString gen_name_eta_barrel = "gen_eta_barrel_forward_"; gen_name_eta_barrel += "probe"; gen_name_eta_barrel += m+2+EtaFtControlBinsNo ; gen_name_eta_barrel += "_pt"; gen_name_eta_barrel += p+1; gen_name_eta_barrel += "_alpha"; gen_name_eta_barrel += r+1;
+        TString name_phi_probe = "phi_probe_forward_"; name_phi_probe += "probe"; name_phi_probe += m+2+EtaFtControlBinsNo ; name_phi_probe += "_pt"; name_phi_probe += p+1; name_phi_probe += "_alpha"; name_phi_probe += r+1;
+        TString gen_name_phi_probe = "gen_phi_probe_forward_"; gen_name_phi_probe += "probe"; gen_name_phi_probe += m+2+EtaFtControlBinsNo ; gen_name_phi_probe += "_pt"; gen_name_phi_probe += p+1; gen_name_phi_probe += "_alpha"; gen_name_phi_probe += r+1;
+        TString name_phi_barrel = "phi_barrel_forward_"; name_phi_barrel += "probe"; name_phi_barrel += m+2+EtaFtControlBinsNo ; name_phi_barrel += "_pt"; name_phi_barrel += p+1; name_phi_barrel += "_alpha"; name_phi_barrel += r+1;
+        TString gen_name_phi_barrel = "gen_phi_barrel_forward_"; gen_name_phi_barrel += "probe"; gen_name_phi_barrel += m+2+EtaFtControlBinsNo ; gen_name_phi_barrel += "_pt"; gen_name_phi_barrel += p+1; gen_name_phi_barrel += "_alpha"; gen_name_phi_barrel += r+1;
+        TString name_dR3 = "dR3_forward_"; name_dR3 += "probe"; name_dR3 += m+2+EtaFtControlBinsNo ; name_dR3 += "_pt"; name_dR3 += p+1; name_dR3 += "_alpha"; name_dR3 += r+1;
+        TString gen_name_dR3 = "gen_dR3_forward_"; gen_name_dR3 += "probe"; gen_name_dR3 += m+2+EtaFtControlBinsNo ; gen_name_dR3 += "_pt"; gen_name_dR3 += p+1; gen_name_dR3 += "_alpha"; gen_name_dR3 += r+1;
+        TH1F *h1 = new TH1F( name_fw, name_fw, 160, -0.8, 0.8 );
         h1 ->GetYaxis()->SetTitle("a.u.");    h1 ->GetXaxis()->SetTitle("Asymmetry");
         h1 -> Sumw2(); temp1.push_back(h1);
         TH1F *h2 = new TH1F( name_fw_pt, name_fw_pt, 50, 0, 1500 );
@@ -299,7 +397,7 @@ void MySelector::SlaveBegin(TTree * /*tree*/){
         TH1F *h4 = new TH1F( name_fw_pt3, name_fw_pt3, 50, 0, 1500 );
         h4 ->GetYaxis()->SetTitle("a.u.");    h4 ->GetXaxis()->SetTitle("Pt[GeV]");
         h4 -> Sumw2(); temp1pt3.push_back(h4);
-        TH1F *gen_h1 = new TH1F( gen_name_fw, gen_name_fw, 80, 0, 0.8 );
+        TH1F *gen_h1 = new TH1F( gen_name_fw, gen_name_fw, 160, -0.8, 0.8 );
         gen_h1 ->GetYaxis()->SetTitle("a.u.");    gen_h1 ->GetXaxis()->SetTitle("Asymmetry");
         gen_h1 -> Sumw2(); gen_temp1.push_back(gen_h1);
         TH1F *gen_h2 = new TH1F( gen_name_fw_pt, gen_name_fw_pt, 50, 0, 1500 );
@@ -314,24 +412,89 @@ void MySelector::SlaveBegin(TTree * /*tree*/){
         TH1F *h1_MCTruth = new TH1F( name_MCTruth, name_MCTruth, 200, 0, 2.0 );
         h1_MCTruth ->GetYaxis()->SetTitle("a.u.");    h1_MCTruth ->GetXaxis()->SetTitle("Response");
         h1_MCTruth -> Sumw2(); temp1_MCTruth.push_back(h1_MCTruth);
+        TH2F *h2_dR = new TH2F( name_dR, name_dR, 60, 0, 6.0, 60, 0, 6.0 );
+        h2_dR ->GetXaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    h2_dR ->GetYaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");
+        h2_dR -> Sumw2(); temp1_dR.push_back(h2_dR);
+        TH2F *gen_h2_dR = new TH2F( gen_name_dR, gen_name_dR, 60, 0, 6.0, 60, 0, 6.0 );
+        gen_h2_dR ->GetXaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    gen_h2_dR ->GetYaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");
+        gen_h2_dR -> Sumw2(); gen_temp1_dR.push_back(gen_h2_dR);
+        TH2F *h2_dR_probe = new TH2F( name_dR_probe, name_dR_probe, 60, 0, 6.0, 160, -0.8, 0.8 );
+        h2_dR_probe ->GetXaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");    h2_dR_probe ->GetYaxis()->SetTitle("Asymmetry");
+        h2_dR_probe -> Sumw2(); temp1_dR_probe.push_back(h2_dR_probe);
+        TH2F *gen_h2_dR_probe = new TH2F( gen_name_dR_probe, gen_name_dR_probe, 60, 0, 6.0, 160, -0.8, 0.8 );
+        gen_h2_dR_probe ->GetXaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");    gen_h2_dR_probe ->GetYaxis()->SetTitle("Asymmetry");
+        gen_h2_dR_probe -> Sumw2(); gen_temp1_dR_probe.push_back(gen_h2_dR_probe);
+        TH2F *h2_dR_barrel = new TH2F( name_dR_barrel, name_dR_barrel, 60, 0, 6.0, 160, -0.8, 0.8 );
+        h2_dR_barrel ->GetXaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    h2_dR_barrel ->GetYaxis()->SetTitle("Asymmetry");
+        h2_dR_barrel -> Sumw2(); temp1_dR_barrel.push_back(h2_dR_barrel);
+        TH2F *gen_h2_dR_barrel = new TH2F( gen_name_dR_barrel, gen_name_dR_barrel, 60, 0, 6.0, 160, -0.8, 0.8 );
+        gen_h2_dR_barrel ->GetXaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    gen_h2_dR_barrel ->GetYaxis()->SetTitle("Asymmetry");
+        gen_h2_dR_barrel -> Sumw2(); gen_temp1_dR_barrel.push_back(gen_h2_dR_barrel);
+        TH2F *h2_eta_probe = new TH2F( name_eta_probe, name_eta_probe, 60, 0, 6.0, 160, -0.8, 0.8 );
+        h2_eta_probe ->GetXaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");    h2_eta_probe ->GetYaxis()->SetTitle("Asymmetry");
+        h2_eta_probe -> Sumw2(); temp1_eta_probe.push_back(h2_eta_probe);
+        TH2F *gen_h2_eta_probe = new TH2F( gen_name_eta_probe, gen_name_eta_probe, 60, 0, 6.0, 160, -0.8, 0.8 );
+        gen_h2_eta_probe ->GetXaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");    gen_h2_eta_probe ->GetYaxis()->SetTitle("Asymmetry");
+        gen_h2_eta_probe -> Sumw2(); gen_temp1_eta_probe.push_back(gen_h2_eta_probe);
+        TH2F *h2_eta_barrel = new TH2F( name_eta_barrel, name_eta_barrel, 60, 0, 6.0, 160, -0.8, 0.8 );
+        h2_eta_barrel ->GetXaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    h2_eta_barrel ->GetYaxis()->SetTitle("Asymmetry");
+        h2_eta_barrel -> Sumw2(); temp1_eta_barrel.push_back(h2_eta_barrel);
+        TH2F *gen_h2_eta_barrel = new TH2F( gen_name_eta_barrel, gen_name_eta_barrel, 60, 0, 6.0, 160, -0.8, 0.8 );
+        gen_h2_eta_barrel ->GetXaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    gen_h2_eta_barrel ->GetYaxis()->SetTitle("Asymmetry");
+        gen_h2_eta_barrel -> Sumw2(); gen_temp1_eta_barrel.push_back(gen_h2_eta_barrel);
+        TH2F *h2_phi_probe = new TH2F( name_phi_probe, name_phi_probe, 60, 0, 6.0, 160, -0.8, 0.8 );
+        h2_phi_probe ->GetXaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");    h2_phi_probe ->GetYaxis()->SetTitle("Asymmetry");
+        h2_phi_probe -> Sumw2(); temp1_phi_probe.push_back(h2_phi_probe);
+        TH2F *gen_h2_phi_probe = new TH2F( gen_name_phi_probe, gen_name_phi_probe, 60, 0, 6.0, 160, -0.8, 0.8 );
+        gen_h2_phi_probe ->GetXaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");    gen_h2_phi_probe ->GetYaxis()->SetTitle("Asymmetry");
+        gen_h2_phi_probe -> Sumw2(); gen_temp1_phi_probe.push_back(gen_h2_phi_probe);
+        TH2F *h2_phi_barrel = new TH2F( name_phi_barrel, name_phi_barrel, 60, 0, 6.0, 160, -0.8, 0.8 );
+        h2_phi_barrel ->GetXaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    h2_phi_barrel ->GetYaxis()->SetTitle("Asymmetry");
+        h2_phi_barrel -> Sumw2(); temp1_phi_barrel.push_back(h2_phi_barrel);
+        TH2F *gen_h2_phi_barrel = new TH2F( gen_name_phi_barrel, gen_name_phi_barrel, 60, 0, 6.0, 160, -0.8, 0.8 );
+        gen_h2_phi_barrel ->GetXaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    gen_h2_phi_barrel ->GetYaxis()->SetTitle("Asymmetry");
+        gen_h2_phi_barrel -> Sumw2(); gen_temp1_phi_barrel.push_back(gen_h2_phi_barrel);
+        TH3F *h3_dR3 = new TH3F( name_dR3, name_dR3, 160, -0.8, 0.8, 60, 0, 6.0, 60, 0, 6.0 );
+        h3_dR3 ->GetXaxis()->SetTitle("Asymmetry");    h3_dR3 ->GetYaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    h3_dR3 ->GetZaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");
+        h3_dR3 -> Sumw2(); temp1_dR3.push_back(h3_dR3);
+        TH3F *gen_h3_dR3 = new TH3F( gen_name_dR3, gen_name_dR3, 160, -0.8, 0.8, 60, 0, 6.0, 60, 0, 6.0 );
+        gen_h3_dR3 ->GetXaxis()->SetTitle("Asymmetry");    gen_h3_dR3 ->GetYaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    gen_h3_dR3 ->GetZaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");
+        gen_h3_dR3 -> Sumw2(); gen_temp1_dR3.push_back(gen_h3_dR3);
       }
       temp2.push_back(temp1); temp2pt.push_back(temp1pt); temp2rho.push_back(temp1rho);  temp2pt3.push_back(temp1pt3);
       gen_temp2.push_back(gen_temp1); gen_temp2pt.push_back(gen_temp1pt); gen_temp2rho.push_back(gen_temp1rho); gen_temp2pt3.push_back(gen_temp1pt3);
-      temp2_MCTruth.push_back(temp1_MCTruth);
+      temp2_MCTruth.push_back(temp1_MCTruth); temp2_dR.push_back(temp1_dR); gen_temp2_dR.push_back(gen_temp1_dR);
+      temp2_dR_probe.push_back(temp1_dR_probe); gen_temp2_dR_probe.push_back(gen_temp1_dR_probe);
+      temp2_dR_barrel.push_back(temp1_dR_barrel); gen_temp2_dR_barrel.push_back(gen_temp1_dR_barrel);
+      temp2_eta_probe.push_back(temp1_eta_probe); gen_temp2_eta_probe.push_back(gen_temp1_eta_probe);
+      temp2_eta_barrel.push_back(temp1_eta_barrel); gen_temp2_eta_barrel.push_back(gen_temp1_eta_barrel);
+      temp2_phi_probe.push_back(temp1_phi_probe); gen_temp2_phi_probe.push_back(gen_temp1_phi_probe);
+      temp2_phi_barrel.push_back(temp1_phi_barrel); gen_temp2_phi_barrel.push_back(gen_temp1_phi_barrel);
+      temp2_dR3.push_back(temp1_dR3); gen_temp2_dR3.push_back(gen_temp1_dR3);
     }
     forward_hist.push_back(temp2); forward_pt_hist.push_back(temp2pt); forward_rho_hist.push_back(temp2rho); forward_pt3_hist.push_back(temp2pt3);
     forward_gen_hist.push_back(gen_temp2); forward_gen_pt_hist.push_back(gen_temp2pt); forward_gen_rho_hist.push_back(gen_temp2rho); forward_gen_pt3_hist.push_back(gen_temp2pt3);
-    MC_Truth_forward_hist.push_back(temp2_MCTruth);
+    MC_Truth_forward_hist.push_back(temp2_MCTruth); dR_forward_hist.push_back(temp2_dR); gen_dR_forward_hist.push_back(gen_temp2_dR);
+    dR_probe_forward_hist.push_back(temp2_dR_probe); gen_dR_probe_forward_hist.push_back(gen_temp2_dR_probe);
+    dR_barrel_forward_hist.push_back(temp2_dR_barrel); gen_dR_barrel_forward_hist.push_back(gen_temp2_dR_barrel);
+    eta_probe_forward_hist.push_back(temp2_eta_probe); gen_eta_probe_forward_hist.push_back(gen_temp2_eta_probe);
+    eta_barrel_forward_hist.push_back(temp2_eta_barrel); gen_eta_barrel_forward_hist.push_back(gen_temp2_eta_barrel);
+    phi_probe_forward_hist.push_back(temp2_phi_probe); gen_phi_probe_forward_hist.push_back(gen_temp2_phi_probe);
+    phi_barrel_forward_hist.push_back(temp2_phi_barrel); gen_phi_barrel_forward_hist.push_back(gen_temp2_phi_barrel);
+    dR3_forward_hist.push_back(temp2_dR3); gen_dR3_forward_hist.push_back(gen_temp2_dR3);
     forward_alpha_spectrum.push_back(alpha_temp2);
   }
-
   // I define histograms for the control eta bins for forward method calculation
 
   for( int m = 0; m < EtaFtControlBinsNo; m++ ){
     std::vector< std::vector< TH1F* > > temp2, temp2pt, temp2rho, temp2pt3, gen_temp2rho, gen_temp2pt3, gen_temp2, gen_temp2pt, temp2_MCTruth;
+    std::vector< std::vector< TH2F* > > temp2_dR, gen_temp2_dR, temp2_dR_probe, gen_temp2_dR_probe, temp2_dR_barrel, gen_temp2_dR_barrel;
     std::vector< TH1F* > alpha_temp2;
+    std::vector< std::vector< TH3F* > > temp2_dR3, gen_temp2_dR3 ;
     for( int p = 0; p < PtBinsNo; p++ ){
       std::vector< TH1F* > temp1, temp1pt, temp1rho, temp1pt3, gen_temp1rho, gen_temp1pt3, gen_temp1, gen_temp1pt, temp1_MCTruth;
+      std::vector< TH2F* > temp1_dR, gen_temp1_dR, temp1_dR_probe, gen_temp1_dR_probe, temp1_dR_barrel, gen_temp1_dR_barrel;
+      std::vector< TH3F* > temp1_dR3, gen_temp1_dR3 ;
       char name_alpha[100];
       sprintf(name_alpha, "forward_alpha_eta%d_pt_%d", m + 2, p );
       TH1F *h1_alpha = new TH1F( name_alpha, name_alpha, 80, 0., 0.8 );
@@ -347,7 +510,15 @@ void MySelector::SlaveBegin(TTree * /*tree*/){
         TString gen_name_fw_rho = "gen_forwardrho_control_"; gen_name_fw_rho += "probe"; gen_name_fw_rho += m+2; gen_name_fw_rho += "_pt"; gen_name_fw_rho += p+1; gen_name_fw_rho += "_alpha"; gen_name_fw_rho += r+1;
         TString gen_name_fw_pt3 = "gen_forwardpt3_control_"; gen_name_fw_pt3 += "probe"; gen_name_fw_pt3 += m+2; gen_name_fw_pt3 += "_pt"; gen_name_fw_pt3 += p+1; gen_name_fw_pt3 += "_alpha"; gen_name_fw_pt3 += r+1;
         TString name_MCTruth = "mctruth_forward_control_"; name_MCTruth += "probe"; name_MCTruth += m+2; name_MCTruth += "_pt"; name_MCTruth += p+1; name_MCTruth += "_alpha"; name_MCTruth += r+1;
-        TH1F *h1 = new TH1F( name_fw, name_fw, 80, 0, 0.8 );
+        TString name_dR = "dR_forward_control_"; name_dR += "probe"; name_dR += m+2; name_dR += "_pt"; name_dR += p+1; name_dR += "_alpha"; name_dR += r+1;
+        TString gen_name_dR = "gen_dR_forward_control_"; gen_name_dR += "probe"; gen_name_dR += m+2; gen_name_dR += "_pt"; gen_name_dR += p+1; gen_name_dR += "_alpha"; gen_name_dR += r+1;
+        TString name_dR_probe = "dR_probe_forward_control_"; name_dR_probe += "probe"; name_dR_probe += m+2; name_dR_probe += "_pt"; name_dR_probe += p+1; name_dR_probe += "_alpha"; name_dR_probe += r+1;
+        TString gen_name_dR_probe = "gen_dR_probe_forward_control_"; gen_name_dR_probe += "probe"; gen_name_dR_probe += m+2; gen_name_dR_probe += "_pt"; gen_name_dR_probe += p+1; gen_name_dR_probe += "_alpha"; gen_name_dR_probe += r+1;
+        TString name_dR_barrel = "dR_barrel_forward_control_"; name_dR_barrel += "probe"; name_dR_barrel += m+2; name_dR_barrel += "_pt"; name_dR_barrel += p+1; name_dR_barrel += "_alpha"; name_dR_barrel += r+1;
+        TString gen_name_dR_barrel = "gen_dR_barrel_forward_control_"; gen_name_dR_barrel += "probe"; gen_name_dR_barrel += m+2; gen_name_dR_barrel += "_pt"; gen_name_dR_barrel += p+1; gen_name_dR_barrel += "_alpha"; gen_name_dR_barrel += r+1;
+        TString name_dR3 = "dR3_forward_control_"; name_dR3 += "probe"; name_dR3 += m+2; name_dR3 += "_pt"; name_dR3 += p+1; name_dR3 += "_alpha"; name_dR3 += r+1;
+        TString gen_name_dR3 = "gen_dR3_forward_control_"; gen_name_dR3 += "probe"; gen_name_dR3 += m+2; gen_name_dR3 += "_pt"; gen_name_dR3 += p+1; gen_name_dR3 += "_alpha"; gen_name_dR3 += r+1;
+        TH1F *h1 = new TH1F( name_fw, name_fw, 160, -0.8, 0.8 );
         h1 ->GetYaxis()->SetTitle("a.u.");    h1 ->GetXaxis()->SetTitle("Asymmetry");
         h1 -> Sumw2(); temp1.push_back(h1);
         TH1F *h2 = new TH1F( name_fw_pt, name_fw_pt, 50, 0, 1500 );
@@ -359,7 +530,7 @@ void MySelector::SlaveBegin(TTree * /*tree*/){
         TH1F *h4 = new TH1F( name_fw_pt3, name_fw_pt3, 50, 0, 1500 );
         h4 ->GetYaxis()->SetTitle("a.u.");    h4 ->GetXaxis()->SetTitle("Pt[GeV]");
         h4 -> Sumw2(); temp1pt3.push_back(h4);
-        TH1F *gen_h1 = new TH1F( gen_name_fw, gen_name_fw, 80, 0, 0.8 );
+        TH1F *gen_h1 = new TH1F( gen_name_fw, gen_name_fw, 160, -0.8, 0.8 );
         gen_h1 ->GetYaxis()->SetTitle("a.u.");    gen_h1 ->GetXaxis()->SetTitle("Asymmetry");
         gen_h1 -> Sumw2(); gen_temp1.push_back(gen_h1);
         TH1F *gen_h2 = new TH1F( gen_name_fw_pt, gen_name_fw_pt, 50, 0, 1500 );
@@ -374,17 +545,79 @@ void MySelector::SlaveBegin(TTree * /*tree*/){
         TH1F *h1_MCTruth = new TH1F( name_MCTruth, name_MCTruth, 200, 0, 2.0 );
         h1_MCTruth ->GetYaxis()->SetTitle("a.u.");    h1_MCTruth ->GetXaxis()->SetTitle("Response");
         h1_MCTruth -> Sumw2(); temp1_MCTruth.push_back(h1_MCTruth);
+        TH2F *h2_dR = new TH2F( name_dR, name_dR, 60, 0, 6.0, 60, 0, 6.0 );
+        h2_dR ->GetXaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    h2_dR ->GetYaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");
+        h2_dR -> Sumw2(); temp1_dR.push_back(h2_dR);
+        TH2F *gen_h2_dR = new TH2F( gen_name_dR, gen_name_dR, 60, 0, 6.0, 60, 0, 6.0 );
+        gen_h2_dR ->GetXaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    gen_h2_dR ->GetYaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");
+        gen_h2_dR -> Sumw2(); gen_temp1_dR.push_back(gen_h2_dR);
+        TH2F *h2_dR_probe = new TH2F( name_dR_probe, name_dR_probe, 60, 0, 6.0, 160, -0.8, 0.8 );
+        h2_dR_probe ->GetXaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");    h2_dR_probe ->GetYaxis()->SetTitle("Asymmetry");
+        h2_dR_probe -> Sumw2(); temp1_dR_probe.push_back(h2_dR_probe);
+        TH2F *gen_h2_dR_probe = new TH2F( gen_name_dR_probe, gen_name_dR_probe, 60, 0, 6.0, 160, -0.8, 0.8 );
+        gen_h2_dR_probe ->GetXaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");    gen_h2_dR_probe ->GetYaxis()->SetTitle("Asymmetry");
+        gen_h2_dR_probe -> Sumw2(); gen_temp1_dR_probe.push_back(gen_h2_dR_probe);
+        TH2F *h2_dR_barrel = new TH2F( name_dR_barrel, name_dR_barrel, 60, 0, 6.0, 160, -0.8, 0.8 );
+        h2_dR_barrel ->GetXaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    h2_dR_barrel ->GetYaxis()->SetTitle("Asymmetry");
+        h2_dR_barrel -> Sumw2(); temp1_dR_barrel.push_back(h2_dR_barrel);
+        TH2F *gen_h2_dR_barrel = new TH2F( gen_name_dR_barrel, gen_name_dR_barrel, 60, 0, 6.0, 160, -0.8, 0.8 );
+        gen_h2_dR_barrel ->GetXaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    gen_h2_dR_barrel ->GetYaxis()->SetTitle("Asymmetry");
+        gen_h2_dR_barrel -> Sumw2(); gen_temp1_dR_barrel.push_back(gen_h2_dR_barrel);
+        TH3F *h3_dR3 = new TH3F( name_dR3, name_dR3, 160, -0.8, 0.8, 60, 0, 6.0, 60, 0, 6.0 );
+        h3_dR3 ->GetXaxis()->SetTitle("Asymmetry");    h3_dR3 ->GetYaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    h3_dR3 ->GetZaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");
+        h3_dR3 -> Sumw2(); temp1_dR3.push_back(h3_dR3);
+        TH3F *gen_h3_dR3 = new TH3F( gen_name_dR3, gen_name_dR3, 160, -0.8, 0.8, 60, 0, 6.0, 60, 0, 6.0 );
+        gen_h3_dR3 ->GetXaxis()->SetTitle("Asymmetry");    gen_h3_dR3 ->GetYaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    gen_h3_dR3 ->GetZaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");
+        gen_h3_dR3 -> Sumw2(); gen_temp1_dR3.push_back(gen_h3_dR3);
       }
       temp2.push_back(temp1); temp2pt.push_back(temp1pt); temp2rho.push_back(temp1rho);  temp2pt3.push_back(temp1pt3);
       gen_temp2.push_back(gen_temp1); gen_temp2pt.push_back(gen_temp1pt); gen_temp2rho.push_back(gen_temp1rho); gen_temp2pt3.push_back(gen_temp1pt3);
-      temp2_MCTruth.push_back(temp1_MCTruth);
+      temp2_MCTruth.push_back(temp1_MCTruth); temp2_dR.push_back(temp1_dR); gen_temp2_dR.push_back(gen_temp1_dR); temp2_dR_probe.push_back(temp1_dR_probe); gen_temp2_dR_probe.push_back(gen_temp1_dR_probe); temp2_dR_barrel.push_back(temp1_dR_barrel); gen_temp2_dR_barrel.push_back(gen_temp1_dR_barrel);
+      temp2_dR3.push_back(temp1_dR3); gen_temp2_dR3.push_back(gen_temp1_dR3);
     }
     forward_hist_dijet.push_back(temp2); forward_pt_hist_dijet.push_back(temp2pt); forward_rho_hist_dijet.push_back(temp2rho); forward_pt3_hist_dijet.push_back(temp2pt3);
     forward_gen_hist_dijet.push_back(gen_temp2); forward_pt_gen_hist_dijet.push_back(gen_temp2pt); forward_gen_rho_hist_dijet.push_back(gen_temp2rho); forward_gen_pt3_hist_dijet.push_back(gen_temp2pt3);
-    MC_Truth_forward_hist_dijet.push_back(temp2_MCTruth);
+    MC_Truth_forward_hist_dijet.push_back(temp2_MCTruth); dR_forward_hist_dijet.push_back(temp2_dR); gen_dR_forward_hist_dijet.push_back(gen_temp2_dR); dR_probe_forward_hist_dijet.push_back(temp2_dR_probe); gen_dR_probe_forward_hist_dijet.push_back(gen_temp2_dR_probe); dR_barrel_forward_hist_dijet.push_back(temp2_dR_barrel); gen_dR_barrel_forward_hist_dijet.push_back(gen_temp2_dR_barrel);
+    dR3_forward_hist_dijet.push_back(temp2_dR3); gen_dR3_forward_hist_dijet.push_back(gen_temp2_dR3);
     forward_alpha_spectrum_dijet.push_back(alpha_temp2);
   }
 
+  double dRbins [] = { 0, 0.4, 0.8, 1.2, 1.6, 2.0, 2.4, 2.8, 3.2, 3.6, 4.0, 4.4, 4.8, 5.2, 5.6, 6.0};
+  std::vector<double> dR_bins(dRbins, dRbins + sizeof(dRbins)/sizeof(double));
+
+  for( int m = 0; m < EtaFtBinsNo; m++ ){
+    std::vector< std::vector< std::vector< TH2F* > > > temp1_barrel, gen_temp1_barrel, temp1_probe, gen_temp1_probe;
+    for( int p = 0; p < PtFTBinsNo; p++ ){
+      std::vector< std::vector< TH2F* > > temp2_barrel, gen_temp2_barrel, temp2_probe, gen_temp2_probe;
+      for( int r = 0; r < AlphaBinsNo; r++ ){
+        std::vector< TH2F* > temp3_barrel, gen_temp3_barrel, temp3_probe, gen_temp3_probe;
+        for (unsigned int i = 0; i < dR_bins.size()-1; i++) {
+          TString name_dR = "asy_dR_barrel_forward_"; name_dR += "probe"; name_dR += m+2+EtaFtControlBinsNo ; name_dR += "_pt"; name_dR += p+1; name_dR += "_alpha"; name_dR += r+1; name_dR += "_dR_probe"; name_dR += i;
+          TH2F *h2 = new TH2F( name_dR, name_dR, 160, -0.8, 0.8, 60, 0, 6.0 );
+          h2 ->GetXaxis()->SetTitle("Asymmetry");    h2 ->GetYaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");
+          h2 -> Sumw2(); temp3_barrel.push_back(h2);
+          name_dR = "gen_asy_dR_barrel_forward_"; name_dR += "probe"; name_dR += m+2+EtaFtControlBinsNo ; name_dR += "_pt"; name_dR += p+1; name_dR += "_alpha"; name_dR += r+1; name_dR += "_dR_probe"; name_dR += i;
+          h2 = new TH2F( name_dR, name_dR, 160, -0.8, 0.8, 60, 0, 6.0 );
+          h2 ->GetXaxis()->SetTitle("Asymmetry");    h2 ->GetYaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");
+          h2 -> Sumw2(); gen_temp3_barrel.push_back(h2);
+          name_dR = "asy_dR_probe_forward_"; name_dR += "probe"; name_dR += m+2+EtaFtControlBinsNo ; name_dR += "_pt"; name_dR += p+1; name_dR += "_alpha"; name_dR += r+1; name_dR += "_dR_barrel"; name_dR += i;
+          h2 = new TH2F( name_dR, name_dR, 160, -0.8, 0.8, 60, 0, 6.0 );
+          h2 ->GetXaxis()->SetTitle("Asymmetry");    h2 ->GetYaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");
+          h2 -> Sumw2(); temp3_probe.push_back(h2);
+          name_dR = "gen_asy_dR_probe_forward_"; name_dR += "probe"; name_dR += m+2+EtaFtControlBinsNo ; name_dR += "_pt"; name_dR += p+1; name_dR += "_alpha"; name_dR += r+1; name_dR += "_dR_barrel"; name_dR += i;
+          h2 = new TH2F( name_dR, name_dR, 160, -0.8, 0.8, 60, 0, 6.0 );
+          h2 ->GetXaxis()->SetTitle("Asymmetry");    h2 ->GetYaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");
+          h2 -> Sumw2(); gen_temp3_probe.push_back(h2);
+        }
+        temp2_barrel.push_back(temp3_barrel); gen_temp2_barrel.push_back(gen_temp3_barrel); temp2_probe.push_back(temp3_probe); gen_temp2_probe.push_back(gen_temp3_probe);
+      }
+      temp1_barrel.push_back(temp2_barrel); gen_temp1_barrel.push_back(gen_temp2_barrel); temp1_probe.push_back(temp2_probe); gen_temp1_probe.push_back(gen_temp2_probe);
+    }
+    asy_dR_barrel_forward_hist.push_back(temp1_barrel);
+    gen_asy_dR_barrel_forward_hist.push_back(gen_temp1_barrel);
+    asy_dR_probe_forward_hist.push_back(temp1_probe);
+    gen_asy_dR_probe_forward_hist.push_back(gen_temp1_probe);
+  }
 }
 
 Bool_t MySelector::Process(Long64_t entry){
@@ -414,20 +647,22 @@ Bool_t MySelector::Process(Long64_t entry){
 
   MakeWeight();
   //2017
-  std::vector<int> p_bins(pt_bins_Di, pt_bins_Di + sizeof(pt_bins_Di)/sizeof(int));
-  std::vector<int> p_bins_FT(pt_bins_Di, pt_bins_Di + sizeof(pt_bins_Di)/sizeof(int));
+  std::vector<int> p_bins(pt_bins_Si, pt_bins_Si + sizeof(pt_bins_Si)/sizeof(double));
+  std::vector<int> p_bins_FT(pt_bins_Si_HF, pt_bins_Si_HF + sizeof(pt_bins_Si_HF)/sizeof(double));
   std::vector<double> eta_bins_all(eta_bins, eta_bins + sizeof(eta_bins)/sizeof(double));
   std::vector<double> eta_ref_down(eta_bins+10, eta_bins + sizeof(eta_bins)/sizeof(double)-1);
   std::vector<double> eta_ref_up(eta_bins+11, eta_bins + sizeof(eta_bins)/sizeof(double));
   std::vector<double> eta_bins_control(eta_bins+3, eta_bins + sizeof(eta_bins)/sizeof(double)-3);
   eta_bins_control.insert(eta_bins_control.begin(), 0.);
+  p_bins.push_back(1500);
+  p_bins_FT.push_back(1500);
   double alpha_bins [] = { 0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3 };
 
+  double dRbins [] = { 0, 0.4, 0.8, 1.2, 1.6, 2.0, 2.4, 2.8, 3.2, 3.6, 4.0, 4.4, 4.8, 5.2, 5.6, 6.0};
+  std::vector<double> dR_bins(dRbins, dRbins + sizeof(dRbins)/sizeof(double));
 
   if( TotalEvents%100000 == 0 ){  std::cout << "            Analyzing event #" << TotalEvents << std::endl; }
-
   if( TotalEvents == 1 ){ std::cout << "asymmetry length " << asymmetries_all.size() << std::endl;  }
-
 
   double gen_threshold = 10;
   double jet_threshold = 15;
@@ -438,7 +673,11 @@ Bool_t MySelector::Process(Long64_t entry){
     alpha_raw =  2 * jet3_pt/( jet1_pt + jet2_pt );
   }
 
+  if (npuIT < 10 || npuIT > 75) {
+    return kFALSE;
+  }
   h_PU -> Fill( npuIT, 1 ); //weight );
+
 
   double parallel, perpendicular, complete, alpha;
   double parallelGen, perpendicularGen, completeGen, alphaGen;
@@ -510,11 +749,21 @@ Bool_t MySelector::Process(Long64_t entry){
             TMath::Abs( barreljet_eta) < eta_bins_all[r+1] ){
               for ( int m = 0 ; m < AlphaBinsNo ; m++ ){
                 if ( alpha < alpha_bins[ m+1 ] ){
-                  double asy = TMath::Abs(asymmetry);
+                  double asy = asymmetry;
+                  double Delta_R_radiation_barrel = TMath::Sqrt(TMath::Power( barreljet_eta - jet3_eta,2) + TMath::Power(TVector2::Phi_mpi_pi( barreljet_phi - jet3_phi),2));
+                  double Delta_R_radiation_probe = TMath::Sqrt(TMath::Power( probejet_eta - jet3_eta,2) + TMath::Power(TVector2::Phi_mpi_pi( probejet_phi - jet3_phi),2));
+                  if (((rand()%2)+1)==1 ) {
+                    asy = - asy;
+                    std::swap(Delta_R_radiation_barrel, Delta_R_radiation_probe);
+                  }
                   asymmetries_all.at(r).at(k).at(m) -> Fill( asy , weight );
                   asymmetries_pt_all.at(r).at(k).at(m) -> Fill( 0.5 * ( jet1_pt + jet2_pt ), weight );
                   asymmetries_rho_all.at(r).at(k).at(m) -> Fill( rho, weight );
                   asymmetries_pt3_all.at(r).at(k).at(m) -> Fill( jet3_pt, weight );
+                  dR_all.at(r).at(k).at(m) -> Fill( Delta_R_radiation_barrel, Delta_R_radiation_probe, weight );
+                  dR3_all.at(r).at(k).at(m) -> Fill( asy, Delta_R_radiation_barrel, Delta_R_radiation_probe, weight );
+                  dR_probe_all.at(r).at(k).at(m) -> Fill( Delta_R_radiation_probe, asy, weight );
+                  dR_barrel_all.at(r).at(k).at(m) -> Fill( Delta_R_radiation_barrel, asy, weight );
                   if(DR1 < s_delta_R) MC_Truth_asymmetries_all.at(r).at(k).at(m) -> Fill( Resp1, weight ); //?
                   if(DR2 < s_delta_R) MC_Truth_asymmetries_all.at(r).at(k).at(m) -> Fill( Resp2, weight ); //?
                   if ( m == AlphaBinsNo-1 ){
@@ -541,11 +790,25 @@ Bool_t MySelector::Process(Long64_t entry){
             TMath::Abs( probejet_eta ) < eta_bins_control[r+1]) ){
               for ( int m = 0 ; m < AlphaBinsNo ; m++ ){
                 if ( alpha < alpha_bins[ m+1 ] ){
-                  double asy = TMath::Abs(asymmetry);
+                  double asy = asymmetry;
+                  double Delta_R_radiation_barrel = TMath::Sqrt(TMath::Power( barreljet_eta - jet3_eta,2) + TMath::Power(TVector2::Phi_mpi_pi( barreljet_phi - jet3_phi),2));
+                  double Delta_R_radiation_probe = TMath::Sqrt(TMath::Power( probejet_eta - jet3_eta,2) + TMath::Power(TVector2::Phi_mpi_pi( probejet_phi - jet3_phi),2));
+                  if ((TMath::Abs( probejet_eta ) > 0. && TMath::Abs( probejet_eta ) < s_eta_barr && TMath::Abs( barreljet_eta ) > eta_bins_control[r] && TMath::Abs( barreljet_eta ) < eta_bins_control[r+1])) {
+                    asy = - asymmetry;
+                    std::swap(Delta_R_radiation_barrel, Delta_R_radiation_probe);
+                  }
+                  if (false) continue;
+                  // if (Delta_R_radiation > 1.0) continue;
+                  // if (Delta_R_radiation < 1.0) continue;
+                  if ( (((rand()%2)+1)==1) && r ==0 ) { asy = - asy;}
                   forward_hist_dijet.at(r).at(k).at(m) -> Fill( asy , weight );
                   forward_pt_hist_dijet.at(r).at(k).at(m) -> Fill( 0.5 * ( jet1_pt + jet2_pt ), weight );
                   forward_rho_hist_dijet.at(r).at(k).at(m) -> Fill( rho, weight );
                   forward_pt3_hist_dijet.at(r).at(k).at(m) -> Fill( jet3_pt, weight );
+                  dR_forward_hist_dijet.at(r).at(k).at(m) -> Fill( Delta_R_radiation_barrel, Delta_R_radiation_probe, weight );
+                  dR_probe_forward_hist_dijet.at(r).at(k).at(m) -> Fill( Delta_R_radiation_probe, asy, weight );
+                  dR_barrel_forward_hist_dijet.at(r).at(k).at(m) -> Fill( Delta_R_radiation_barrel, asy, weight );
+                  dR3_forward_hist_dijet.at(r).at(k).at(m) -> Fill( asy, Delta_R_radiation_barrel, Delta_R_radiation_probe, weight );
                   if( (DR1< s_delta_R) && (probejet_phi >s_eta_barr) ) MC_Truth_forward_hist_dijet.at(r).at(k).at(m) -> Fill( Resp1, weight ); //?
                   if( (DR2< s_delta_R) && (barreljet_phi>s_eta_barr) ) MC_Truth_forward_hist_dijet.at(r).at(k).at(m) -> Fill( Resp2, weight ); //?
                   if ( m == AlphaBinsNo-1 ){
@@ -577,11 +840,51 @@ Bool_t MySelector::Process(Long64_t entry){
             TMath::Abs( probejet_eta ) < eta_ref_up[r]) ){
               for ( int m = 0 ; m < AlphaBinsNo; m++ ){
                 if ( alpha < alpha_bins[ m+1 ] ){
-                  double asy = TMath::Abs(asymmetry);
+                  double asy = asymmetry;
+                  double Delta_R_radiation_barrel = TMath::Sqrt(TMath::Power( barreljet_eta - jet3_eta,2) + TMath::Power(TVector2::Phi_mpi_pi( barreljet_phi - jet3_phi),2));
+                  double Delta_R_radiation_probe = TMath::Sqrt(TMath::Power( probejet_eta - jet3_eta,2) + TMath::Power(TVector2::Phi_mpi_pi( probejet_phi - jet3_phi),2));
+                  double eta_probe = TMath::Abs(TMath::Power( barreljet_eta - jet3_eta,2));
+                  double eta_barrel = TMath::Abs(TMath::Power( probejet_eta - jet3_eta,2));
+                  double phi_probe = TMath::Abs(TMath::Power(TVector2::Phi_mpi_pi( barreljet_phi - jet3_phi),2));
+                  double phi_barrel = TMath::Abs(TMath::Power(TVector2::Phi_mpi_pi( probejet_phi - jet3_phi),2));
+                  if ((TMath::Abs( probejet_eta ) > 0. && TMath::Abs( probejet_eta ) < s_eta_barr && TMath::Abs( barreljet_eta) > eta_ref_down[r] && TMath::Abs( barreljet_eta) < eta_ref_up[r])) {
+                    asy = - asymmetry;
+                    std::swap(Delta_R_radiation_barrel, Delta_R_radiation_probe);
+                    std::swap(eta_probe, eta_barrel);
+                    std::swap(phi_probe, phi_barrel);
+                  }
+                  if (false) continue;
+                  // if (Delta_R_radiation > 1.0) continue;
+                  // if (Delta_R_radiation < 1.0) continue;
                   forward_hist.at(r).at(k).at(m) -> Fill( asy , weight );
                   forward_pt_hist.at(r).at(k).at(m) -> Fill( 0.5 * ( jet1_pt + jet2_pt ), weight );
                   forward_rho_hist.at(r).at(k).at(m) -> Fill( rho, weight );
                   forward_pt3_hist.at(r).at(k).at(m) -> Fill( jet3_pt, weight );
+                  dR_forward_hist.at(r).at(k).at(m) -> Fill( Delta_R_radiation_barrel, Delta_R_radiation_probe, weight );
+                  dR_probe_forward_hist.at(r).at(k).at(m) -> Fill( Delta_R_radiation_probe, asy, weight );
+                  dR_barrel_forward_hist.at(r).at(k).at(m) -> Fill( Delta_R_radiation_barrel, asy, weight );
+                  eta_probe_forward_hist.at(r).at(k).at(m) -> Fill( eta_probe, asy, weight );
+                  eta_barrel_forward_hist.at(r).at(k).at(m) -> Fill( eta_barrel, asy, weight );
+                  phi_probe_forward_hist.at(r).at(k).at(m) -> Fill( phi_probe, asy, weight );
+                  phi_barrel_forward_hist.at(r).at(k).at(m) -> Fill( phi_barrel, asy, weight );
+                  dR3_forward_hist.at(r).at(k).at(m) -> Fill( asy, Delta_R_radiation_barrel, Delta_R_radiation_probe, weight );
+                  for (unsigned int i = 0; i < dR_bins.size()-1; i++) {
+                    // std::cout << __LINE__ << " " << r << " "<< k << " "<< m << " "<< i << " " << std::endl;
+                    // std::cout << dR_bins[i] << " "<< dR_bins[i+1] << " "<< asy_dR_barrel_forward_hist.size() << " " << asy_dR_barrel_forward_hist.at(r).size() << " " << asy_dR_barrel_forward_hist.at(r).at(k).size() << " " << asy_dR_barrel_forward_hist.at(r).at(k).at(m).size() << " " << std::endl;
+                    // std::cout << dR_bins[i] << " "<< dR_bins[i+1] << " "<< asy_dR_probe_forward_hist.size() << std::endl;
+                    // std::cout << asy_dR_probe_forward_hist.at(r).size() << std::endl;
+                    // std::cout << asy_dR_probe_forward_hist.at(r).at(k).size() << std::endl;
+                    // std::cout <<asy_dR_probe_forward_hist.at(r).at(k).at(m).size() << " " << std::endl;
+
+                    if (Delta_R_radiation_probe > dR_bins[i] && Delta_R_radiation_probe < dR_bins[i+1]) {
+                      // std::cout << __LINE__ << " " << r << " "<< k << " "<< m << " "<< i << " " << std::endl;
+                      asy_dR_barrel_forward_hist.at(r).at(k).at(m).at(i) -> Fill( asy, Delta_R_radiation_barrel, weight );
+                    }
+                    if (Delta_R_radiation_barrel > dR_bins[i] && Delta_R_radiation_barrel < dR_bins[i+1]) {
+                      // std::cout << __LINE__ << r << " "<< k << " "<< m << " "<< i << " " << std::endl;
+                      asy_dR_probe_forward_hist.at(r).at(k).at(m).at(i) -> Fill( asy, Delta_R_radiation_probe, weight );
+                    }
+                  }
                   if( (DR1< s_delta_R) && (probejet_phi >s_eta_barr) ) MC_Truth_forward_hist.at(r).at(k).at(m) -> Fill( Resp1, weight );//?
                   if( (DR2< s_delta_R) && (barreljet_phi>s_eta_barr) ) MC_Truth_forward_hist.at(r).at(k).at(m) -> Fill( Resp2, weight );//?
                   if ( m == AlphaBinsNo-1 ){
@@ -604,11 +907,21 @@ Bool_t MySelector::Process(Long64_t entry){
             TMath::Abs( barreljet_eta ) < eta_bins_all[r+1+EtaBinsNo] ){
               for ( int m = 0 ; m < AlphaBinsNo ; m++ ){
                 if ( alpha < alpha_bins[ m+1 ] ){
-                  double asy = TMath::Abs(asymmetry);
+                  double asy = asymmetry;
+                  double Delta_R_radiation_barrel = TMath::Sqrt(TMath::Power( barreljet_eta - jet3_eta,2) + TMath::Power(TVector2::Phi_mpi_pi( barreljet_phi - jet3_phi),2));
+                  double Delta_R_radiation_probe = TMath::Sqrt(TMath::Power( probejet_eta - jet3_eta,2) + TMath::Power(TVector2::Phi_mpi_pi( probejet_phi - jet3_phi),2));
+                  if (((rand()%2)+1)==1 ) {
+                    asy = - asy;
+                    std::swap(Delta_R_radiation_barrel, Delta_R_radiation_probe);
+                  }
                   asymmetries_all.at(r+EtaBinsNo).at(k).at(m) -> Fill( asy , weight );
                   asymmetries_pt_all.at(r+EtaBinsNo).at(k).at(m) -> Fill( 0.5 * ( jet1_pt + jet2_pt ), weight );
                   asymmetries_rho_all.at(r).at(k).at(m) -> Fill( rho, weight );
                   asymmetries_pt3_all.at(r).at(k).at(m) -> Fill( jet3_pt, weight );
+                  dR_all.at(r).at(k).at(m) -> Fill( Delta_R_radiation_barrel, Delta_R_radiation_probe, weight );
+                  dR_probe_all.at(r).at(k).at(m) -> Fill( Delta_R_radiation_probe, asy, weight );
+                  dR_barrel_all.at(r).at(k).at(m) -> Fill( Delta_R_radiation_barrel, asy, weight );
+                  dR3_all.at(r).at(k).at(m) -> Fill( asy, Delta_R_radiation_barrel, Delta_R_radiation_probe, weight );
                   if(DR1< s_delta_R) MC_Truth_asymmetries_all.at(r).at(k).at(m) -> Fill( Resp1, weight );//?
                   if(DR2< s_delta_R) MC_Truth_asymmetries_all.at(r).at(k).at(m) -> Fill( Resp2, weight );//?
                   if ( m == AlphaBinsNo-1 ){
@@ -708,8 +1021,20 @@ Bool_t MySelector::Process(Long64_t entry){
             TMath::Abs( genjet2_eta) < eta_bins_all[r+1] ){
               for ( int m = 0 ; m < AlphaBinsNo ; m++ ){
                 if ( alphaGen < alpha_bins[ m+1 ] ){
-                  double gen_asy = TMath::Abs(gen_asymmetry);
-                  if(TMath::Abs(gen_asy) < 5) asymmetries_gen_all.at(r).at(k).at(m) -> Fill( gen_asy , weight );
+                  double gen_asy = gen_asymmetry;
+                  double gen_Delta_R_radiation_barrel = TMath::Sqrt(TMath::Power( genjet1_eta - genjet3_eta,2) + TMath::Power(TVector2::Phi_mpi_pi( genjet1_phi - genjet3_phi),2));
+                  double gen_Delta_R_radiation_probe = TMath::Sqrt(TMath::Power( genjet2_eta - genjet3_eta,2) + TMath::Power(TVector2::Phi_mpi_pi( genjet2_phi - genjet3_phi),2));
+                  if (((rand()%2)+1)==1 ) {
+                    gen_asy = - gen_asy;
+                    std::swap(gen_Delta_R_radiation_barrel, gen_Delta_R_radiation_probe);
+                  }
+                  if(TMath::Abs(gen_asy) < 5){
+                    asymmetries_gen_all.at(r).at(k).at(m) -> Fill( gen_asy , weight );
+                    gen_dR_all.at(r).at(k).at(m) -> Fill( gen_Delta_R_radiation_barrel, gen_Delta_R_radiation_probe, weight );
+                    gen_dR_probe_all.at(r).at(k).at(m) -> Fill( gen_Delta_R_radiation_probe, gen_asy, weight );
+                    gen_dR_barrel_all.at(r).at(k).at(m) -> Fill( gen_Delta_R_radiation_barrel, gen_asy, weight );
+                    gen_dR3_all.at(r).at(k).at(m) -> Fill( gen_asy, gen_Delta_R_radiation_barrel, gen_Delta_R_radiation_probe, weight );
+                  }
                   asymmetries_gen_pt_all.at(r).at(k).at(m) -> Fill( 0.5 * ( genjet1_pt + genjet2_pt ), weight );
                   asymmetries_gen_pt3_all.at(r).at(k).at(m) -> Fill( genjet3_pt, weight );
                   if ( excl_bin ) break;
@@ -728,8 +1053,24 @@ Bool_t MySelector::Process(Long64_t entry){
             TMath::Abs( genjet1_eta ) < eta_bins_control[r+1]) ){
               for ( int m = 0 ; m < AlphaBinsNo ; m++ ){
                 if ( alpha < alpha_bins[ m+1 ] ){
-                  double gen_asy = TMath::Abs(gen_asymmetry);
-                  if(TMath::Abs(gen_asy) < 5) forward_gen_hist_dijet.at(r).at(k).at(m) -> Fill( gen_asy , weight );
+                  double gen_asy = gen_asymmetry;
+                  double gen_Delta_R_radiation_barrel = TMath::Sqrt(TMath::Power( genjet1_eta - genjet3_eta,2) + TMath::Power(TVector2::Phi_mpi_pi( genjet1_phi - genjet3_phi),2));
+                  double gen_Delta_R_radiation_probe = TMath::Sqrt(TMath::Power( genjet2_eta - genjet3_eta,2) + TMath::Power(TVector2::Phi_mpi_pi( genjet2_phi - genjet3_phi),2));
+                  if ((TMath::Abs( genjet2_eta ) > 0. && TMath::Abs( genjet2_eta ) < s_eta_barr && TMath::Abs( genjet1_eta ) > eta_bins_control[r] && TMath::Abs( genjet1_eta ) < eta_bins_control[r+1])) {
+                    gen_asy = - gen_asymmetry;
+                    std::swap(gen_Delta_R_radiation_barrel, gen_Delta_R_radiation_probe);
+                  }
+                  if (false) continue;
+                  // if (Delta_R_radiation > 1.0) continue;
+                  // if (Delta_R_radiation < 1.0) continue;
+                  // if ( (((rand()%2)+1)==1) && r ==0 ) { gen_asy = - gen_asy;}
+                  if(TMath::Abs(gen_asy) < 5){
+                    forward_gen_hist_dijet.at(r).at(k).at(m) -> Fill( gen_asy , weight );
+                    gen_dR_forward_hist_dijet.at(r).at(k).at(m) -> Fill( gen_Delta_R_radiation_barrel, gen_Delta_R_radiation_probe, weight );
+                    gen_dR_probe_forward_hist_dijet.at(r).at(k).at(m) -> Fill( gen_Delta_R_radiation_probe, gen_asymmetry, weight );
+                    gen_dR_barrel_forward_hist_dijet.at(r).at(k).at(m) -> Fill( gen_Delta_R_radiation_barrel, gen_asymmetry, weight );
+                    gen_dR3_forward_hist_dijet.at(r).at(k).at(m) -> Fill( gen_asy, gen_Delta_R_radiation_barrel, gen_Delta_R_radiation_probe, weight );
+                  }
                   forward_pt_gen_hist_dijet.at(r).at(k).at(m) -> Fill( 0.5 * ( genjet1_pt + genjet2_pt ), weight );
                   forward_pt3_hist_dijet.at(r).at(k).at(m) -> Fill( genjet3_pt, weight );
                   if ( excl_bin ) break;
@@ -754,8 +1095,23 @@ Bool_t MySelector::Process(Long64_t entry){
             TMath::Abs( genjet1_eta ) < eta_ref_up[r]) ){
               for ( int m = 0 ; m < AlphaBinsNo ; m++ ){
                 if ( alpha < alpha_bins[ m+1 ] ){
-                  double gen_asy = TMath::Abs(gen_asymmetry);
-                  if(TMath::Abs(gen_asy) < 5) forward_gen_hist.at(r).at(k).at(m) -> Fill( gen_asy , weight );
+                  double gen_asy = gen_asymmetry;
+                  double gen_Delta_R_radiation_barrel = TMath::Sqrt(TMath::Power( genjet1_eta - genjet3_eta,2) + TMath::Power(TVector2::Phi_mpi_pi( genjet1_phi - genjet3_phi),2));
+                  double gen_Delta_R_radiation_probe = TMath::Sqrt(TMath::Power( genjet2_eta - genjet3_eta,2) + TMath::Power(TVector2::Phi_mpi_pi( genjet2_phi - genjet3_phi),2));
+                  if ((TMath::Abs( genjet2_eta ) > 0. && TMath::Abs( genjet2_eta ) < s_eta_barr && TMath::Abs( genjet1_eta ) > eta_ref_down[r] && TMath::Abs( genjet1_eta ) < eta_ref_up[r])) {
+                    gen_asy = - gen_asymmetry;
+                    std::swap(gen_Delta_R_radiation_barrel, gen_Delta_R_radiation_probe);
+                  }
+                  if (false) continue;
+                  // if (Delta_R_radiation > 1.0) continue;
+                  // if (Delta_R_radiation < 1.0) continue;
+                  if(TMath::Abs(gen_asy) < 5){
+                    forward_gen_hist.at(r).at(k).at(m) -> Fill( gen_asy , weight );
+                    gen_dR_forward_hist.at(r).at(k).at(m) -> Fill( gen_Delta_R_radiation_barrel, gen_Delta_R_radiation_probe, weight );
+                    gen_dR_probe_forward_hist.at(r).at(k).at(m) -> Fill( gen_Delta_R_radiation_probe, gen_asymmetry, weight );
+                    gen_dR_barrel_forward_hist.at(r).at(k).at(m) -> Fill( gen_Delta_R_radiation_barrel, gen_asymmetry, weight );
+                    gen_dR3_forward_hist.at(r).at(k).at(m) -> Fill( gen_asy, gen_Delta_R_radiation_barrel, gen_Delta_R_radiation_probe, weight );
+                  }
                   forward_gen_pt_hist.at(r).at(k).at(m) -> Fill( 0.5 * ( genjet1_pt + genjet2_pt ), weight );
                   forward_gen_pt3_hist.at(r).at(k).at(m) -> Fill( genjet3_pt, weight );
                   if ( excl_bin ) break;
@@ -770,8 +1126,20 @@ Bool_t MySelector::Process(Long64_t entry){
             TMath::Abs( genjet2_eta ) < eta_bins_all[r+1+EtaBinsNo] ){
               for ( int m = 0 ; m < AlphaBinsNo ; m++ ){
                 if ( alphaGen < alpha_bins[ m+1 ] ){
-                  double gen_asy = TMath::Abs(gen_asymmetry);
-                  if(TMath::Abs(gen_asy) < 5) asymmetries_gen_all.at(r+EtaBinsNo).at(k).at(m) -> Fill( gen_asy , weight );
+                  double gen_asy = gen_asymmetry;
+                  double gen_Delta_R_radiation_barrel = TMath::Sqrt(TMath::Power( genjet1_eta - genjet3_eta,2) + TMath::Power(TVector2::Phi_mpi_pi( genjet1_phi - genjet3_phi),2));
+                  double gen_Delta_R_radiation_probe = TMath::Sqrt(TMath::Power( genjet2_eta - genjet3_eta,2) + TMath::Power(TVector2::Phi_mpi_pi( genjet2_phi - genjet3_phi),2));
+                  if (((rand()%2)+1)==1 ) {
+                    gen_asy = - gen_asymmetry;
+                    std::swap(gen_Delta_R_radiation_barrel, gen_Delta_R_radiation_probe);
+                  }
+                  if(TMath::Abs(gen_asy) < 5){
+                    asymmetries_gen_all.at(r+EtaBinsNo).at(k).at(m) -> Fill( gen_asy , weight );
+                    gen_dR_all.at(r).at(k).at(m) -> Fill( gen_Delta_R_radiation_barrel, gen_Delta_R_radiation_probe, weight );
+                    gen_dR_probe_all.at(r).at(k).at(m) -> Fill( gen_Delta_R_radiation_probe, gen_asymmetry, weight );
+                    gen_dR_barrel_all.at(r).at(k).at(m) -> Fill( gen_Delta_R_radiation_barrel, gen_asymmetry, weight );
+                    gen_dR3_all.at(r).at(k).at(m) -> Fill( gen_asy, gen_Delta_R_radiation_barrel, gen_Delta_R_radiation_probe, weight );
+                  }
                   asymmetries_gen_pt_all.at(r+EtaBinsNo).at(k).at(m) -> Fill( 0.5 * ( genjet1_pt + genjet2_pt ), weight );
                   asymmetries_gen_pt3_all.at(r).at(k).at(m) -> Fill( genjet3_pt, weight );
                   if ( excl_bin ) break;
@@ -823,6 +1191,8 @@ void MySelector::SlaveTerminate(){
 
   TFile *f = new TFile("histograms_mc_incl_full.root","RECREATE");
   TFile *f1 = new TFile("histograms_mc_incl_full_control.root","RECREATE");
+  TFile *f2 = new TFile("histograms_mc_incl_full_2D.root","RECREATE");
+  TFile *f3 = new TFile("histograms_mc_incl_full_2D_dR.root","RECREATE");
 
   for( int m = 0; m < EtaBinsNo; m++ ){
     for( int p = 0; p < PtBinsNo; p++ ){
@@ -837,6 +1207,15 @@ void MySelector::SlaveTerminate(){
         asymmetries_rho_all.at(m).at(p).at(r) -> Write();
         asymmetries_pt3_all.at(m).at(p).at(r) -> Write();
         asymmetries_gen_pt3_all.at(m).at(p).at(r) -> Write();
+        f2->cd();
+        dR_all.at(m).at(p).at(r) -> Write();
+        gen_dR_all.at(m).at(p).at(r) -> Write();
+        dR_probe_all.at(m).at(p).at(r) -> Write();
+        gen_dR_probe_all.at(m).at(p).at(r) -> Write();
+        dR_barrel_all.at(m).at(p).at(r) -> Write();
+        gen_dR_barrel_all.at(m).at(p).at(r) -> Write();
+        dR3_all.at(m).at(p).at(r) -> Write();
+        gen_dR3_all.at(m).at(p).at(r) -> Write();
       }
     }
   }
@@ -854,9 +1233,21 @@ void MySelector::SlaveTerminate(){
         asymmetries_rho_all.at(m+EtaBinsNo).at(p).at(r) -> Write();
         asymmetries_pt3_all.at(m+EtaBinsNo).at(p).at(r) -> Write();
         asymmetries_gen_pt3_all.at(m+EtaBinsNo).at(p).at(r) -> Write();
+        f2->cd();
+        dR_all.at(m).at(p).at(r) -> Write();
+        gen_dR_all.at(m).at(p).at(r) -> Write();
+        dR_probe_all.at(m).at(p).at(r) -> Write();
+        gen_dR_probe_all.at(m).at(p).at(r) -> Write();
+        dR_barrel_all.at(m).at(p).at(r) -> Write();
+        gen_dR_barrel_all.at(m).at(p).at(r) -> Write();
+        dR3_all.at(m).at(p).at(r) -> Write();
+        gen_dR3_all.at(m).at(p).at(r) -> Write();
       }
     }
   }
+
+  double dRbins [] = { 0, 0.4, 0.8, 1.2, 1.6, 2.0, 2.4, 2.8, 3.2, 3.6, 4.0, 4.4, 4.8, 5.2, 5.6, 6.0};
+  std::vector<double> dR_bins(dRbins, dRbins + sizeof(dRbins)/sizeof(double));
 
   for( int m = 0; m < EtaFtBinsNo; m++ ){
     for( int p = 0; p < PtFTBinsNo; p++ ){
@@ -871,6 +1262,26 @@ void MySelector::SlaveTerminate(){
         forward_rho_hist.at(m).at(p).at(r) -> Write();
         forward_pt3_hist.at(m).at(p).at(r) -> Write();
         forward_gen_pt3_hist.at(m).at(p).at(r) -> Write();
+        f2->cd();
+        dR_forward_hist.at(m).at(p).at(r) -> Write();
+        gen_dR_forward_hist.at(m).at(p).at(r) -> Write();
+        dR_probe_forward_hist.at(m).at(p).at(r) -> Write();
+        gen_dR_probe_forward_hist.at(m).at(p).at(r) -> Write();
+        dR_barrel_forward_hist.at(m).at(p).at(r) -> Write();
+        gen_dR_barrel_forward_hist.at(m).at(p).at(r) -> Write();
+        gen_dR_barrel_forward_hist.at(m).at(p).at(r) -> Write();
+        eta_barrel_forward_hist.at(m).at(p).at(r) -> Write();
+        eta_probe_forward_hist.at(m).at(p).at(r) -> Write();
+        phi_barrel_forward_hist.at(m).at(p).at(r) -> Write();
+        phi_probe_forward_hist.at(m).at(p).at(r) -> Write();
+        dR3_forward_hist.at(m).at(p).at(r) -> Write();
+        gen_dR3_forward_hist.at(m).at(p).at(r) -> Write();
+        f3->cd();
+        for (unsigned int i = 0; i < dR_bins.size()-1; i++) {
+          asy_dR_barrel_forward_hist.at(m).at(p).at(r).at(i) -> Write();
+          asy_dR_probe_forward_hist.at(m).at(p).at(r).at(i) -> Write();
+        }
+
       }
     }
   }
@@ -888,6 +1299,14 @@ void MySelector::SlaveTerminate(){
         forward_rho_hist_dijet.at(m).at(p).at(r) -> Write();
         forward_pt3_hist_dijet.at(m).at(p).at(r) -> Write();
         forward_gen_pt3_hist_dijet.at(m).at(p).at(r) -> Write();
+        f2->cd();
+        dR_forward_hist_dijet.at(m).at(p).at(r) -> Write();
+        gen_dR_forward_hist_dijet.at(m).at(p).at(r) -> Write();
+        dR_probe_forward_hist_dijet.at(m).at(p).at(r) -> Write();
+        gen_dR_probe_forward_hist_dijet.at(m).at(p).at(r) -> Write();
+        dR_barrel_forward_hist_dijet.at(m).at(p).at(r) -> Write();
+        dR3_forward_hist_dijet.at(m).at(p).at(r) -> Write();
+        gen_dR3_forward_hist_dijet.at(m).at(p).at(r) -> Write();
       }
     }
   }
@@ -897,6 +1316,8 @@ void MySelector::SlaveTerminate(){
   h_rhoFWD -> Write();
   f -> Close();
   f1-> Close();
+  f2-> Close();
+  f3-> Close();
 
 
   TFile *f_alpha = new TFile("alpha_spectrum.root","RECREATE"); ;
@@ -930,83 +1351,23 @@ void MySelector::Terminate(){
 
 }
 
-
 double Weight( std::string filename ){
+  if ( filename.std::string::find("QCDPt15to30")      != std::string::npos )  return 1837410000.0000  /19777211;
+  if ( filename.std::string::find("QCDPt30to50")      != std::string::npos )  return 140932000.0000   /19693825;
+  if ( filename.std::string::find("QCDPt50to80")      != std::string::npos )  return 19204300.0000    /19191105;
+  if ( filename.std::string::find("QCDPt80to120")     != std::string::npos )  return 2762530.0000     /28780800;
+  if ( filename.std::string::find("QCDPt120to170")    != std::string::npos )  return 471100.0000      /26840644;
+  if ( filename.std::string::find("QCDPt170to300")    != std::string::npos )  return 117276.0000      /29725594;
+  if ( filename.std::string::find("QCDPt300to470")    != std::string::npos )  return 7823.0000        /53285022;
+  if ( filename.std::string::find("QCDPt470to600")    != std::string::npos )  return 648.2000         /26439242;
+  if ( filename.std::string::find("QCDPt600to800")    != std::string::npos )  return 186.9000         /63545546;
+  if ( filename.std::string::find("QCDPt800to1000")   != std::string::npos )  return 32.2930          /37632352;
+  if ( filename.std::string::find("QCDPt1000to1400")  != std::string::npos )  return 9.4183           /19552294;
+  if ( filename.std::string::find("QCDPt1400to1800")  != std::string::npos )  return 0.8427           /5669140;
+  if ( filename.std::string::find("QCDPt1800to2400")  != std::string::npos )  return 0.1149           /2923941;
+  if ( filename.std::string::find("QCDPt2400to3200")  != std::string::npos )  return 0.0068           /1910526;
+  if ( filename.std::string::find("QCDPt3200toInf")   != std::string::npos )  return 0.0002           /770558;
 
-  if ( filename.std::string::find("Pt_5to10") != std::string::npos )         return 0.;
-  if ( filename.std::string::find("Pt_10to15") != std::string::npos )        return 0.;
-  if ( filename.std::string::find("Pt_15to30") != std::string::npos )        return 0.;
-  if ( filename.std::string::find("Pt_30to50") != std::string::npos )        return 0.;
-
-  if ( filename.std::string::find("Pt_50to80") != std::string::npos )        return 19204300.0000/9954259 ;
-  if ( filename.std::string::find("Pt_80to120") != std::string::npos )       return 2762530.0000 /14595366;
-  if ( filename.std::string::find("Pt_120to170") != std::string::npos )      return 471100.0000  /12457117;
-  if ( filename.std::string::find("Pt_170to300") != std::string::npos )      return 117276.0000  /14776538;
-  if ( filename.std::string::find("Pt_300to470") != std::string::npos )      return 7823.0000    /22229783;
-  if ( filename.std::string::find("Pt_470to600") != std::string::npos )      return 648.2000     /3954275 ;
-  if ( filename.std::string::find("Pt_600to800") != std::string::npos )      return 186.9000     /13515776;
-  if ( filename.std::string::find("Pt_800to1000") != std::string::npos )     return 32.2930      /19688854;
-  if ( filename.std::string::find("Pt_1000to1400") != std::string::npos )    return 9.4183       /9975312 ;
-  if ( filename.std::string::find("Pt_1400to1800") != std::string::npos )    return 0.8427       /2860637 ;
-  if ( filename.std::string::find("Pt_1800to2400") != std::string::npos )    return 0.1149       /1937027 ;
-  if ( filename.std::string::find("Pt_2400to3200") != std::string::npos )    return 0.0068       /984347  ;
-  if ( filename.std::string::find("Pt_3200toInf") != std::string::npos )     return 0.0002       /390798  ;
-  //
-  if ( filename.std::string::find("Pt5to10") != std::string::npos )         return 0.;
-  if ( filename.std::string::find("Pt10to15") != std::string::npos )        return 0.;
-  if ( filename.std::string::find("Pt15to30") != std::string::npos )        return 0.;
-  if ( filename.std::string::find("Pt30to50") != std::string::npos )        return 0.;
-
-  if ( filename.std::string::find("Pt50to80") != std::string::npos )        return 19204300.0000/9954259 ;
-  if ( filename.std::string::find("Pt80to120") != std::string::npos )       return 2762530.0000 /14595366;
-  if ( filename.std::string::find("Pt120to170") != std::string::npos )      return 471100.0000  /12457117;
-  if ( filename.std::string::find("Pt170to300") != std::string::npos )      return 117276.0000  /14776538;
-  if ( filename.std::string::find("Pt300to470") != std::string::npos )      return 7823.0000    /22229783;
-  if ( filename.std::string::find("Pt470to600") != std::string::npos )      return 648.2000     /3954275 ;
-  if ( filename.std::string::find("Pt600to800") != std::string::npos )      return 186.9000     /13515776;
-  if ( filename.std::string::find("Pt800to1000") != std::string::npos )     return 32.2930      /19688854;
-  if ( filename.std::string::find("Pt1000to1400") != std::string::npos )    return 9.4183       /9975312 ;
-  if ( filename.std::string::find("Pt1400to1800") != std::string::npos )    return 0.8427       /2860637 ;
-  if ( filename.std::string::find("Pt1800to2400") != std::string::npos )    return 0.1149       /1937027 ;
-  if ( filename.std::string::find("Pt2400to3200") != std::string::npos )    return 0.0068       /984347  ;
-  if ( filename.std::string::find("Pt3200toInf") != std::string::npos )     return 0.0002       /390798  ;
-
-
-
-
-  if ( filename.std::string::find("Ht50to100") != std::string::npos)    return 0/4096999.; // not yet
-  if ( filename.std::string::find("Ht100to200") != std::string::npos)    return 27990000/80396003.;
-  if ( filename.std::string::find("Ht200to300") != std::string::npos)    return 1712000/57549559.;
-  if ( filename.std::string::find("Ht300to500") != std::string::npos)    return 347700/37514715.;
-  if ( filename.std::string::find("Ht500to700") != std::string::npos)    return 32100/62229758.;
-  if ( filename.std::string::find("Ht700to1000") != std::string::npos)    return 6831/45260499.;
-  if ( filename.std::string::find("Ht1000to1500") != std::string::npos)    return 1207/15125299.;
-  if ( filename.std::string::find("Ht1500to2000") != std::string::npos)    return 119.9/11773017.;
-  if ( filename.std::string::find("Ht2000toInf") != std::string::npos)    return 25.24/6035623.;
-  if ( filename.std::string::find("HT50to100") != std::string::npos)    return 0/4096999.; // not yet
-  if ( filename.std::string::find("HT100to200") != std::string::npos)    return 27990000/80396003.;
-  if ( filename.std::string::find("HT200to300") != std::string::npos)    return 1712000/57549559.;
-  if ( filename.std::string::find("HT300to500") != std::string::npos)    return 347700/37514715.;
-  if ( filename.std::string::find("HT500to700") != std::string::npos)    return 32100/62229758.;
-  if ( filename.std::string::find("HT700to1000") != std::string::npos)    return 6831/45260499.;
-  if ( filename.std::string::find("HT1000to1500") != std::string::npos)    return 1207/15125299.;
-  if ( filename.std::string::find("HT1500to2000") != std::string::npos)    return 119.9/11773017.;
-  if ( filename.std::string::find("HT2000toInf") != std::string::npos)    return 25.24/6035623.;
-  // Flat: take weight 1 or maybenot
-  //if ( filename.std::string::find("QCDPt15to7000") != std::string::npos)  return 1.;
-  if ( filename.std::string::find("QCDPt15to7000") != std::string::npos)  return 0.;
-  //if ( filename.std::string::find("Ht500to700") != std::string::npos)    return 31630/42598486.;
-  //if ( filename.std::string::find("Ht100to200") != std::string::npos)    return 27990000/11961085.;
-  //if ( filename.std::string::find("Ht300to500") != std::string::npos)    return 351300/11219370.;
-  //if ( filename.std::string::find("Ht200to300") != std::string::npos)    return 1717000/11488082.;
-  //if ( filename.std::string::find("Ht2000toInf") != std::string::npos)    return 25.24/4105322.;
-  //if ( filename.std::string::find("Ht1000to1500") != std::string::npos)    return 1206/10379506.;
-  //if ( filename.std::string::find("Ht1500to2000") != std::string::npos)    return 120.4/7948786.;
-  //if ( filename.std::string::find("HT700to1000") != std::string::npos)    return 6802/29802311.;
-  //if ( filename.std::string::find("HT500to700") != std::string::npos)    return 31630/44138665.;
-  //if ( filename.std::string::find("HT2000toInf") != std::string::npos)    return 25.24/4047532.;
-  //if ( filename.std::string::find("HT1000to1500") != std::string::npos)    return 1206/10335975.;
-  //if ( filename.std::string::find("HT1500to2000") != std::string::npos)    return 120.4/7803965.;
   else
   {
     //std::cout << "failed to get pt_hat weight" << std::endl;

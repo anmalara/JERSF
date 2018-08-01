@@ -48,7 +48,6 @@ protected:
 
   // correctors
   std::unique_ptr<JetCorrector> jet_corrector, jet_corrector_B, jet_corrector_C, jet_corrector_D, jet_corrector_E, jet_corrector_F;
-  std::unique_ptr<TopJetCorrector> topjet_corrector, topjet_corrector_B, topjet_corrector_C, topjet_corrector_D, topjet_corrector_E, topjet_corrector_F;
   std::unique_ptr<GenericJetResolutionSmearer> jetER_smearer;
 
   // cleaners
@@ -58,7 +57,7 @@ protected:
   std::unique_ptr<ElectronCleaner> eleSR_cleaner;
 
   // selections
-  std::unique_ptr<uhh2::Selection> lumi_sel;
+  std::unique_ptr<uhh2::Selection> lumi_selection;
   std::unique_ptr<uhh2::AndSelection> metfilters_sel;
   std::unique_ptr<uhh2::Selection> trigger40_sel;
   std::unique_ptr<uhh2::Selection> trigger60_sel;
@@ -84,8 +83,12 @@ protected:
   Event::Handle<int> tt_hf_trigger; Event::Handle<int> tt_bl_trigger;
   Event::Handle<float> tt_gen_pthat; Event::Handle<float> tt_gen_weight;  //Event::Handle<float> tt_gen_PUpthat;
   Event::Handle<float> tt_jet1_pt;     Event::Handle<float> tt_jet2_pt;     Event::Handle<float> tt_jet3_pt;
+  Event::Handle<float> tt_jet1_eta;     Event::Handle<float> tt_jet2_eta;     Event::Handle<float> tt_jet3_eta;
+  Event::Handle<float> tt_jet1_phi;     Event::Handle<float> tt_jet2_phi;     Event::Handle<float> tt_jet3_phi;
   Event::Handle<float> tt_jet1_ptRaw;  Event::Handle<float> tt_jet2_ptRaw;  Event::Handle<float> tt_jet3_ptRaw;
   Event::Handle<float> tt_jet1_ptGen;  Event::Handle<float> tt_jet2_ptGen;  Event::Handle<float> tt_jet3_ptGen;
+  Event::Handle<float> tt_jet1_etaGen;  Event::Handle<float> tt_jet2_etaGen;  Event::Handle<float> tt_jet3_etaGen;
+  Event::Handle<float> tt_jet1_phiGen;  Event::Handle<float> tt_jet2_phiGen;  Event::Handle<float> tt_jet3_phiGen;
   Event::Handle<float> tt_jet1_pt_onoff_Resp;     Event::Handle<float> tt_jet2_pt_onoff_Resp;
   Event::Handle<int> tt_nvertices;
   Event::Handle<float> tt_probejet_eta;  Event::Handle<float> tt_probejet_phi; Event::Handle<float> tt_probejet_pt; Event::Handle<float> tt_probejet_ptRaw;
@@ -114,6 +117,8 @@ protected:
 
   // MC
   Event::Handle<float> tt_genjet1_pt;     Event::Handle<float> tt_genjet2_pt;     Event::Handle<float> tt_genjet3_pt;
+  Event::Handle<float> tt_genjet1_eta;     Event::Handle<float> tt_genjet2_eta;     Event::Handle<float> tt_genjet3_eta;
+  Event::Handle<float> tt_genjet1_phi;     Event::Handle<float> tt_genjet2_phi;     Event::Handle<float> tt_genjet3_phi;
   //Event::Handle<float> tt_genjet1_ptRaw;  Event::Handle<float> tt_genjet2_ptRaw;  Event::Handle<float> tt_genjet3_ptRaw;
   Event::Handle<float> tt_probegenjet_eta;  Event::Handle<float> tt_probegenjet_phi; Event::Handle<float> tt_probegenjet_pt;// Event::Handle<float> tt_probegenjet_ptRaw;
   Event::Handle<float> tt_barrelgenjet_eta;  Event::Handle<float> tt_barrelgenjet_phi; Event::Handle<float> tt_barrelgenjet_pt;// Event::Handle<float> tt_barrelgenjet_ptRaw;
@@ -158,9 +163,9 @@ protected:
 
 JER2017Module::JER2017Module(uhh2::Context & ctx) : sel(ctx) {
 
-  //for(auto & kv : ctx.get_all()){
+  // for(auto & kv : ctx.get_all()){
   //  cout << " " << kv.first << " = " << kv.second << endl;
-  //}
+  // }
 
   no_genp=false;
   cout << "start" << endl;
@@ -177,7 +182,7 @@ JER2017Module::JER2017Module(uhh2::Context & ctx) : sel(ctx) {
 
   //#############################################  Filters  #########################################################
   // COMMON MODULES
-  if(!isMC) lumi_sel.reset(new LumiSelection(ctx));
+  if(!isMC) lumi_selection.reset(new LumiSelection(ctx));
   /* MET filters */
   if(!isMC) {
     metfilters_sel.reset(new uhh2::AndSelection(ctx, "metfilters"));
@@ -286,58 +291,62 @@ JER2017Module::JER2017Module(uhh2::Context & ctx) : sel(ctx) {
     JEC_corr_F_L1RC = JERFiles::jecv##_F_L1RC_##jetLabel##_DATA;        \
   }                                                                     \
 
-  #define MAKE_JEC_NORES(jecv,jetLabel)         					              \
-  if(JEC_Version == #jecv){                                             \
-    JEC_corr_B      = JERFiles::jecv##_B_L123_noRes_##jetLabel##_DATA;  \
-    JEC_corr_C      = JERFiles::jecv##_C_L123_noRes_##jetLabel##_DATA;  \
-    JEC_corr_D      = JERFiles::jecv##_D_L123_noRes_##jetLabel##_DATA;  \
-    JEC_corr_E      = JERFiles::jecv##_E_L123_noRes_##jetLabel##_DATA;  \
-    JEC_corr_F      = JERFiles::jecv##_F_L123_noRes_##jetLabel##_DATA;  \
-    JEC_corr_B_L1RC = JERFiles::jecv##_B_L1RC_noRes_##jetLabel##_DATA;  \
-    JEC_corr_C_L1RC = JERFiles::jecv##_C_L1RC_noRes_##jetLabel##_DATA;  \
-    JEC_corr_D_L1RC = JERFiles::jecv##_D_L1RC_noRes_##jetLabel##_DATA;  \
-    JEC_corr_E_L1RC = JERFiles::jecv##_E_L1RC_noRes_##jetLabel##_DATA;  \
-    JEC_corr_F_L1RC = JERFiles::jecv##_F_L1RC_noRes_##jetLabel##_DATA;  \
-  }                                                                     \
-
   #define MAKE_JEC_MC(jecv,jetLabel)					                          \
   if(JEC_Version == #jecv){                                             \
     JEC_corr      = JERFiles::jecv##_L123_##jetLabel##_MC;              \
     JEC_corr_L1RC = JERFiles::jecv##_L1RC_##jetLabel##_MC;              \
   }                                                                     \
 
+  #define MAKE_JEC_MC_AK8(jecv,jetLabel)					                      \
+  if(JEC_Version == #jecv){                                             \
+    JEC_corr      = JERFiles::jecv##_L123_##jetLabel##_MC;              \
+  }                                                                     \
+
 
   if(isMC){ //L123 for MC
     if (jetLabel == "AK4CHS") {
-      MAKE_JEC_MC(Fall17_17Nov2017_V4, AK4PFchs)
-      else MAKE_JEC_MC(Fall17_17Nov2017_V6, AK4PFchs)
+      MAKE_JEC_MC(Fall17_17Nov2017_V6, AK4PFchs)
       else MAKE_JEC_MC(Fall17_17Nov2017_V10, AK4PFchs)
+      else MAKE_JEC_MC(Fall17_17Nov2017_V11, AK4PFchs)
+      // else MAKE_JEC_MC(Fall17_17Nov2017_V12, AK4PFchs)
+      // else MAKE_JEC_MC(Fall17_17Nov2017_V20, AK4PFchs)
       else throw runtime_error("In JER2017Module.cxx: Invalid JEC_Version for deriving residuals on AK4CHS, MC specified ("+JEC_Version+") ");
     }
     else if (jetLabel == "AK8PUPPI") {
-      MAKE_JEC_MC(Fall17_17Nov2017_V6, AK8PFPuppi)
-      else throw runtime_error("In JER2017Module.cxx: Invalid JEC_Version for deriving residuals on AK4CHS, MC specified ("+JEC_Version+") ");
+      MAKE_JEC_MC_AK8(Fall17_17Nov2017_V6, AK8PFPuppi)
+      else MAKE_JEC_MC_AK8(Fall17_17Nov2017_V10, AK8PFPuppi)
+      else MAKE_JEC_MC_AK8(Fall17_17Nov2017_V11, AK8PFPuppi)
+      // else MAKE_JEC_MC(Fall17_17Nov2017_V12, AK8PFPuppi)
+      // else MAKE_JEC_MC(Fall17_17Nov2017_V20, AK8PFPuppi)
+      else throw runtime_error("In JER2017Module.cxx: Invalid JEC_Version for deriving residuals on AK8PUPPI, MC specified ("+JEC_Version+") ");
     }
     else throw runtime_error("In JER2017Module.cxx: Invalid jetLabel: "+jetLabel+" ");
   }//MC
   else { //L123 + L2L3Res for Data
     if (jetLabel == "AK4CHS") {
-      MAKE_JEC(Fall17_17Nov2017_V5, AK4PFchs)
-      else MAKE_JEC(Fall17_17Nov2017_V6, AK4PFchs)
-      else MAKE_JEC(Fall17_17Nov2017_V7, AK4PFchs)
+      MAKE_JEC(Fall17_17Nov2017_V6, AK4PFchs)
       else MAKE_JEC(Fall17_17Nov2017_V10, AK4PFchs)
-      else throw runtime_error("In JER2017Module.cxx: Invalid JEC_Version for deriving residuals on "+JEC_Version+", DATA specified.");
+      else MAKE_JEC(Fall17_17Nov2017_V11, AK4PFchs)
+      else MAKE_JEC(Fall17_17Nov2017_V12, AK4PFchs)
+      else MAKE_JEC(Fall17_17Nov2017_V13, AK4PFchs)
+      // else MAKE_JEC(Fall17_17Nov2017_V20, AK4PFchs)
+      else throw runtime_error("In JER2017Module.cxx: Invalid JEC_Version for deriving residuals on AK4CHS "+JEC_Version+", DATA specified.");
     }
     else if (jetLabel == "AK8PUPPI") {
       MAKE_JEC(Fall17_17Nov2017_V6, AK8PFPuppi)
-      else throw runtime_error("In JER2017Module.cxx: Invalid JEC_Version for deriving residuals on "+JEC_Version+", DATA specified.");
+      else MAKE_JEC(Fall17_17Nov2017_V10, AK8PFPuppi)
+      else MAKE_JEC(Fall17_17Nov2017_V11, AK8PFPuppi)
+      else MAKE_JEC(Fall17_17Nov2017_V12, AK8PFPuppi)
+      else MAKE_JEC(Fall17_17Nov2017_V13, AK8PFPuppi)
+      // else MAKE_JEC(Fall17_17Nov2017_V20, AK8PFPuppi)
+      else throw runtime_error("In JER2017Module.cxx: Invalid JEC_Version for deriving residuals on AK8PUPPI "+JEC_Version+", DATA specified.");
     }
     else throw runtime_error("In JER2017Module.cxx: Invalid jetLabel: "+jetLabel+" ");
 
   }//DATA
 
 
-  if(jetLabel == "AK4CHS"){
+  if(jetLabel == "AK4CHS" || jetLabel == "AK8PUPPI"){
     //DATA
     if(!isMC){
       jet_corrector_B.reset(new JetCorrector(ctx, JEC_corr_B));
@@ -352,26 +361,10 @@ JER2017Module::JER2017Module(uhh2::Context & ctx) : sel(ctx) {
       JLC_F.reset(new JetLeptonCleaner(ctx, JEC_corr_F));
     }
     else if(isMC){//MC : only one version of JECs exists
-      jet_corrector.reset(new JetCorrector(ctx, JEC_corr, JEC_corr_L1RC));
+      jet_corrector.reset(new JetCorrector(ctx, JEC_corr));
       jetleptoncleaner.reset(new JetLeptonCleaner(ctx, JEC_corr));
     }
   }
-
-  if(jetLabel == "AK8PUPPI"){
-    //DATA
-    if(!isMC){
-      topjet_corrector_B.reset(new TopJetCorrector(ctx, JEC_corr_B));
-      topjet_corrector_C.reset(new TopJetCorrector(ctx, JEC_corr_C));
-      topjet_corrector_D.reset(new TopJetCorrector(ctx, JEC_corr_D));
-      topjet_corrector_E.reset(new TopJetCorrector(ctx, JEC_corr_E));
-      topjet_corrector_F.reset(new TopJetCorrector(ctx, JEC_corr_F));
-    }
-    else if(isMC){//MC : only one version of JECs exists
-      jet_corrector.reset(new JetCorrector(ctx, JEC_corr, JEC_corr_L1RC));
-      // jetleptoncleaner.reset(new JetLeptonCleaner(ctx, JEC_corr));
-    }
-  }
-
 
 
   // JER Smearing for corresponding JEC-Version
@@ -389,6 +382,7 @@ JER2017Module::JER2017Module(uhh2::Context & ctx) : sel(ctx) {
 
   // Do pileup reweighting (define it after undeclaring all other variables to keep the weights in the output)
   DO_Pu_ReWeighting = string2bool(ctx.get("DO_Pu_ReWeighting"));
+  DO_Pu_ReWeighting = DO_Pu_ReWeighting && isMC;
   SysType_PU = ctx.get("SysType_PU");
   if (DO_Pu_ReWeighting) pileupSF.reset(new MCPileupReweight(ctx,SysType_PU));
 
@@ -402,12 +396,24 @@ JER2017Module::JER2017Module(uhh2::Context & ctx) : sel(ctx) {
   tt_jet1_pt = ctx.declare_event_output<float>("jet1_pt");
   tt_jet2_pt = ctx.declare_event_output<float>("jet2_pt");
   tt_jet3_pt = ctx.declare_event_output<float>("jet3_pt");
+  tt_jet1_eta = ctx.declare_event_output<float>("jet1_eta");
+  tt_jet2_eta = ctx.declare_event_output<float>("jet2_eta");
+  tt_jet3_eta = ctx.declare_event_output<float>("jet3_eta");
+  tt_jet1_phi = ctx.declare_event_output<float>("jet1_phi");
+  tt_jet2_phi = ctx.declare_event_output<float>("jet2_phi");
+  tt_jet3_phi = ctx.declare_event_output<float>("jet3_phi");
   tt_jet1_ptRaw = ctx.declare_event_output<float>("jet1_ptRaw");
   tt_jet2_ptRaw = ctx.declare_event_output<float>("jet2_ptRaw");
   tt_jet3_ptRaw = ctx.declare_event_output<float>("jet3_ptRaw");
   tt_jet1_ptGen = ctx.declare_event_output<float>("jet1_ptGen");
   tt_jet2_ptGen = ctx.declare_event_output<float>("jet2_ptGen");
   tt_jet3_ptGen = ctx.declare_event_output<float>("jet3_ptGen");
+  tt_jet1_etaGen = ctx.declare_event_output<float>("jet1_etaGen");
+  tt_jet2_etaGen = ctx.declare_event_output<float>("jet2_etaGen");
+  tt_jet3_etaGen = ctx.declare_event_output<float>("jet3_etaGen");
+  tt_jet1_phiGen = ctx.declare_event_output<float>("jet1_phiGen");
+  tt_jet2_phiGen = ctx.declare_event_output<float>("jet2_phiGen");
+  tt_jet3_phiGen = ctx.declare_event_output<float>("jet3_phiGen");
   tt_jet1_pt_onoff_Resp = ctx.declare_event_output<float>("jet1_pt_onoff_Resp");
   tt_jet2_pt_onoff_Resp = ctx.declare_event_output<float>("jet2_pt_onoff_Resp");
   tt_nvertices = ctx.declare_event_output<int>("nvertices");
@@ -454,6 +460,12 @@ JER2017Module::JER2017Module(uhh2::Context & ctx) : sel(ctx) {
   tt_genjet1_pt = ctx.declare_event_output<float>("genjet1_pt");
   tt_genjet2_pt = ctx.declare_event_output<float>("genjet2_pt");
   tt_genjet3_pt = ctx.declare_event_output<float>("genjet3_pt");
+  tt_genjet1_eta = ctx.declare_event_output<float>("genjet1_eta");
+  tt_genjet2_eta = ctx.declare_event_output<float>("genjet2_eta");
+  tt_genjet3_eta = ctx.declare_event_output<float>("genjet3_eta");
+  tt_genjet1_phi = ctx.declare_event_output<float>("genjet1_phi");
+  tt_genjet2_phi = ctx.declare_event_output<float>("genjet2_phi");
+  tt_genjet3_phi = ctx.declare_event_output<float>("genjet3_phi");
   //tt_genjet1_ptRaw = ctx.declare_event_output<float>("genjet1_ptRaw");
   //tt_genjet2_ptRaw = ctx.declare_event_output<float>("genjet2_ptRaw");
   //tt_genjet3_ptRaw = ctx.declare_event_output<float>("genjet3_ptRaw");
@@ -605,7 +617,7 @@ bool JER2017Module::process(Event & event) {
   // Do pileup reweighting
   if (DO_Pu_ReWeighting){
     bool pass_reweighting = pileupSF->process(event);
-     if(!pass_reweighting) return false;
+    if(!pass_reweighting) return false;
   }
 
   //LEPTON selection
@@ -621,10 +633,8 @@ bool JER2017Module::process(Event & event) {
 
 
   // CMS-certified luminosity sections
-  if(event.isRealData){
-    if(!lumi_sel->passes(event)){
-      return false; //????
-    }
+  if (event.isRealData) {
+    if (!lumi_selection->passes(event)) return false;
   }
 
   // MET filters
@@ -652,17 +662,16 @@ bool JER2017Module::process(Event & event) {
     event_in_lumibin = distance(upper_binborders_runnrs.begin(), it); //find how many elements of the vector of binborders are smaller than 'it', this is the bin to be filled
     fill_event_integrated_lumi = lumi_in_bins.at(event_in_lumibin);
   }
-  int n_jets_beforeCleaner = isTopCollection ?  ak8jets->size() : ak4jets->size();
+  int n_jets_beforeCleaner = ak4jets->size();
   //JetID
-  if(jetLabel == "AK4CHS" || jetLabel == "AK8CHS") jetcleaner->process(event);
-  int n_jets_afterCleaner = isTopCollection ?  ak8jets->size() : ak4jets->size();
+  jetcleaner->process(event);
+  int n_jets_afterCleaner = ak4jets->size();
   //discard events if not all jets fulfill JetID instead of just discarding single jets
   if (n_jets_beforeCleaner != n_jets_afterCleaner) return false;
-  if (isTopCollection) sort_by_pt<TopJet>(*ak8jets);
-  else sort_by_pt<Jet>(*ak4jets);
+  sort_by_pt<Jet>(*ak4jets);
   //h_cleaner->fill(event);
 
-  const int jet_n = isTopCollection ?  ak8jets->size() : ak4jets->size();
+  const int jet_n = ak4jets->size();
   if(jet_n<2) return false;
 
   bool apply_B = false;
@@ -737,16 +746,16 @@ bool JER2017Module::process(Event & event) {
   //   jet_corrector->correct_met(event,true);
   // }
 
-  if (isTopCollection) sort_by_pt<TopJet>(*ak8jets);
-  else sort_by_pt<Jet>(*ak4jets);
+  sort_by_pt<Jet>(*ak4jets);
 
-  Jet* jet1 = isTopCollection ?  &ak8jets->at(0) : &ak4jets->at(0);// leading jet
-  Jet* jet2 = isTopCollection ?  &ak8jets->at(1) : &ak4jets->at(1);// sub-leading jet
+  Jet* jet1 = &ak4jets->at(0);// leading jet
+  Jet* jet2 = &ak4jets->at(1);// sub-leading jet
   float jet1_pt = jet1->pt(); float jet2_pt = jet2->pt();
+  float jet1_eta = jet1->eta(); float jet2_eta = jet2->eta();
+  float jet1_phi = jet1->phi(); float jet2_phi = jet2->phi();
   float pt_ave = (jet1_pt + jet2_pt)/2.;
 
   Jet* jet_barrel = jet1; Jet* jet_probe = jet2;
-
   //// HLT selection
   bool pass_trigger_bl=false; bool pass_trigger_hf=false;
   bool pass_trigger40=false; bool pass_trigger60=false; bool pass_trigger80=false;
@@ -828,7 +837,6 @@ bool JER2017Module::process(Event & event) {
       return false;
     }
   }
-
   //read or calculated values for dijet events
   float gen_pthat = 0; //pt hat (from QCD simulation) //todo!
   //    if(isMC) gen_pthat = event.genInfo->binningValues()[0];
@@ -840,10 +848,22 @@ bool JER2017Module::process(Event & event) {
   float genjet1_pt = 0;
   float genjet2_pt = 0;
   float genjet3_pt = 0;
+  float genjet1_eta = 0;
+  float genjet2_eta = 0;
+  float genjet3_eta = 0;
+  float genjet1_phi = 0;
+  float genjet2_phi = 0;
+  float genjet3_phi = 0;
   if(isMC){
     if(event.genjets->size()>0)genjet1_pt = event.genjets->at(0).pt();
     if(event.genjets->size()>1)genjet2_pt = event.genjets->at(1).pt();
     if(event.genjets->size()>2)genjet3_pt = event.genjets->at(2).pt();
+    if(event.genjets->size()>0)genjet1_eta = event.genjets->at(0).eta();
+    if(event.genjets->size()>1)genjet2_eta = event.genjets->at(1).eta();
+    if(event.genjets->size()>2)genjet3_eta = event.genjets->at(2).eta();
+    if(event.genjets->size()>0)genjet1_phi = event.genjets->at(0).phi();
+    if(event.genjets->size()>1)genjet2_phi = event.genjets->at(1).phi();
+    if(event.genjets->size()>2)genjet3_phi = event.genjets->at(2).phi();
   }
   auto factor_raw1 = jet1->JEC_factor_raw();     auto factor_raw2 = jet2->JEC_factor_raw();
   float jet1_ptRaw = jet1_pt*factor_raw1;  float jet2_ptRaw = jet2_pt*factor_raw2;
@@ -858,6 +878,7 @@ bool JER2017Module::process(Event & event) {
   auto factor_raw_barrel = jet_barrel->JEC_factor_raw();
   float barreljet_ptRaw = barreljet_pt*factor_raw_barrel;
   float jet3_pt = 0; float jet3_ptRaw = 0;
+  float jet3_eta = 0; float jet3_phi = 0;
   Jet* jet3;
   TVector3 jet1_2Dv, jet2_2Dv, jet3_2Dv;
 
@@ -866,8 +887,10 @@ bool JER2017Module::process(Event & event) {
 
   float alpha_p = 0;
   if(jet_n>2){
-    jet3 = isTopCollection ?  &ak8jets->at(2) : &ak4jets->at(2);
+    jet3 = &ak4jets->at(2);
     jet3_pt = jet3->pt();
+    jet3_eta = jet3->eta();
+    jet3_phi = jet3->phi();
     auto factor_raw3 = jet3->JEC_factor_raw();
     jet3_ptRaw = jet3_pt*factor_raw3;
     jet3_2Dv.SetPtEtaPhi( jet3->pt(), 0.0, jet3->phi());
@@ -886,8 +909,7 @@ bool JER2017Module::process(Event & event) {
   float B = (met.Px()*pt.Px() + met.Py()*pt.Py())/((probejet_pt + barreljet_pt) * sqrt(pt.Px()*pt.Px() + pt.Py()*pt.Py())); //vec_MET*vec_ptbarr/(2ptave*ptbarr)
   float jets_pt = 0;
   for(int i=2;i<jet_n;i++){
-    if (isTopCollection) jets_pt += ((TopJet*)&ak8jets->at(i))->pt();
-    else jets_pt += ((Jet*)&ak4jets->at(i))->pt();
+    jets_pt += ((Jet*)&ak4jets->at(i))->pt();
   }
   int flavor = 0;
   //separate flat and fwd samples at |eta| = 2.853
@@ -967,10 +989,10 @@ bool JER2017Module::process(Event & event) {
   //      double additional_weight = pow(gen_pthat/15,-6);
   //      event.weight *= additional_weight;
   //    }
-  double had_n_Efrac = isTopCollection ?  ak8jets->at(0).neutralHadronEnergyFraction() : ak4jets->at(0).neutralHadronEnergyFraction();
-  double had_ch_Efrac = isTopCollection ?  ak8jets->at(0).chargedHadronEnergyFraction() : ak4jets->at(0).chargedHadronEnergyFraction();
-  double mu_Efrac = isTopCollection ?  ak8jets->at(0).muonEnergyFraction() : ak4jets->at(0).muonEnergyFraction();
-  double ph_Efrac = isTopCollection ?  ak8jets->at(0).photonEnergyFraction() : ak4jets->at(0).photonEnergyFraction();
+  double had_n_Efrac = ak4jets->at(0).neutralHadronEnergyFraction();
+  double had_ch_Efrac = ak4jets->at(0).chargedHadronEnergyFraction();
+  double mu_Efrac = ak4jets->at(0).muonEnergyFraction();
+  double ph_Efrac = ak4jets->at(0).photonEnergyFraction();
   float onoffDummy =0.;
 
   //fill the containers
@@ -981,12 +1003,24 @@ bool JER2017Module::process(Event & event) {
   event.set(tt_jet1_pt,jet1_pt);
   event.set(tt_jet2_pt,jet2_pt);
   event.set(tt_jet3_pt,jet3_pt);
+  event.set(tt_jet1_eta,jet1_eta);
+  event.set(tt_jet2_eta,jet2_eta);
+  event.set(tt_jet3_eta,jet3_eta);
+  event.set(tt_jet1_phi,jet1_phi);
+  event.set(tt_jet2_phi,jet2_phi);
+  event.set(tt_jet3_phi,jet3_phi);
   event.set(tt_jet1_ptRaw,jet1_ptRaw);
   event.set(tt_jet2_ptRaw,jet2_ptRaw);
   event.set(tt_jet3_ptRaw,jet3_ptRaw);
   event.set(tt_jet1_ptGen,genjet1_pt);
   event.set(tt_jet2_ptGen,genjet2_pt);
   event.set(tt_jet3_ptGen,genjet3_pt);
+  event.set(tt_jet1_etaGen,genjet1_eta);
+  event.set(tt_jet2_etaGen,genjet2_eta);
+  event.set(tt_jet3_etaGen,genjet3_eta);
+  event.set(tt_jet1_phiGen,genjet1_phi);
+  event.set(tt_jet2_phiGen,genjet2_phi);
+  event.set(tt_jet3_phiGen,genjet3_phi);
   event.set(tt_jet1_pt_onoff_Resp,onoffDummy);
   event.set(tt_jet2_pt_onoff_Resp,onoffDummy);
   event.set(tt_nvertices,nvertices);
@@ -1100,6 +1134,12 @@ bool JER2017Module::process(Event & event) {
     event.set(tt_genjet1_pt,genjet1_pt);
     event.set(tt_genjet2_pt,genjet2_pt);
     event.set(tt_genjet3_pt,genjet3_pt);
+    event.set(tt_genjet1_eta,genjet1_eta);
+    event.set(tt_genjet2_eta,genjet2_eta);
+    event.set(tt_genjet3_eta,genjet3_eta);
+    event.set(tt_genjet1_phi,genjet1_phi);
+    event.set(tt_genjet2_phi,genjet2_phi);
+    event.set(tt_genjet3_phi,genjet3_phi);
     //event.set(tt_genjet1_ptRaw,genjet1_ptRaw);
     //event.set(tt_genjet2_ptRaw,genjet2_ptRaw);
     //event.set(tt_genjet3_ptRaw,genjet3_ptRaw);
@@ -1124,6 +1164,13 @@ bool JER2017Module::process(Event & event) {
     event.set(tt_genjet1_pt,0);
     event.set(tt_genjet2_pt,0);
     event.set(tt_genjet3_pt,0);
+    event.set(tt_genjet1_eta,0);
+    event.set(tt_genjet2_eta,0);
+    event.set(tt_genjet3_eta,0);
+    event.set(tt_genjet1_phi,0);
+    event.set(tt_genjet2_phi,0);
+    event.set(tt_genjet3_phi,0);
+
     //event.set(tt_genjet1_ptRaw,genjet1_ptRaw);
     //event.set(tt_genjet2_ptRaw,genjet2_ptRaw);
     //event.set(tt_genjet3_ptRaw,genjet3_ptRaw);
@@ -1283,8 +1330,8 @@ bool JER2017Module::process(Event & event) {
     //matching gen- and reco-jets
     for(unsigned int i=0; i<event.genjets->size(); i++){
       double dR_min = 99999; int idx_matching_jet = -1;
-      for(unsigned int j=0; isTopCollection? j<ak8jets->size(): j<ak4jets->size(); j++){
-        double dR = isTopCollection ? deltaR(ak8jets->at(j), event.genjets->at(i)) : deltaR(ak4jets->at(j), event.genjets->at(i));
+      for(unsigned int j=0; j<ak4jets->size(); j++){
+        double dR = deltaR(ak4jets->at(j), event.genjets->at(i));
         if(debug) cout << "dR between GenJet " << i << " and RecoJet " << j << ": " << dR << endl;
         if(dR<dR_min){
           dR_min = dR;
@@ -1376,17 +1423,9 @@ bool JER2017Module::process(Event & event) {
       if(idx_jet_matching_genjet[i] == 0) idx_corresponding_genjet = i;
     }
     double response_jet1 = -1;
-    if(idx_corresponding_genjet != -1){
-      if (isTopCollection) {
-        response_jet1 = ak8jets->at(0).pt() / event.genjets->at(idx_corresponding_genjet).pt();
-      } else {
-        response_jet1 = ak4jets->at(0).pt() / event.genjets->at(idx_corresponding_genjet).pt();
-      }
-    }
-
+    if(idx_corresponding_genjet != -1) response_jet1 = ak4jets->at(0).pt() / event.genjets->at(idx_corresponding_genjet).pt();
 
     event.set(tt_response_leadingjet,response_jet1);
-
 
   } //isMC
 
