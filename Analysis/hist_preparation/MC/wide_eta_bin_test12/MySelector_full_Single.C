@@ -202,10 +202,10 @@ void MySelector::SlaveBegin(TTree * /*tree*/){
         h1_MCTruth ->GetYaxis()->SetTitle("a.u.");    h1_MCTruth ->GetXaxis()->SetTitle("Response");
         h1_MCTruth -> Sumw2(); temp1_MCTruth.push_back(h1_MCTruth);
         TH2F *h2_dR = new TH2F( name_dR, name_dR, 70, 0, 7.0, 70, 0, 7.0 );
-        h2_dR ->GetYaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    h2_dR ->GetXaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");
+        h2_dR ->GetXaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    h2_dR ->GetYaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");
         h2_dR -> Sumw2(); temp1_dR.push_back(h2_dR);
         TH2F *gen_h2_dR = new TH2F( gen_name_dR, gen_name_dR, 70, 0, 7.0, 70, 0, 7.0 );
-        gen_h2_dR ->GetYaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    gen_h2_dR ->GetXaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");
+        gen_h2_dR ->GetXaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    gen_h2_dR ->GetYaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");
         gen_h2_dR -> Sumw2(); gen_temp1_dR.push_back(gen_h2_dR);
       }
       temp2.push_back(temp1); temp2pt.push_back(temp1pt); temp2rho.push_back(temp1rho);  temp2pt3.push_back(temp1pt3);
@@ -270,10 +270,10 @@ void MySelector::SlaveBegin(TTree * /*tree*/){
         h1_MCTruth ->GetYaxis()->SetTitle("a.u.");    h1_MCTruth ->GetXaxis()->SetTitle("Response");
         h1_MCTruth -> Sumw2(); temp1_MCTruth.push_back(h1_MCTruth);
         TH2F *h2_dR = new TH2F( name_dR, name_dR, 70, 0, 7.0, 70, 0, 7.0 );
-        h2_dR ->GetYaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    h2_dR ->GetXaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");
+        h2_dR ->GetXaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    h2_dR ->GetYaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");
         h2_dR -> Sumw2(); temp1_dR.push_back(h2_dR);
         TH2F *gen_h2_dR = new TH2F( gen_name_dR, gen_name_dR, 70, 0, 7.0, 70, 0, 7.0 );
-        gen_h2_dR ->GetYaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    gen_h2_dR ->GetXaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");
+        gen_h2_dR ->GetXaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    gen_h2_dR ->GetYaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");
         gen_h2_dR -> Sumw2(); gen_temp1_dR.push_back(gen_h2_dR);
       }
       temp2.push_back(temp1); temp2pt.push_back(temp1pt); temp2rho.push_back(temp1rho);  temp2pt3.push_back(temp1pt3);
@@ -340,10 +340,10 @@ void MySelector::SlaveBegin(TTree * /*tree*/){
         h1_MCTruth ->GetYaxis()->SetTitle("a.u.");    h1_MCTruth ->GetXaxis()->SetTitle("Response");
         h1_MCTruth -> Sumw2(); temp1_MCTruth.push_back(h1_MCTruth);
         TH2F *h2_dR = new TH2F( name_dR, name_dR, 70, 0, 7.0, 70, 0, 7.0 );
-        h2_dR ->GetYaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    h2_dR ->GetXaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");
+        h2_dR ->GetXaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    h2_dR ->GetYaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");
         h2_dR -> Sumw2(); temp1_dR.push_back(h2_dR);
         TH2F *gen_h2_dR = new TH2F( gen_name_dR, gen_name_dR, 70, 0, 7.0, 70, 0, 7.0 );
-        gen_h2_dR ->GetYaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    gen_h2_dR ->GetXaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");
+        gen_h2_dR ->GetXaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    gen_h2_dR ->GetYaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");
         gen_h2_dR -> Sumw2(); gen_temp1_dR.push_back(gen_h2_dR);
       }
       temp2.push_back(temp1); temp2pt.push_back(temp1pt); temp2rho.push_back(temp1rho);  temp2pt3.push_back(temp1pt3);
@@ -410,10 +410,10 @@ void MySelector::SlaveBegin(TTree * /*tree*/){
         h1_MCTruth ->GetYaxis()->SetTitle("a.u.");    h1_MCTruth ->GetXaxis()->SetTitle("Response");
         h1_MCTruth -> Sumw2(); temp1_MCTruth.push_back(h1_MCTruth);
         TH2F *h2_dR = new TH2F( name_dR, name_dR, 70, 0, 7.0, 70, 0, 7.0 );
-        h2_dR ->GetYaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    h2_dR ->GetXaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");
+        h2_dR ->GetXaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    h2_dR ->GetYaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");
         h2_dR -> Sumw2(); temp1_dR.push_back(h2_dR);
         TH2F *gen_h2_dR = new TH2F( gen_name_dR, gen_name_dR, 70, 0, 7.0, 70, 0, 7.0 );
-        gen_h2_dR ->GetYaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    gen_h2_dR ->GetXaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");
+        gen_h2_dR ->GetXaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    gen_h2_dR ->GetYaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");
         gen_h2_dR -> Sumw2(); gen_temp1_dR.push_back(gen_h2_dR);
       }
       temp2.push_back(temp1); temp2pt.push_back(temp1pt); temp2rho.push_back(temp1rho);  temp2pt3.push_back(temp1pt3);
@@ -595,7 +595,7 @@ Bool_t MySelector::Process(Long64_t entry){
                     asy = - asymmetry;
                     std::swap(Delta_R_radiation_barrel, Delta_R_radiation_probe);
                   }
-                  if (Delta_R_radiation_barrel > Delta_R_radiation_probe && Delta_R_radiation_barrel < 7 - Delta_R_radiation_probe) continue;
+                  if (Delta_R_radiation_probe > Delta_R_radiation_barrel && Delta_R_radiation_probe < 7 - Delta_R_radiation_barrel) continue;
                   if ( (((rand()%2)+1)==1) && r ==0 ) { asy = - asy;}
                   forward_hist_dijet.at(r).at(k).at(m) -> Fill( asy , weight );
                   forward_pt_hist_dijet.at(r).at(k).at(m) -> Fill( 0.5 * ( jet1_pt + jet2_pt ), weight );
