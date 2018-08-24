@@ -31,7 +31,7 @@
 #include <TRandom3.h>
 #include "MySelector.h"
 #include "MyJet.h"
-#include "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/JER2017/include/constants.h"
+#include "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/JER2017/include/constants.hpp"
 
 bool sortFunct( MyJet a, MyJet b) { return ( a.Pt() > b.Pt() ); }
 

@@ -27,7 +27,7 @@
 #include "UHH2/JER2017/include/JER2017Selections.h"
 #include "UHH2/JER2017/include/JER2017Hists.h"
 #include "UHH2/JER2017/include/selection.h"
-#include "UHH2/JER2017/include/constants.h"
+#include "UHH2/JER2017/include/constants.hpp"
 #include "TClonesArray.h"
 #include "TString.h"
 #include "Riostream.h"
@@ -75,6 +75,18 @@ protected:
   std::unique_ptr<uhh2::Selection> trigger160_HFJEC_sel;
   std::unique_ptr<uhh2::Selection> trigger220_HFJEC_sel;
   std::unique_ptr<uhh2::Selection> trigger300_HFJEC_sel;
+  std::unique_ptr<uhh2::Selection> triggerMB_sel;
+  std::unique_ptr<uhh2::Selection> triggerMB_part0_sel;
+  std::unique_ptr<uhh2::Selection> triggerMB_part1_sel;
+  std::unique_ptr<uhh2::Selection> triggerMB_part2_sel;
+  std::unique_ptr<uhh2::Selection> triggerMB_part3_sel;
+  std::unique_ptr<uhh2::Selection> triggerMB_part4_sel;
+  std::unique_ptr<uhh2::Selection> triggerMB_part5_sel;
+  std::unique_ptr<uhh2::Selection> triggerMB_part6_sel;
+  std::unique_ptr<uhh2::Selection> triggerMB_part7_sel;
+  std::unique_ptr<uhh2::Selection> triggerMB_part8_sel;
+  std::unique_ptr<uhh2::Selection> triggerMB_part9_sel;
+
   //// Data/MC scale factors
   std::unique_ptr<uhh2::AnalysisModule> pileupSF;
   unique_ptr<AnalysisModule>  Jet_printer, GenParticles_printer;
@@ -115,6 +127,24 @@ protected:
   Event::Handle<float> tt_inst_lumi, tt_integrated_lumi_in_bin, tt_integrated_lumi;
   Event::Handle<int> tt_lumibin;
 
+  Event::Handle<int> tt_trigger40;
+  Event::Handle<int> tt_trigger60;
+  Event::Handle<int> tt_trigger80;
+  Event::Handle<int> tt_trigger140;
+  Event::Handle<int> tt_trigger200;
+  Event::Handle<int> tt_trigger260;
+  Event::Handle<int> tt_trigger320;
+  Event::Handle<int> tt_trigger400;
+  Event::Handle<int> tt_trigger450;
+  Event::Handle<int> tt_trigger500;
+
+  Event::Handle<int> tt_trigger60_HFJEC;
+  Event::Handle<int> tt_trigger80_HFJEC;
+  Event::Handle<int> tt_trigger100_HFJEC;
+  Event::Handle<int> tt_trigger160_HFJEC;
+  Event::Handle<int> tt_trigger220_HFJEC;
+  Event::Handle<int> tt_trigger300_HFJEC;
+
   // MC
   Event::Handle<float> tt_genjet1_pt;     Event::Handle<float> tt_genjet2_pt;     Event::Handle<float> tt_genjet3_pt;
   Event::Handle<float> tt_genjet1_eta;     Event::Handle<float> tt_genjet2_eta;     Event::Handle<float> tt_genjet3_eta;
@@ -141,12 +171,13 @@ protected:
   uhh2bacon::Selection sel;
 
   bool debug, no_genp;
-  bool isMC, isTopCollection, ClosureTest, apply_weights, apply_lumiweights, apply_unflattening, apply_METoverPt_cut, apply_EtaPhi_cut, apply_EtaPhi_HCAL, do_only_centraltriggers, do_only_forwardtriggers, do_fulltriggers, trigger_central, trigger_fwd, DO_Pu_ReWeighting;
+  bool isMC, ClosureTest, apply_weights, apply_lumiweights, apply_unflattening, apply_METoverPt_cut, apply_EtaPhi_cut, apply_EtaPhi_HCAL, do_only_centraltriggers, do_only_forwardtriggers, do_fulltriggers, trigger_central, trigger_fwd, DO_Pu_ReWeighting;
   double lumiweight;
   string PtBinsTrigger, SysType_PU;
   TString dataset_version, JEC_Version, jetLabel;
   JetId Jet_PFID;
   int n_evt;
+  bool test_trigger, isThreshold;
   std::unique_ptr<TFile> f_weights;
 
   std::map<run_lumi, double> rl2lumi;
@@ -173,8 +204,8 @@ JER2017Module::JER2017Module(uhh2::Context & ctx) : sel(ctx) {
   dataset_version = ctx.get("dataset_version");
   jetLabel = ctx.get("JetLabel");
   isMC = (ctx.get("dataset_type") == "MC");
-  isTopCollection = jetLabel.Contains("AK8");
-  string2bool(ctx.get("use_sframe_weight", "true"));
+  test_trigger = string2bool(ctx.get("test_trigger", "false"));
+  isThreshold = string2bool(ctx.get("isThreshold", "false"));
   apply_weights = (ctx.get("Apply_Weights") == "true" && isMC);
   cout << "Dataset is " << ((isMC) ? " mc " : " data") << endl;
   cout << ((apply_weights) ? " Applying weights" : " NOT applying weights ") << endl;
@@ -257,6 +288,22 @@ JER2017Module::JER2017Module(uhh2::Context & ctx) : sel(ctx) {
       GET_RESET_TRIGGER(trigger160_HFJEC)
       GET_RESET_TRIGGER(trigger220_HFJEC)
       GET_RESET_TRIGGER(trigger300_HFJEC)
+    }
+    else if (PtBinsTrigger == "ZeroBias") {
+      if (test_trigger) {
+        GET_RESET_TRIGGER(triggerMB_part0)
+        GET_RESET_TRIGGER(triggerMB_part1)
+        GET_RESET_TRIGGER(triggerMB_part2)
+        GET_RESET_TRIGGER(triggerMB_part3)
+        GET_RESET_TRIGGER(triggerMB_part4)
+        GET_RESET_TRIGGER(triggerMB_part5)
+        GET_RESET_TRIGGER(triggerMB_part6)
+        GET_RESET_TRIGGER(triggerMB_part7)
+        GET_RESET_TRIGGER(triggerMB_part8)
+        GET_RESET_TRIGGER(triggerMB_part9)
+      } else {
+        GET_RESET_TRIGGER(triggerMB)
+      }
     }
   }
 
@@ -456,6 +503,24 @@ JER2017Module::JER2017Module(uhh2::Context & ctx) : sel(ctx) {
   tt_lumibin = ctx.declare_event_output<int>("lumibin");
   tt_integrated_lumi = ctx.declare_event_output<float>("integrated_lumi");
 
+  tt_trigger40 = ctx.declare_event_output<int>("trigger40");
+  tt_trigger60 = ctx.declare_event_output<int>("trigger60");
+  tt_trigger80 = ctx.declare_event_output<int>("trigger80");
+  tt_trigger140 = ctx.declare_event_output<int>("trigger140");
+  tt_trigger200 = ctx.declare_event_output<int>("trigger200");
+  tt_trigger260 = ctx.declare_event_output<int>("trigger260");
+  tt_trigger320 = ctx.declare_event_output<int>("trigger320");
+  tt_trigger400 = ctx.declare_event_output<int>("trigger400");
+  tt_trigger450 = ctx.declare_event_output<int>("trigger450");
+  tt_trigger500 = ctx.declare_event_output<int>("trigger500");
+
+  tt_trigger60_HFJEC = ctx.declare_event_output<int>("trigger60_HFJEC");
+  tt_trigger80_HFJEC = ctx.declare_event_output<int>("trigger80_HFJEC");
+  tt_trigger100_HFJEC = ctx.declare_event_output<int>("trigger100_HFJEC");
+  tt_trigger160_HFJEC = ctx.declare_event_output<int>("trigger160_HFJEC");
+  tt_trigger220_HFJEC = ctx.declare_event_output<int>("trigger220_HFJEC");
+  tt_trigger300_HFJEC = ctx.declare_event_output<int>("trigger300_HFJEC");
+
   // MC:
   tt_genjet1_pt = ctx.declare_event_output<float>("genjet1_pt");
   tt_genjet2_pt = ctx.declare_event_output<float>("genjet2_pt");
@@ -605,7 +670,6 @@ JER2017Module::~JER2017Module() {
 
 bool JER2017Module::process(Event & event) {
 
-  #define ak8jets event.topjets
   #define ak4jets event.jets
 
   n_evt++;
@@ -764,6 +828,13 @@ bool JER2017Module::process(Event & event) {
   bool pass_trigger60_HFJEC=false; bool pass_trigger80_HFJEC=false;
   bool pass_trigger100_HFJEC=false; bool pass_trigger160_HFJEC=false;
   bool pass_trigger220_HFJEC=false; bool pass_trigger300_HFJEC=false;
+  bool pass_triggerMB=false;
+  bool pass_trigger_part0=false; bool pass_trigger_part1=false; bool pass_trigger_part2=false; bool pass_trigger_part3=false; bool pass_trigger_part4=false;
+  bool pass_trigger_part5=false; bool pass_trigger_part6=false; bool pass_trigger_part7=false; bool pass_trigger_part8=false; bool pass_trigger_part9=false;
+
+  int trigger40=0; int trigger60=0; int trigger80=0; int trigger140=0; int trigger200=0; int trigger260=0; int trigger320=0; int trigger400=0; int trigger450=0; int trigger500=0;
+  int trigger60_HFJEC=0; int trigger80_HFJEC=0; int trigger100_HFJEC=0; int trigger160_HFJEC=0; int trigger220_HFJEC=0; int trigger300_HFJEC=0;
+    
   std::vector<double> trg_thresh, trgHF_thresh;
   if (PtBinsTrigger == "Single") {
     for (int i = 0; i < n_pt_bins_Si; i++) trg_thresh.push_back(pt_bins_Si[i]);
@@ -771,6 +842,9 @@ bool JER2017Module::process(Event & event) {
   } else if (PtBinsTrigger == "DiJet") {
     for (int i = 0; i < n_pt_bins_Di; i++) trg_thresh.push_back(pt_bins_Di[i]);
     for (int i = 0; i < n_pt_bins_Di_HF; i++) trgHF_thresh.push_back(pt_bins_Di_HF[i]);
+  } else if (PtBinsTrigger == "ZeroBias") {
+    for (int i = 0; i < n_pt_bins_MB; i++) trg_thresh.push_back(pt_bins_MB[i]);
+    for (int i = 0; i < n_pt_bins_MB_HF; i++) trgHF_thresh.push_back(pt_bins_MB_HF[i]);
   }
 
   if(event.isRealData){
@@ -797,6 +871,18 @@ bool JER2017Module::process(Event & event) {
         pass_trigger400       = (trigger400_sel->passes(event)        && pt_ave>trg_thresh[7]   && pt_ave<trg_thresh[8]);
         pass_trigger450       = (trigger450_sel->passes(event)        && pt_ave>trg_thresh[8]   && pt_ave<trg_thresh[9]);
         pass_trigger500       = (trigger500_sel->passes(event)        && pt_ave>trg_thresh[9]);
+        if (isThreshold) {
+          pass_trigger40        = trigger40_sel->passes(event);
+          pass_trigger60        = trigger60_sel->passes(event);
+          pass_trigger80        = trigger80_sel->passes(event);
+          pass_trigger140       = trigger140_sel->passes(event);
+          pass_trigger200       = trigger200_sel->passes(event);
+          pass_trigger260       = trigger260_sel->passes(event);
+          pass_trigger320       = trigger320_sel->passes(event);
+          pass_trigger400       = trigger400_sel->passes(event);
+          pass_trigger450       = trigger450_sel->passes(event);
+          pass_trigger500       = trigger500_sel->passes(event);
+        }
         pass_trigger_bl = (pass_trigger40 || pass_trigger60 || pass_trigger80 || pass_trigger140 || pass_trigger200 || pass_trigger260 || pass_trigger320 || pass_trigger400 || pass_trigger450 || pass_trigger500);
       }
       else if (PtBinsTrigger == "DiJet") {
@@ -809,7 +895,46 @@ bool JER2017Module::process(Event & event) {
         pass_trigger320       = (trigger320_sel->passes(event)        && pt_ave>trg_thresh[6]   && pt_ave<trg_thresh[7]);
         pass_trigger400       = (trigger400_sel->passes(event)        && pt_ave>trg_thresh[7]   && pt_ave<trg_thresh[8]);
         pass_trigger500       = (trigger500_sel->passes(event)        && pt_ave>trg_thresh[8]);
+        if (isThreshold) {
+          pass_trigger40        = trigger40_sel->passes(event);
+          pass_trigger60        = trigger60_sel->passes(event);
+          pass_trigger80        = trigger80_sel->passes(event);
+          pass_trigger140       = trigger140_sel->passes(event);
+          pass_trigger200       = trigger200_sel->passes(event);
+          pass_trigger260       = trigger260_sel->passes(event);
+          pass_trigger320       = trigger320_sel->passes(event);
+          pass_trigger400       = trigger400_sel->passes(event);
+          pass_trigger500       = trigger500_sel->passes(event);
+        }
         pass_trigger_bl = (pass_trigger40 || pass_trigger60 || pass_trigger80 || pass_trigger140 || pass_trigger200 || pass_trigger260 || pass_trigger320 || pass_trigger400 || pass_trigger500);
+      }
+      else if (PtBinsTrigger == "ZeroBias") {
+        if (test_trigger) {
+          try {pass_trigger_part0   = triggerMB_part0_sel->passes(event);}
+          catch (...){pass_trigger_part0 = false;}
+          try {pass_trigger_part1   = triggerMB_part1_sel->passes(event);}
+          catch (...){pass_trigger_part1 = false;}
+          try {pass_trigger_part2   = triggerMB_part2_sel->passes(event);}
+          catch (...){pass_trigger_part2 = false;}
+          try {pass_trigger_part3   = triggerMB_part3_sel->passes(event);}
+          catch (...){pass_trigger_part3 = false;}
+          try {pass_trigger_part4   = triggerMB_part4_sel->passes(event);}
+          catch (...){pass_trigger_part4 = false;}
+          try {pass_trigger_part5   = triggerMB_part5_sel->passes(event);}
+          catch (...){pass_trigger_part5 = false;}
+          try {pass_trigger_part6   = triggerMB_part6_sel->passes(event);}
+          catch (...){pass_trigger_part6 = false;}
+          try {pass_trigger_part7   = triggerMB_part7_sel->passes(event);}
+          catch (...){pass_trigger_part7 = false;}
+          try {pass_trigger_part8   = triggerMB_part8_sel->passes(event);}
+          catch (...){pass_trigger_part8 = false;}
+          try {pass_trigger_part9   = triggerMB_part9_sel->passes(event);}
+          catch (...){pass_trigger_part9 = false;}
+          pass_trigger_bl = (pass_trigger_part0 || pass_trigger_part1 || pass_trigger_part2 || pass_trigger_part3 || pass_trigger_part4 || pass_trigger_part5 || pass_trigger_part6 || pass_trigger_part7 || pass_trigger_part8 || pass_trigger_part9);
+        }else {
+          pass_triggerMB       = triggerMB_sel->passes(event);
+          pass_trigger_bl = pass_triggerMB;
+        }
       }
     }
     if (!eta_cut_bool && trigger_fwd ) {
@@ -820,6 +945,14 @@ bool JER2017Module::process(Event & event) {
         pass_trigger160_HFJEC = (trigger160_HFJEC_sel->passes(event)  && pt_ave>trgHF_thresh[3] && pt_ave<trgHF_thresh[4]);
         pass_trigger220_HFJEC = (trigger220_HFJEC_sel->passes(event)  && pt_ave>trgHF_thresh[4] && pt_ave<trgHF_thresh[5]);
         pass_trigger300_HFJEC = (trigger300_HFJEC_sel->passes(event)  && pt_ave>trgHF_thresh[5]);
+        if (isThreshold) {
+          pass_trigger60_HFJEC  = trigger60_HFJEC_sel->passes(event);
+          pass_trigger80_HFJEC  = trigger80_HFJEC_sel->passes(event);
+          pass_trigger100_HFJEC = trigger100_HFJEC_sel->passes(event);
+          pass_trigger160_HFJEC = trigger160_HFJEC_sel->passes(event);
+          pass_trigger220_HFJEC = trigger220_HFJEC_sel->passes(event);
+          pass_trigger300_HFJEC = trigger300_HFJEC_sel->passes(event);
+        }
         pass_trigger_hf = (pass_trigger60_HFJEC || pass_trigger80_HFJEC || pass_trigger100_HFJEC || pass_trigger160_HFJEC || pass_trigger220_HFJEC || pass_trigger300_HFJEC);
       }
       else if (PtBinsTrigger == "DiJet") {
@@ -829,7 +962,43 @@ bool JER2017Module::process(Event & event) {
         pass_trigger160_HFJEC = (trigger160_HFJEC_sel->passes(event)  && pt_ave>trgHF_thresh[3] && pt_ave<trgHF_thresh[4]);
         pass_trigger220_HFJEC = (trigger220_HFJEC_sel->passes(event)  && pt_ave>trgHF_thresh[4] && pt_ave<trgHF_thresh[5]);
         pass_trigger300_HFJEC = (trigger300_HFJEC_sel->passes(event)  && pt_ave>trgHF_thresh[5]);
+        if (isThreshold) {
+          pass_trigger60_HFJEC  = trigger60_HFJEC_sel->passes(event);
+          pass_trigger80_HFJEC  = trigger80_HFJEC_sel->passes(event);
+          pass_trigger100_HFJEC = trigger100_HFJEC_sel->passes(event);
+          pass_trigger160_HFJEC = trigger160_HFJEC_sel->passes(event);
+          pass_trigger220_HFJEC = trigger220_HFJEC_sel->passes(event);
+          pass_trigger300_HFJEC = trigger300_HFJEC_sel->passes(event);
+        }
         pass_trigger_hf = (pass_trigger60_HFJEC || pass_trigger80_HFJEC || pass_trigger100_HFJEC || pass_trigger160_HFJEC || pass_trigger220_HFJEC || pass_trigger300_HFJEC);
+      }
+      else if (PtBinsTrigger == "ZeroBias") {
+        if (test_trigger) {
+          try {pass_trigger_part0   = triggerMB_part0_sel->passes(event);}
+          catch (...){pass_trigger_part0 = false;}
+          try {pass_trigger_part1   = triggerMB_part1_sel->passes(event);}
+          catch (...){pass_trigger_part1 = false;}
+          try {pass_trigger_part2   = triggerMB_part2_sel->passes(event);}
+          catch (...){pass_trigger_part2 = false;}
+          try {pass_trigger_part3   = triggerMB_part3_sel->passes(event);}
+          catch (...){pass_trigger_part3 = false;}
+          try {pass_trigger_part4   = triggerMB_part4_sel->passes(event);}
+          catch (...){pass_trigger_part4 = false;}
+          try {pass_trigger_part5   = triggerMB_part5_sel->passes(event);}
+          catch (...){pass_trigger_part5 = false;}
+          try {pass_trigger_part6   = triggerMB_part6_sel->passes(event);}
+          catch (...){pass_trigger_part6 = false;}
+          try {pass_trigger_part7   = triggerMB_part7_sel->passes(event);}
+          catch (...){pass_trigger_part7 = false;}
+          try {pass_trigger_part8   = triggerMB_part8_sel->passes(event);}
+          catch (...){pass_trigger_part8 = false;}
+          try {pass_trigger_part9   = triggerMB_part9_sel->passes(event);}
+          catch (...){pass_trigger_part9 = false;}
+          pass_trigger_bl = (pass_trigger_part0 || pass_trigger_part1 || pass_trigger_part2 || pass_trigger_part3 || pass_trigger_part4 || pass_trigger_part5 || pass_trigger_part6 || pass_trigger_part7 || pass_trigger_part8 || pass_trigger_part9);
+        } else {
+          pass_triggerMB       = triggerMB_sel->passes(event);
+          pass_trigger_bl = pass_triggerMB;
+        }
       }
     }
 
@@ -837,6 +1006,26 @@ bool JER2017Module::process(Event & event) {
       return false;
     }
   }
+
+  int n_trig = 0;
+  if(pass_trigger40){ n_trig++; trigger40 = 1;}
+  if(pass_trigger60){ n_trig++; trigger60 = 1;}
+  if(pass_trigger80){ n_trig++; trigger80 = 1;}
+  if(pass_trigger140){ n_trig++; trigger140 = 1;}
+  if(pass_trigger200){ n_trig++; trigger200 = 1;}
+  if(pass_trigger260){ n_trig++; trigger260 = 1;}
+  if(pass_trigger320){ n_trig++; trigger320 = 1;}
+  if(pass_trigger400){ n_trig++; trigger400 = 1;}
+  if(pass_trigger450){ n_trig++; trigger450 = 1;}
+  if(pass_trigger500){ n_trig++; trigger500 = 1;}
+
+  if(pass_trigger60_HFJEC){ n_trig++; trigger60_HFJEC = 1;}
+  if(pass_trigger80_HFJEC){ n_trig++; trigger80_HFJEC = 1;}
+  if(pass_trigger100_HFJEC){ n_trig++; trigger100_HFJEC = 1;}
+  if(pass_trigger160_HFJEC){ n_trig++; trigger160_HFJEC = 1;}
+  if(pass_trigger220_HFJEC){ n_trig++; trigger220_HFJEC = 1;}
+  if(pass_trigger300_HFJEC){ n_trig++; trigger300_HFJEC = 1;}
+
   //read or calculated values for dijet events
   float gen_pthat = 0; //pt hat (from QCD simulation) //todo!
   //    if(isMC) gen_pthat = event.genInfo->binningValues()[0];
@@ -1056,6 +1245,23 @@ bool JER2017Module::process(Event & event) {
   event.set(tt_integrated_lumi_in_bin,fill_event_integrated_lumi);
   event.set(tt_lumibin,event_in_lumibin);
   event.set(tt_integrated_lumi,int_lumi_event);
+
+  event.set(tt_trigger40 , trigger40);
+  event.set(tt_trigger60 , trigger60);
+  event.set(tt_trigger80 , trigger80);
+  event.set(tt_trigger140, trigger140);
+  event.set(tt_trigger200, trigger200);
+  event.set(tt_trigger260, trigger260);
+  event.set(tt_trigger320, trigger320);
+  event.set(tt_trigger400, trigger400);
+  event.set(tt_trigger450, trigger450);
+  event.set(tt_trigger500, trigger500);
+  event.set(tt_trigger60_HFJEC, trigger60_HFJEC);
+  event.set(tt_trigger80_HFJEC, trigger80_HFJEC);
+  event.set(tt_trigger100_HFJEC, trigger100_HFJEC);
+  event.set(tt_trigger160_HFJEC, trigger160_HFJEC);
+  event.set(tt_trigger220_HFJEC, trigger220_HFJEC);
+  event.set(tt_trigger300_HFJEC, trigger300_HFJEC);
 
   // Geninfo for MC
   // Start MC

@@ -1,0 +1,16 @@
+/nfs/dust/cms/user/amalara/sframe_all/JER2017_2GeV_QCD/Fall17_17Nov2017_V6/AK4CHS/uhh2.AnalysisModuleRunner.MC.QCDPt1000to1400_ZB.root
+/nfs/dust/cms/user/amalara/sframe_all/JER2017_2GeV_QCD/Fall17_17Nov2017_V6/AK4CHS/uhh2.AnalysisModuleRunner.MC.QCDPt120to170_ZB.root
+/nfs/dust/cms/user/amalara/sframe_all/JER2017_2GeV_QCD/Fall17_17Nov2017_V6/AK4CHS/uhh2.AnalysisModuleRunner.MC.QCDPt1400to1800_ZB.root
+/nfs/dust/cms/user/amalara/sframe_all/JER2017_2GeV_QCD/Fall17_17Nov2017_V6/AK4CHS/uhh2.AnalysisModuleRunner.MC.QCDPt15to30_ZB.root
+/nfs/dust/cms/user/amalara/sframe_all/JER2017_2GeV_QCD/Fall17_17Nov2017_V6/AK4CHS/uhh2.AnalysisModuleRunner.MC.QCDPt15to7000_ZB.root
+/nfs/dust/cms/user/amalara/sframe_all/JER2017_2GeV_QCD/Fall17_17Nov2017_V6/AK4CHS/uhh2.AnalysisModuleRunner.MC.QCDPt170to300_ZB.root
+/nfs/dust/cms/user/amalara/sframe_all/JER2017_2GeV_QCD/Fall17_17Nov2017_V6/AK4CHS/uhh2.AnalysisModuleRunner.MC.QCDPt1800to2400_ZB.root
+/nfs/dust/cms/user/amalara/sframe_all/JER2017_2GeV_QCD/Fall17_17Nov2017_V6/AK4CHS/uhh2.AnalysisModuleRunner.MC.QCDPt2400to3200_ZB.root
+/nfs/dust/cms/user/amalara/sframe_all/JER2017_2GeV_QCD/Fall17_17Nov2017_V6/AK4CHS/uhh2.AnalysisModuleRunner.MC.QCDPt300to470_ZB.root
+/nfs/dust/cms/user/amalara/sframe_all/JER2017_2GeV_QCD/Fall17_17Nov2017_V6/AK4CHS/uhh2.AnalysisModuleRunner.MC.QCDPt30to50_ZB.root
+/nfs/dust/cms/user/amalara/sframe_all/JER2017_2GeV_QCD/Fall17_17Nov2017_V6/AK4CHS/uhh2.AnalysisModuleRunner.MC.QCDPt3200toInf_ZB.root
+/nfs/dust/cms/user/amalara/sframe_all/JER2017_2GeV_QCD/Fall17_17Nov2017_V6/AK4CHS/uhh2.AnalysisModuleRunner.MC.QCDPt470to600_ZB.root
+/nfs/dust/cms/user/amalara/sframe_all/JER2017_2GeV_QCD/Fall17_17Nov2017_V6/AK4CHS/uhh2.AnalysisModuleRunner.MC.QCDPt50to80_ZB.root
+/nfs/dust/cms/user/amalara/sframe_all/JER2017_2GeV_QCD/Fall17_17Nov2017_V6/AK4CHS/uhh2.AnalysisModuleRunner.MC.QCDPt600to800_ZB.root
+/nfs/dust/cms/user/amalara/sframe_all/JER2017_2GeV_QCD/Fall17_17Nov2017_V6/AK4CHS/uhh2.AnalysisModuleRunner.MC.QCDPt800to1000_ZB.root
+/nfs/dust/cms/user/amalara/sframe_all/JER2017_2GeV_QCD/Fall17_17Nov2017_V6/AK4CHS/uhh2.AnalysisModuleRunner.MC.QCDPt80to120_ZB.root

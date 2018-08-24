@@ -27,7 +27,7 @@
 #include "UHH2/JER2017/include/JER2017Selections.h"
 #include "UHH2/JER2017/include/JER2017Hists.h"
 #include "UHH2/JER2017/include/selection.h"
-#include "UHH2/JER2017/include/constants.h"
+#include "UHH2/JER2017/include/constants.hpp"
 #include "TClonesArray.h"
 #include "TString.h"
 #include "Riostream.h"
@@ -75,6 +75,18 @@ protected:
   std::unique_ptr<uhh2::Selection> trigger160_HFJEC_sel;
   std::unique_ptr<uhh2::Selection> trigger220_HFJEC_sel;
   std::unique_ptr<uhh2::Selection> trigger300_HFJEC_sel;
+  std::unique_ptr<uhh2::Selection> triggerMB_sel;
+  std::unique_ptr<uhh2::Selection> triggerMB_part0_sel;
+  std::unique_ptr<uhh2::Selection> triggerMB_part1_sel;
+  std::unique_ptr<uhh2::Selection> triggerMB_part2_sel;
+  std::unique_ptr<uhh2::Selection> triggerMB_part3_sel;
+  std::unique_ptr<uhh2::Selection> triggerMB_part4_sel;
+  std::unique_ptr<uhh2::Selection> triggerMB_part5_sel;
+  std::unique_ptr<uhh2::Selection> triggerMB_part6_sel;
+  std::unique_ptr<uhh2::Selection> triggerMB_part7_sel;
+  std::unique_ptr<uhh2::Selection> triggerMB_part8_sel;
+  std::unique_ptr<uhh2::Selection> triggerMB_part9_sel;
+
   //// Data/MC scale factors
   std::unique_ptr<uhh2::AnalysisModule> pileupSF;
   unique_ptr<AnalysisModule>  Jet_printer, GenParticles_printer;
@@ -147,6 +159,7 @@ protected:
   TString dataset_version, JEC_Version, jetLabel;
   JetId Jet_PFID;
   int n_evt;
+  bool test_trigger;
   std::unique_ptr<TFile> f_weights;
 
   std::map<run_lumi, double> rl2lumi;
@@ -175,6 +188,7 @@ JER2017Module_2GeV::JER2017Module_2GeV(uhh2::Context & ctx) : sel(ctx) {
   isMC = (ctx.get("dataset_type") == "MC");
   isTopCollection = jetLabel.Contains("AK8");
   string2bool(ctx.get("use_sframe_weight", "true"));
+  test_trigger = string2bool(ctx.get("test_trigger", "false"));
   apply_weights = (ctx.get("Apply_Weights") == "true" && isMC);
   cout << "Dataset is " << ((isMC) ? " mc " : " data") << endl;
   cout << ((apply_weights) ? " Applying weights" : " NOT applying weights ") << endl;
@@ -257,6 +271,22 @@ JER2017Module_2GeV::JER2017Module_2GeV(uhh2::Context & ctx) : sel(ctx) {
       GET_RESET_TRIGGER(trigger160_HFJEC)
       GET_RESET_TRIGGER(trigger220_HFJEC)
       GET_RESET_TRIGGER(trigger300_HFJEC)
+    }
+    else if (PtBinsTrigger == "MinimumBias") {
+      if (test_trigger) {
+        GET_RESET_TRIGGER(triggerMB_part0)
+        GET_RESET_TRIGGER(triggerMB_part1)
+        GET_RESET_TRIGGER(triggerMB_part2)
+        GET_RESET_TRIGGER(triggerMB_part3)
+        GET_RESET_TRIGGER(triggerMB_part4)
+        GET_RESET_TRIGGER(triggerMB_part5)
+        GET_RESET_TRIGGER(triggerMB_part6)
+        GET_RESET_TRIGGER(triggerMB_part7)
+        GET_RESET_TRIGGER(triggerMB_part8)
+        GET_RESET_TRIGGER(triggerMB_part9)
+      } else {
+        GET_RESET_TRIGGER(triggerMB)
+      }
     }
   }
 
@@ -764,6 +794,18 @@ bool JER2017Module_2GeV::process(Event & event) {
   bool pass_trigger60_HFJEC=false; bool pass_trigger80_HFJEC=false;
   bool pass_trigger100_HFJEC=false; bool pass_trigger160_HFJEC=false;
   bool pass_trigger220_HFJEC=false; bool pass_trigger300_HFJEC=false;
+  bool pass_triggerMB=false;
+  bool pass_trigger_part0=false;
+  bool pass_trigger_part1=false;
+  bool pass_trigger_part2=false;
+  bool pass_trigger_part3=false;
+  bool pass_trigger_part4=false;
+  bool pass_trigger_part5=false;
+  bool pass_trigger_part6=false;
+  bool pass_trigger_part7=false;
+  bool pass_trigger_part8=false;
+  bool pass_trigger_part9=false;
+
   std::vector<double> trg_thresh, trgHF_thresh;
   if (PtBinsTrigger == "Single") {
     for (int i = 0; i < n_pt_bins_Si; i++) trg_thresh.push_back(pt_bins_Si[i]);
@@ -771,6 +813,9 @@ bool JER2017Module_2GeV::process(Event & event) {
   } else if (PtBinsTrigger == "DiJet") {
     for (int i = 0; i < n_pt_bins_Di; i++) trg_thresh.push_back(pt_bins_Di[i]);
     for (int i = 0; i < n_pt_bins_Di_HF; i++) trgHF_thresh.push_back(pt_bins_Di_HF[i]);
+  } else if (PtBinsTrigger == "MinimumBias") {
+    for (int i = 0; i < n_pt_bins_MB; i++) trg_thresh.push_back(pt_bins_MB[i]);
+    for (int i = 0; i < n_pt_bins_MB_HF; i++) trgHF_thresh.push_back(pt_bins_MB_HF[i]);
   }
 
   if(event.isRealData){
@@ -811,6 +856,34 @@ bool JER2017Module_2GeV::process(Event & event) {
         pass_trigger500       = (trigger500_sel->passes(event)        && pt_ave>trg_thresh[8]);
         pass_trigger_bl = (pass_trigger40 || pass_trigger60 || pass_trigger80 || pass_trigger140 || pass_trigger200 || pass_trigger260 || pass_trigger320 || pass_trigger400 || pass_trigger500);
       }
+      else if (PtBinsTrigger == "MinimumBias") {
+        if (test_trigger) {
+          try {pass_trigger_part0   = triggerMB_part0_sel->passes(event);}
+          catch (...){pass_trigger_part0 = false;}
+          try {pass_trigger_part1   = triggerMB_part1_sel->passes(event);}
+          catch (...){pass_trigger_part1 = false;}
+          try {pass_trigger_part2   = triggerMB_part2_sel->passes(event);}
+          catch (...){pass_trigger_part2 = false;}
+          try {pass_trigger_part3   = triggerMB_part3_sel->passes(event);}
+          catch (...){pass_trigger_part3 = false;}
+          try {pass_trigger_part4   = triggerMB_part4_sel->passes(event);}
+          catch (...){pass_trigger_part4 = false;}
+          try {pass_trigger_part5   = triggerMB_part5_sel->passes(event);}
+          catch (...){pass_trigger_part5 = false;}
+          try {pass_trigger_part6   = triggerMB_part6_sel->passes(event);}
+          catch (...){pass_trigger_part6 = false;}
+          try {pass_trigger_part7   = triggerMB_part7_sel->passes(event);}
+          catch (...){pass_trigger_part7 = false;}
+          try {pass_trigger_part8   = triggerMB_part8_sel->passes(event);}
+          catch (...){pass_trigger_part8 = false;}
+          try {pass_trigger_part9   = triggerMB_part9_sel->passes(event);}
+          catch (...){pass_trigger_part9 = false;}
+          pass_trigger_bl = (pass_trigger_part0 || pass_trigger_part1 || pass_trigger_part2 || pass_trigger_part3 || pass_trigger_part4 || pass_trigger_part5 || pass_trigger_part6 || pass_trigger_part7 || pass_trigger_part8 || pass_trigger_part9);
+        }else {
+          pass_triggerMB       = triggerMB_sel->passes(event);
+          pass_trigger_bl = pass_triggerMB;
+        }
+      }
     }
     if (!eta_cut_bool && trigger_fwd ) {
       if (PtBinsTrigger == "Single") {
@@ -830,6 +903,34 @@ bool JER2017Module_2GeV::process(Event & event) {
         pass_trigger220_HFJEC = (trigger220_HFJEC_sel->passes(event)  && pt_ave>trgHF_thresh[4] && pt_ave<trgHF_thresh[5]);
         pass_trigger300_HFJEC = (trigger300_HFJEC_sel->passes(event)  && pt_ave>trgHF_thresh[5]);
         pass_trigger_hf = (pass_trigger60_HFJEC || pass_trigger80_HFJEC || pass_trigger100_HFJEC || pass_trigger160_HFJEC || pass_trigger220_HFJEC || pass_trigger300_HFJEC);
+      }
+      else if (PtBinsTrigger == "MinimumBias") {
+        if (test_trigger) {
+          try {pass_trigger_part0   = triggerMB_part0_sel->passes(event);}
+          catch (...){pass_trigger_part0 = false;}
+          try {pass_trigger_part1   = triggerMB_part1_sel->passes(event);}
+          catch (...){pass_trigger_part1 = false;}
+          try {pass_trigger_part2   = triggerMB_part2_sel->passes(event);}
+          catch (...){pass_trigger_part2 = false;}
+          try {pass_trigger_part3   = triggerMB_part3_sel->passes(event);}
+          catch (...){pass_trigger_part3 = false;}
+          try {pass_trigger_part4   = triggerMB_part4_sel->passes(event);}
+          catch (...){pass_trigger_part4 = false;}
+          try {pass_trigger_part5   = triggerMB_part5_sel->passes(event);}
+          catch (...){pass_trigger_part5 = false;}
+          try {pass_trigger_part6   = triggerMB_part6_sel->passes(event);}
+          catch (...){pass_trigger_part6 = false;}
+          try {pass_trigger_part7   = triggerMB_part7_sel->passes(event);}
+          catch (...){pass_trigger_part7 = false;}
+          try {pass_trigger_part8   = triggerMB_part8_sel->passes(event);}
+          catch (...){pass_trigger_part8 = false;}
+          try {pass_trigger_part9   = triggerMB_part9_sel->passes(event);}
+          catch (...){pass_trigger_part9 = false;}
+          pass_trigger_bl = (pass_trigger_part0 || pass_trigger_part1 || pass_trigger_part2 || pass_trigger_part3 || pass_trigger_part4 || pass_trigger_part5 || pass_trigger_part6 || pass_trigger_part7 || pass_trigger_part8 || pass_trigger_part9);
+        } else {
+          pass_triggerMB       = triggerMB_sel->passes(event);
+          pass_trigger_bl = pass_triggerMB;
+        }
       }
     }
 

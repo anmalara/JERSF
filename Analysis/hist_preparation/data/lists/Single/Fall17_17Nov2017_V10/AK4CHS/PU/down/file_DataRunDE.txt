@@ -1,0 +1,2 @@
+/nfs/dust/cms/user/amalara/sframe_all/JER2017_DATA/Fall17_17Nov2017_V10/AK4CHS/PU/down/uhh2.AnalysisModuleRunner.DATA.DATA_RunD.root
+/nfs/dust/cms/user/amalara/sframe_all/JER2017_DATA/Fall17_17Nov2017_V10/AK4CHS/PU/down/uhh2.AnalysisModuleRunner.DATA.DATA_RunE.root

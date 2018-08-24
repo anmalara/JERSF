@@ -1,0 +1,1 @@
+/nfs/dust/cms/user/amalara/sframe_all/JER2017_MB_QCD/Fall17_17Nov2017_V10/AK4CHS/uhh2.AnalysisModuleRunner.MC.QCDPt15to7000_MB.root

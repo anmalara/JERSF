@@ -6,7 +6,7 @@
 #include "UHH2/core/include/PrimaryVertex.h"
 // #include "UHH2/BaconTrans/baconheaders/TJet.hh"
 //#include "UHH2/BaconTrans/baconheaders/TVertex.hh"
-#include "UHH2/JER2017/include/constants.h"
+#include "UHH2/JER2017/include/constants.hpp"
 
 #include "TVector2.h"
 #include <TFile.h>

@@ -24,12 +24,12 @@ def condor_control(original_dir ="./submittedJobs/" , JECVersions=["Fall17_17Nov
                 for dir in ["", "up", "down"]:
                     if sys == "" and dir != "":
                         continue
-                    path = original_dir+"/submittedJobs/"+newJECVersion+"/"+newJetLabel+"/"+sys+"/"+dir+"/"
+                    path = original_dir+newJECVersion+"/"+newJetLabel+"/"+sys+"/"+dir+"/"
                     for sample in sorted(os.listdir(path)):
                         if not ".xml" in sample:
                             continue
                         count += 1
-                        all_events = cont_event(original_dir+"/submittedJobs/", JECVersions, JetLabels, systematics)
+                        all_events = cont_event(original_dir, JECVersions, JetLabels, systematics)
                         print "Already completed "+str(count)+" out of "+str(all_events)+" jobs --> "+str(float(count)/float(all_events)*100)+"%."
                         os.chdir(original_dir)
                         os.chdir(path)
@@ -41,11 +41,13 @@ def condor_control(original_dir ="./submittedJobs/" , JECVersions=["Fall17_17Nov
                         process.wait()
                         if internal_option == "-a":
                             time.sleep(5)
+                        os.chdir(original_dir)
 
 
 from createConfigFiles import *
 @timeit
-def delete_workdir(original_dir ="./submittedJobs/" , JECVersions=["Fall17_17Nov2017_V6", "Fall17_17Nov2017_V10"], JetLabels=["AK4CHS", "AK8PUPPI"], systematics=["", "PU", "JEC", "JER"]):
+def delete_workdir(original_dir ="./SubmittedJobs/" , JECVersions=["Fall17_17Nov2017_V6", "Fall17_17Nov2017_V10"], JetLabels=["AK4CHS", "AK8PUPPI"], systematics=["", "PU", "JEC", "JER"]):
+    add_name = original_dir[original_dir.find("SubmittedJobs")+len("SubmittedJobs"):-1]
     for sample in ["DATA", "QCD"]:
         for newJECVersion in JECVersions:
             for newJetLabel in JetLabels:
@@ -53,20 +55,13 @@ def delete_workdir(original_dir ="./submittedJobs/" , JECVersions=["Fall17_17Nov
                     for dir in ["", "up", "down"]:
                         if sys == "" and dir != "":
                             continue
-                        path = "/nfs/dust/cms/user/amalara/sframe_all/JER2017_"+sample+"/"+newJECVersion+"/"+newJetLabel+"/"+sys+"/"+dir+"/"
+                        path = "/nfs/dust/cms/user/amalara/sframe_all/JER2017"+add_name+"_"+sample+"/"+newJECVersion+"/"+newJetLabel+"/"+sys+"/"+dir+"/"
                         if os.path.isdir(path):
                             for workdir in sorted(os.listdir(path)):
                                 if "workdir" in workdir:
                                     cmd = "rm -fr %s" % (path+workdir)
                                     a = os.system(cmd)
-                                    command = ['ls', path+workdir]
-                                    # process = subprocess.Popen(command)
-                                    # process.wait()
-                    # process = subprocess.Popen(command)
-                    # process.wait()
-                    # path = original_dir+"/submittedJobs/"+newJECVersion+"/"+newJetLabel+"/"+sys+"/"+dir+"/"
 
-# delete_workdir()
 
 
 
@@ -93,6 +88,23 @@ QCD_process.append("QCDPt1800to2400")
 QCD_process.append("QCDPt2400to3200")
 QCD_process.append("QCDPt3200toInf")
 
+QCD_process.append("QCDPt15to7000_MB")
+QCD_process.append("QCDPt15to30_MB")
+QCD_process.append("QCDPt30to50_MB")
+QCD_process.append("QCDPt50to80_MB")
+QCD_process.append("QCDPt80to120_MB")
+QCD_process.append("QCDPt120to170_MB")
+QCD_process.append("QCDPt170to300_MB")
+QCD_process.append("QCDPt300to470_MB")
+QCD_process.append("QCDPt470to600_MB")
+QCD_process.append("QCDPt600to800_MB")
+QCD_process.append("QCDPt800to1000_MB")
+QCD_process.append("QCDPt1000to1400_MB")
+QCD_process.append("QCDPt1400to1800_MB")
+QCD_process.append("QCDPt1800to2400_MB")
+QCD_process.append("QCDPt2400to3200_MB")
+QCD_process.append("QCDPt3200toInf_MB")
+
 Data_process= []
 Data_process.append("DATA_RunB")
 Data_process.append("DATA_RunC")
@@ -100,38 +112,93 @@ Data_process.append("DATA_RunD")
 Data_process.append("DATA_RunE")
 Data_process.append("DATA_RunF")
 
+Data_process.append("DATA_RunB_MB")
+Data_process.append("DATA_RunC_MB")
+Data_process.append("DATA_RunD_MB")
+Data_process.append("DATA_RunE_MB")
+Data_process.append("DATA_RunF_MB")
+
 processes = QCD_process+Data_process
 
 JECVersions = ["Fall17_17Nov2017_V6", "Fall17_17Nov2017_V10", "Fall17_17Nov2017_V11"]
 JetLabels = ["AK4CHS", "AK8PUPPI"]
 systematics = ["PU", "JEC", "JER"]
 
-JECVersions = ["Fall17_17Nov2017_V10"]
-JetLabels = ["AK4CHS", "AK8PUPPI"]
-systematics = ["PU", "JEC", "JER"]
+original_file = "JER2017.xml"
+original_dir_ = os.getcwd()
 
-original_dir = os.getcwd()
-
-option = sys.argv[1]
+try:
+    option = sys.argv[1]
+except:
+    option = ""
 
 if option == "resubmit":
     internal_option = "-r"
 elif option == "submit":
     internal_option = "-s"
-elif option == "add":
-    internal_option = "-a"
+elif option == "add" or option == "merge":
+    internal_option = "-f"
 elif option == "list":
     internal_option = "-l"
 elif option == "new":
     internal_option = ""
+elif option == "remove" or option == "delete":
+    internal_option = ""
 else:
     internal_option = ""
 
-if option == "new":
-    path = original_dir+"/submittedJobs/"
-    cmd = "rm -fr %s" % (path)
-    # a = os.system(cmd)
-    # createConfigFiles()
-    createConfigFiles(processes,JECVersions,JetLabels, systematics)
 
-condor_control(original_dir, JECVersions, JetLabels, systematics, internal_option)
+
+def main_program(option="", internal_option="", processes=[], JECVersions=[], JetLabels=[], systematics=[], original_dir="./SubmittedJobs/", original_file="JER2017.xml", isMB=False, test_trigger=False, isThreshold=False):
+    if option == "new":
+        cmd = "rm -fr %s" % (original_dir)
+        a = os.system(cmd)
+        createConfigFiles(processes, JECVersions, JetLabels, systematics, original_dir, original_file, isMB, test_trigger, isThreshold)
+    elif option == "delete":
+        delete_workdir(original_dir, JECVersions, JetLabels, systematics)
+    else:
+        condor_control(original_dir, JECVersions, JetLabels, systematics, internal_option)
+
+
+original_dir = original_dir_
+original_dir += "/SubmittedJobs/"
+isMB = False
+test_trigger = False
+isThreshold = False
+JECVersions = ["Fall17_17Nov2017_V10"]
+JetLabels = ["AK4CHS", "AK8PUPPI"]
+systematics = ["PU", "JEC"]
+main_program(option, internal_option, processes, JECVersions, JetLabels, systematics, original_dir, original_file, isMB, test_trigger, isThreshold)
+
+
+original_dir = original_dir_
+original_dir += "/SubmittedJobs_MB/"
+isMB = True
+test_trigger = False
+isThreshold = False
+JECVersions = ["Fall17_17Nov2017_V10"]
+JetLabels = ["AK4CHS"]
+systematics = []
+main_program(option, internal_option, processes, JECVersions, JetLabels, systematics, original_dir, original_file, isMB, test_trigger, isThreshold)
+
+
+original_dir = original_dir_
+original_dir += "/SubmittedJobs_MB_test/"
+isMB = True
+test_trigger = True
+isThreshold = False
+JECVersions = ["Fall17_17Nov2017_V10"]
+JetLabels = ["AK4CHS"]
+systematics = []
+main_program(option, internal_option, processes, JECVersions, JetLabels, systematics, original_dir, original_file, isMB, test_trigger, isThreshold)
+
+
+original_dir = original_dir_
+original_dir += "/SubmittedJobs_Threshold/"
+isMB = False
+test_trigger = False
+isThreshold = True
+JECVersions = ["Fall17_17Nov2017_V10"]
+JetLabels = ["AK4CHS", "AK8PUPPI"]
+systematics = []
+main_program(option, internal_option, processes, JECVersions, JetLabels, systematics, original_dir, original_file, isMB, test_trigger, isThreshold)

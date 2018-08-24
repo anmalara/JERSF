@@ -31,7 +31,7 @@
 #include <TRandom3.h>
 #include "MySelector.h"
 #include "MyJet.h"
-#include "../../../../include/constants.h"
+#include "../../../../include/constants.hpp"
 
 bool sortFunct( MyJet a, MyJet b) { return ( a.Pt() > b.Pt() ); }
 
