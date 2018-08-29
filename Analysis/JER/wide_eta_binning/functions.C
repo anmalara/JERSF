@@ -472,7 +472,7 @@ void widths_015_ratios( TString name1, std::vector<TH1F*> &widths, std::vector<s
   for( unsigned int m = 0; m < Widths.size(); m++ ){
     TString name_width_fe1 = name1;
     name_width_fe1 += "_eta"; name_width_fe1 += m+1;
-    TH1F *hist = new TH1F( name_width_fe1, name_width_fe1, 1500, 0, 1500 );
+    TH1F *hist = new TH1F( name_width_fe1, name_width_fe1, 1000, 0, 1000 );
     hist ->GetYaxis()->SetTitle();
     hist ->GetXaxis()->SetTitle("p_{T} [GeV]");
     hist -> GetYaxis()->SetRangeUser( 0, 2. );
@@ -498,9 +498,9 @@ void correctJERwithPLI(std::vector< std::vector< double > > &Output, std::vector
       double temp_error;
       if(Widths.at(i).at(j) != 0. ){
         // With PLI correction (change also alpha=015):
-        temp = TMath::Sqrt( Widths.at(i).at(j) * Widths.at(i).at(j) - PLI.at(i).at(j) * PLI.at(i).at(j) );
+        temp = TMath::Sqrt(2)*TMath::Sqrt( Widths.at(i).at(j) * Widths.at(i).at(j) - (1.+shift)*PLI.at(i).at(j) * PLI.at(i).at(j) );
         // temp_error = ( Widths.at(i).at(j) * WidthsError.at(i).at(j) + (1.+shift)* PLI.at(i).at(j) * PLIError.at(i).at(j) )/temp;
-        temp_error = sumSquare( Widths.at(i).at(j) * WidthsError.at(i).at(j), (1.+shift)*PLI.at(i).at(j) * PLIError.at(i).at(j) )/temp;
+        temp_error = TMath::Sqrt(2)*sumSquare( Widths.at(i).at(j) * WidthsError.at(i).at(j), (1.+shift)*PLI.at(i).at(j) * PLIError.at(i).at(j) )/temp;
       } else {
         temp = 0.;
         temp_error = 0.;
@@ -522,9 +522,9 @@ void correctJERwithPLI015(std::vector<std::vector<double> > &Output, std::vector
       double temp;
       double temp_error;
       // With PLI correction (change also alpha=0):
-      temp = TMath::Sqrt( Widths.at(i).at(j).at(2) * Widths.at(i).at(j).at(2) - PLI.at(i).at(j).at(2) * PLI.at(i).at(j).at(2) );
+      temp = TMath::Sqrt(2)*TMath::Sqrt( Widths.at(i).at(j).at(2) * Widths.at(i).at(j).at(2) - (1.+shift)* PLI.at(i).at(j).at(2) * PLI.at(i).at(j).at(2) );
       // temp_error = ( Widths.at(i).at(j).at(2) * WidthsError.at(i).at(j).at(2) + (1.+shift) * PLI.at(i).at(j).at(2) * PLIError.at(i).at(j).at(2) )/temp;
-      temp_error = sumSquare( Widths.at(i).at(j).at(2) * WidthsError.at(i).at(j).at(2) , (1.+shift) * PLI.at(i).at(j).at(2) * PLIError.at(i).at(j).at(2) )/temp;
+      temp_error = TMath::Sqrt(2)*sumSquare( Widths.at(i).at(j).at(2) * WidthsError.at(i).at(j).at(2) , (1.+shift) * PLI.at(i).at(j).at(2) * PLIError.at(i).at(j).at(2) )/temp;
       if( TMath::IsNaN(temp) ) { temp = 0 ; temp_error = 0; }
       temp2.push_back(temp);
       temp_error2.push_back(temp_error);
@@ -542,13 +542,13 @@ void correctForRef( TString name1, std::vector<std::vector<double> > &Output, st
   gStyle ->SetOptFit(0);
   TString name_width_fe1 = name1;
   //	TF1 * NSCfun = new TF1( name_width_fe1, "TMath::Sqrt(TMath::Power(([0]/x),2)+TMath::Power([1],2)/x + TMath::Power([2],2))", 0, 1000 );
-  TF1 * NSCfun = new TF1( name_width_fe1, "TMath::Sqrt([0]*[0]/(x*x)+[1]*[1]/x + [2]*[2])", 0, 1500 );
+  TF1 * NSCfun = new TF1( name_width_fe1, "TMath::Sqrt([0]*[0]/(x*x)+[1]*[1]/x + [2]*[2])", 0, 1000 );
   //	NSCfun->SetParName(0,"N");	NSCfun->SetParName(1,"S");	NSCfun->SetParName(2,"C");
   if(name1=="data_cor_correct"){
     NSCfun->SetParameter(0,3);	NSCfun->SetParameter(1,1);	NSCfun->SetParameter(2,0.05);
   }
 
-  TH1F *hist = new TH1F( name1+"_hist", name1+"_hist", 1500, 0, 1500 );
+  TH1F *hist = new TH1F( name1+"_hist", name1+"_hist", 1000, 0, 1000 );
   hist ->GetYaxis()->SetTitle("#sigma_{A}");
   hist ->GetYaxis()->SetRangeUser(0.,0.2);
   hist ->GetXaxis()->SetTitle("p_{T}");
@@ -596,16 +596,10 @@ void correctForRef( TString name1, std::vector<std::vector<double> > &Output, st
         Ref = NSCfun->Eval( pT );
         Probe = Input.at(m).at(p);
         ProbeError = InputError.at(m).at(p);
-        //			   ProbeError = 0.05*Input.at(m).at(p);
         RefError = ( (N*sN)/(pT*pT) + ( S*sS )/pT + C*sC )/Ref;
 
-        sqRef = Ref*Ref;
-        sqProbe = Probe*Probe;
-
-        temp = TMath::Sqrt( 2*sqProbe - 1*sqRef);
-        temp_error = TMath::Sqrt(1)*TMath::Sqrt(( 4*Probe*Probe*ProbeError*ProbeError + Ref*Ref*RefError*RefError ))/temp;
-
-        //			   std::cout << "probe " << Probe << ", ref " << Ref << ", corrected width " << temp << std::endl;
+        temp = TMath::Sqrt( 2*Probe*Probe - Ref*Ref);
+        temp_error = sumSquare(2*Probe*ProbeError, Ref*RefError )/temp;
 
         if( !(TMath::IsNaN(temp)) ) temp2.push_back(temp);
         else temp2.push_back(0.);
@@ -649,8 +643,11 @@ void makeScales( std::vector< std::vector< double > > &Output, std::vector< std:
 void fill_mctruth_hist( TString name1, std::vector< TH1F* > &output, std::vector< std::vector< std::vector< double > > > Widths, std::vector< std::vector< std::vector< double > > > WidthsError, std::vector< std::vector< std::vector< double > > > pt_binning, double range){
   for( unsigned int m = 0; m <  Widths.size(); m++ ){
     TString name_width_fe1 = name1;
-    name_width_fe1 += m;
-    TH1F *h1 = new TH1F( name_width_fe1, name_width_fe1, 1500, 0, 1500 );
+    if ( Widths.size() == 10 ) name_width_fe1 += m+1;
+    if ( Widths.size() == 11 ) name_width_fe1 += m+2;
+
+
+    TH1F *h1 = new TH1F( name_width_fe1, name_width_fe1, 1000, 0, 1000 );
     h1 ->GetYaxis()->SetTitle("#sigma_{MCTruth}");	h1 ->GetXaxis()->SetTitle("p_{T}");	h1 -> Sumw2();
 
     for( unsigned int p = 0; p <  Widths.at(m).size(); p++ ){
@@ -673,7 +670,7 @@ void fill_hist( TString name1, std::vector< TH1F* > &output, std::vector< std::v
   for( unsigned int m = 0; m <  Widths.size(); m++ ){
     TString name_width_fe1 = name1;
     name_width_fe1 += (m+shift);
-    TH1F *h1 = new TH1F( name_width_fe1, name_width_fe1, 1500, 0, 1500 );
+    TH1F *h1 = new TH1F( name_width_fe1, name_width_fe1, 1000, 0, 1000 );
     //std::cout << name1 << std::endl;;
     if(name1.Contains("SF_")) h1 ->GetYaxis()->SetTitle("#sigma_{JER}");
     else                      h1 ->GetYaxis()->SetTitle("Scale factor");
@@ -966,6 +963,18 @@ void findExtreme_gr(std::vector<TGraphErrors*> vec, double *x_min, double *x_max
   }
 }
 
+double findMinMax(std::vector<double> pt_width, TF1* NSC_ratio, TF1* constfit, bool isMin) {
+	double min = 10000;
+  double max = 0;
+	for (unsigned int p = 0; p < pt_width.size(); p++) {
+		double pT = pt_width.at(p);
+		min = std::min(min, TMath::Abs(NSC_ratio->Eval(pT) - constfit->Eval(pT)));
+    max = std::max(min, TMath::Abs(NSC_ratio->Eval(pT) - constfit->Eval(pT)));
+	}
+  if (isMin) return min;
+  else return max;
+}
+
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1041,7 +1050,7 @@ void fill_PLI_hist( TString name1, std::vector< std::vector< TH1F* > > &widths_F
     for( unsigned int r = 0; r <  Widths.at(m).at(0).size(); r++ ){
       TString name_width_fe1 = name1;
       name_width_fe1 += m+shift; name_width_fe1 += "_alpha"; name_width_fe1 += r+1;
-      TH1F *h1 = new TH1F( name_width_fe1, name_width_fe1, 1500, 0, 1500 );
+      TH1F *h1 = new TH1F( name_width_fe1, name_width_fe1, 1000, 0, 1000 );
       h1 ->GetYaxis()->SetTitle("#sigma_{A,PLI}");	h1 ->GetXaxis()->SetTitle("p_{T}");	h1 -> Sumw2();
       for( unsigned int p = 0; p < Widths.at(m).size(); p++ ){
         if( !(TMath::IsNaN(Widths.at(m).at(p).at(r))) ) h1 -> SetBinContent( h1 -> FindBin( pt_binning.at(m).at(p).at(r) ), Widths.at(m).at(p).at(r) );
@@ -1061,7 +1070,7 @@ void fit_NSC_PLI( std::vector< std::vector< TF1* > > &functions, std::vector< st
     for( unsigned int r = 0; r <  PLI_hists.at(m).size(); r++ ){
       TString name_width_fe1 = "NSCfun";
       name_width_fe1 += m+1; name_width_fe1 += "_alpha"; name_width_fe1 += r+1;
-      TF1 * NSCfun = new TF1( name_width_fe1, "TMath::Sqrt(TMath::Power(([0]/x),2)+TMath::Power([1],2)/x + TMath::Power([2],2))", 0, 1500 );
+      TF1 * NSCfun = new TF1( name_width_fe1, "TMath::Sqrt(TMath::Power(([0]/x),2)+TMath::Power([1],2)/x + TMath::Power([2],2))", 0, 1000 );
       NSCfun->SetParName(0,"N");	NSCfun->SetParName(1,"S");	NSCfun->SetParName(2,"C");
       PLI_hists.at(m).at(r)-> Fit(name_width_fe1,"");
       NSCfun ->GetYaxis()-> SetRangeUser( 0.8*(NSCfun -> GetMinimum()), 1.2*(NSCfun -> GetMaximum()) );
@@ -1128,7 +1137,7 @@ void fill_widths_pt( TString name1, std::vector<TH1F*> &widths, std::vector<std:
   for( unsigned int m = 0; m < Widths.size(); m++ ){
     TString name_width_fe1 = name1;
     name_width_fe1 += "_eta"; name_width_fe1 += m+1;
-    TH1F *hist = new TH1F( name_width_fe1, name_width_fe1, 1500, 0, 1500 );
+    TH1F *hist = new TH1F( name_width_fe1, name_width_fe1, 1000, 0, 1000 );
     hist ->GetYaxis()->SetTitle("k_{FSR}");
     hist ->GetXaxis()->SetTitle("p_{T}");
     hist -> GetYaxis()->SetRangeUser( 0, 0.4 );
@@ -1149,7 +1158,7 @@ void KFSR_ratios( TString name1, std::vector<TH1F*> &widths, std::vector<std::ve
   for( unsigned int m = 0; m < Widths.size(); m++ ){
     TString name_width_fe1 = name1;
     name_width_fe1 += "_eta"; name_width_fe1 += m+1;
-    TH1F *hist = new TH1F( name_width_fe1, name_width_fe1, 1500, 0, 1500 );
+    TH1F *hist = new TH1F( name_width_fe1, name_width_fe1, 1000, 0, 1000 );
     hist ->GetYaxis()->SetTitle("k_{FSR}^{" + labeldata + "}/k_{FSR}^{MC}");
     //hist ->GetYaxis()->SetTitle("k_{FSR}^{Smeared MC}/k_{FSR}^{MC}");
     hist ->GetXaxis()->SetTitle("p_{T}");

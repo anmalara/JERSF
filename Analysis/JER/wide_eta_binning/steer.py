@@ -27,12 +27,19 @@ def getLabel(sample):
     return LABEL_LUMI_INV_FB
 
 
-def main_function(gaustails=False):
+def main_function(gaustails=False, shiftForPLI="central"):
     outdir = out_path+pattern+run+"/"
     gaustail_num = 0.985
+    shiftForPLI_num = 0.0
     if gaustails:
         outdir = out_path+newJECVersion+"/"+newJetLabel+"/gaustails/"+run+"/"
         gaustail_num = 0.95
+    if shiftForPLI=="up":
+        outdir = out_path+newJECVersion+"/"+newJetLabel+"/PLI/up/"+run+"/"
+        shiftForPLI_num = 0.25
+    if shiftForPLI=="down":
+        outdir = out_path+newJECVersion+"/"+newJetLabel+"/PLI/down/"+run+"/"
+        shiftForPLI_num = -0.25
     print "outdir ", outdir
     if os.path.isdir(outdir):
         for el in sorted(os.listdir(outdir)):
@@ -63,7 +70,7 @@ def main_function(gaustails=False):
     MC_type = '\\"MC\\"'
     data_type = '\\"Data\\"'
     trigger_type = '\\"'+study+'\\"'
-    cmd = 'root -l -b -q "mainRun.cxx(false, %s, %s, %s, %s , %s, %s, %s)" >> log.txt ' % (MC_file, Data_file, LABEL_LUMI_INV_FB, MC_type, data_type, trigger_type, gaustail_num)
+    cmd = 'root -l -b -q "mainRun.cxx(false, %s, %s, %s, %s , %s, %s, %s, %s)" >> log.txt ' % (MC_file, Data_file, LABEL_LUMI_INV_FB, MC_type, data_type, trigger_type, gaustail_num, shiftForPLI_num)
     print cmd
     a = os.system(cmd)
     # command = ["root", "-l", "-b", "-q", test]
@@ -100,8 +107,8 @@ dirs = ["", "up", "down"]
 samples = ["BCDEF"]
 JECVersions=["Fall17_17Nov2017_V10"]
 JetLabels=["AK4CHS"]
-systematics=[""]
-dirs = [""]
+# systematics=[""]
+# dirs = [""]
 common_path = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/JER2017/Analysis/JER/wide_eta_binning/"
 source_path = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/JER2017/Analysis/hist_preparation/"
 
@@ -137,4 +144,6 @@ for study in studies:
                             continue
                         main_function(gaustails=False)
                         if sys == "":
-                            main_function(gaustails=True)
+                            main_function(gaustails=True, shiftForPLI="central")
+                            main_function(gaustails=False, shiftForPLI="up")
+                            main_function(gaustails=False, shiftForPLI="down")

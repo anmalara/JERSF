@@ -79,6 +79,7 @@ os.chdir(common_path+"wide_eta_bin/")
 
 sframe_ = "/nfs/dust/cms/user/amalara/sframe_all/"
 
-for el in ["JER2017_DATA", "JER2017_MB_DATA", "JER2017_MB_test_DATA", "JER2017_Threshold_DATA"]:
+# for el in ["JER2017_DATA", "JER2017_MB_DATA", "JER2017_MB_test_DATA", "JER2017_Threshold_DATA"]:
+for el in ["JER2017_Threshold_DATA"]:
     path = sframe_+el+"/"
     main_program(path, list_path, out_path, JECVersions, JetLabels, systematics, samples)
