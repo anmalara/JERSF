@@ -56,7 +56,7 @@ class MySelector : public TSelector {
   Float_t probejet_pt;
   Float_t asymmetry;
   Float_t rho;
-  Float_t alpha;
+  Float_t alpha_;
   TBranch *b_njet;
   TBranch *b_pt_ave;
   TBranch *b_jet1_pt;
@@ -92,7 +92,7 @@ class MySelector : public TSelector {
   Float_t probegenjet_eta;
   Float_t probegenjet_pt;
   Float_t gen_asymmetry;
-  Float_t gen_alpha;
+  Float_t gen_alpha_;
   TBranch *b_ngenjet;
   TBranch *b_gen_pt_ave;
   TBranch *b_genjet1_pt;
@@ -140,58 +140,46 @@ class MySelector : public TSelector {
   void MakeWeight();
 
   int TotalEvents, unmachedJets, unmatchegGenJets;
-  int EtaForwardBinsNo;
-  int EtaBinsNo;
-  int EtaFtBinsNo;
-  int EtaFtControlBinsNo;
-  int PtBinsNo;
-  int PtFTBinsNo;
-  int AlphaBinsNo;
 
-  std::vector< std::vector< std::vector< TH1F* > > > forward_hist, forward_gen_hist;
-  std::vector< std::vector< std::vector< TH1F* > > > forward_hist_dijet, forward_gen_hist_dijet;
-  std::vector< std::vector< std::vector< TH1F* > > > asymmetries_all, asymmetries_gen_all;
+	int EtaBins_SM, EtaBins_SM_control, EtaBins_FE_reference, EtaBins_FE_control, EtaBins_FE;
+	int etaShift_SM, etaShift_SM_control, etaShift_FE_reference, etaShift_FE_control, etaShift_FE;
+	int PtBins_Central, PtBins_HF;
+	int AlphaBins;
 
-  std::vector< std::vector< std::vector< TH1F* > > > forward_pt_hist, forward_gen_pt_hist;
-  std::vector< std::vector< std::vector< TH1F* > > > forward_pt_hist_dijet, forward_pt_gen_hist_dijet;
-  std::vector< std::vector< std::vector< TH1F* > > > asymmetries_pt_all, asymmetries_gen_pt_all;
+  TString whichRun;
+  std::vector<MyJet> Jets;
 
-  std::vector< std::vector< std::vector< TH1F* > > > forward_pt3_hist, forward_gen_pt3_hist;
-  std::vector< std::vector< std::vector< TH1F* > > > forward_pt3_hist_dijet, forward_gen_pt3_hist_dijet;
-  std::vector< std::vector< std::vector< TH1F* > > > asymmetries_pt3_all, asymmetries_gen_pt3_all;
+  std::vector< std::vector< std::vector< TH1F* > > > asymmetries_SM, 						asymmetries_pt_SM,						asymmetries_rho_SM,						asymmetries_pt3_SM;
+  std::vector< std::vector< std::vector< TH1F* > > > asymmetries_SM_control, 		asymmetries_pt_SM_control,		asymmetries_rho_SM_control,		asymmetries_pt3_SM_control;
+  std::vector< std::vector< std::vector< TH1F* > > > asymmetries_FE_reference, 	asymmetries_pt_FE_reference,	asymmetries_rho_FE_reference,	asymmetries_pt3_FE_reference;
+  std::vector< std::vector< std::vector< TH1F* > > > asymmetries_FE_control, 		asymmetries_pt_FE_control,		asymmetries_rho_FE_control,		asymmetries_pt3_FE_control;
+  std::vector< std::vector< std::vector< TH1F* > > > asymmetries_FE, 						asymmetries_pt_FE,						asymmetries_rho_FE,						asymmetries_pt3_FE;
 
-  std::vector< std::vector< std::vector< TH1F* > > > forward_rho_hist, forward_gen_rho_hist;
-  std::vector< std::vector< std::vector< TH1F* > > > forward_rho_hist_dijet, forward_gen_rho_hist_dijet;
-  std::vector< std::vector< std::vector< TH1F* > > > asymmetries_rho_all, asymmetries_gen_rho_all;
 
-  std::vector< std::vector< std::vector< TH1F* > > > MC_Truth_asymmetries_all, MC_Truth_forward_hist, MC_Truth_forward_hist_dijet;
-  std::vector< std::vector< std::vector< TH2F* > > > dR_all, dR_forward_hist, dR_forward_hist_dijet;
-  std::vector< std::vector< std::vector< TH2F* > > > gen_dR_all, gen_dR_forward_hist, gen_dR_forward_hist_dijet;
+	std::vector< std::vector< std::vector< TH1F* > > > gen_asymmetries_SM, 						gen_asymmetries_pt_SM,						gen_asymmetries_rho_SM,						gen_asymmetries_pt3_SM;
+	std::vector< std::vector< std::vector< TH1F* > > > gen_asymmetries_SM_control, 		gen_asymmetries_pt_SM_control,		gen_asymmetries_rho_SM_control,		gen_asymmetries_pt3_SM_control;
+	std::vector< std::vector< std::vector< TH1F* > > > gen_asymmetries_FE_reference, 	gen_asymmetries_pt_FE_reference,	gen_asymmetries_rho_FE_reference,	gen_asymmetries_pt3_FE_reference;
+	std::vector< std::vector< std::vector< TH1F* > > > gen_asymmetries_FE_control, 		gen_asymmetries_pt_FE_control,		gen_asymmetries_rho_FE_control,		gen_asymmetries_pt3_FE_control;
+	std::vector< std::vector< std::vector< TH1F* > > > gen_asymmetries_FE, 						gen_asymmetries_pt_FE,						gen_asymmetries_rho_FE,						gen_asymmetries_pt3_FE;
 
-  std::vector< std::vector< std::vector< TH2F* > > > dR_probe_all, dR_probe_forward_hist, dR_probe_forward_hist_dijet;
-  std::vector< std::vector< std::vector< TH2F* > > > gen_dR_probe_all, gen_dR_probe_forward_hist, gen_dR_probe_forward_hist_dijet;
-  std::vector< std::vector< std::vector< TH2F* > > > dR_barrel_all, dR_barrel_forward_hist, dR_barrel_forward_hist_dijet;
-  std::vector< std::vector< std::vector< TH2F* > > > gen_dR_barrel_all, gen_dR_barrel_forward_hist, gen_dR_barrel_forward_hist_dijet;
+  std::vector< std::vector< TH1F* > > alpha_spectrum_SM, alpha_spectrum_SM_control, alpha_spectrum_FE_reference, alpha_spectrum_FE_control, alpha_spectrum_FE;
+	std::vector< std::vector< std::vector< TH1F* > > > MC_Truth_asymmetries_SM, MC_Truth_asymmetries_SM_control, MC_Truth_asymmetries_FE_reference, MC_Truth_asymmetries_FE_control, MC_Truth_asymmetries_FE;
 
-  std::vector< std::vector< std::vector< TH2F* > > > eta_probe_all, eta_probe_forward_hist, eta_probe_forward_hist_dijet;
-  std::vector< std::vector< std::vector< TH2F* > > > gen_eta_probe_all, gen_eta_probe_forward_hist, gen_eta_probe_forward_hist_dijet;
-  std::vector< std::vector< std::vector< TH2F* > > > eta_barrel_all, eta_barrel_forward_hist, eta_barrel_forward_hist_dijet;
-  std::vector< std::vector< std::vector< TH2F* > > > gen_eta_barrel_all, gen_eta_barrel_forward_hist, gen_eta_barrel_forward_hist_dijet;
+  std::vector< std::vector< std::vector< TH2F* > > > dR_SM, 					gen_dR_SM,						dR_probe_SM,						gen_dR_probe_SM,            dR_barrel_SM,						gen_dR_barrel_SM;
+	std::vector< std::vector< std::vector< TH2F* > > > dR_SM_control, 	gen_dR_SM_control,		dR_probe_SM_control,		gen_dR_probe_SM_control,    dR_barrel_SM_control,		gen_dR_barrel_SM_control;
+  std::vector< std::vector< std::vector< TH2F* > > > dR_FE_reference, gen_dR_FE_reference,  dR_probe_FE_reference,  gen_dR_probe_FE_reference,  dR_barrel_FE_reference, gen_dR_barrel_FE_reference;
+  std::vector< std::vector< std::vector< TH2F* > > > dR_FE_control, 	gen_dR_FE_control,	  dR_probe_FE_control,		gen_dR_probe_FE_control,    dR_barrel_FE_control,		gen_dR_barrel_FE_control;
+  std::vector< std::vector< std::vector< TH2F* > > > dR_FE, 					gen_dR_FE,						dR_probe_FE,						gen_dR_probe_FE,            dR_barrel_FE,						gen_dR_barrel_FE;
 
-  std::vector< std::vector< std::vector< TH2F* > > > phi_probe_all, phi_probe_forward_hist, phi_probe_forward_hist_dijet;
-  std::vector< std::vector< std::vector< TH2F* > > > gen_phi_probe_all, gen_phi_probe_forward_hist, gen_phi_probe_forward_hist_dijet;
-  std::vector< std::vector< std::vector< TH2F* > > > phi_barrel_all, phi_barrel_forward_hist, phi_barrel_forward_hist_dijet;
-  std::vector< std::vector< std::vector< TH2F* > > > gen_phi_barrel_all, gen_phi_barrel_forward_hist, gen_phi_barrel_forward_hist_dijet;
+  std::vector< std::vector< std::vector< TH3F* > > > dR3_SM,            gen_dR3_SM;
+	std::vector< std::vector< std::vector< TH3F* > > > dR3_SM_control,    gen_dR3_SM_control;
+  std::vector< std::vector< std::vector< TH3F* > > > dR3_FE_reference,  gen_dR3_FE_reference;
+  std::vector< std::vector< std::vector< TH3F* > > > dR3_FE_control,    gen_dR3_FE_control;
+  std::vector< std::vector< std::vector< TH3F* > > > dR3_FE,            gen_dR3_FE;
 
-  std::vector< std::vector< std::vector< TH3F* > > > dR3_all, dR3_forward_hist, dR3_forward_hist_dijet;
-  std::vector< std::vector< std::vector< TH3F* > > > gen_dR3_all, gen_dR3_forward_hist, gen_dR3_forward_hist_dijet;
+  std::vector<double> dR_bins;
 
-  std::vector< std::vector< std::vector< std::vector< TH2F* > > > > asy_dR_barrel_all, asy_dR_barrel_forward_hist, asy_dR_barrelforward_hist_dijet;
-  std::vector< std::vector< std::vector< std::vector< TH2F* > > > > asy_dR_probe_all, asy_dR_probe_forward_hist, asy_dR_probe_forward_hist_dijet;
-  std::vector< std::vector< std::vector< std::vector< TH2F* > > > > gen_asy_dR_barrel_all, gen_asy_dR_barrel_forward_hist, gen_asy_dR_barrelforward_hist_dijet;
-  std::vector< std::vector< std::vector< std::vector< TH2F* > > > > gen_asy_dR_probe_all, gen_asy_dR_probe_forward_hist, gen_asy_dR_probe_forward_hist_dijet;
-
-  std::vector< std::vector< TH1F* > > alpha_spectrum, forward_alpha_spectrum, forward_alpha_spectrum_dijet;
+  std::vector< std::vector< std::vector< std::vector< TH2F* > > > > asy_dR_barrel_FE, asy_dR_probe_FE, gen_asy_dR_barrel_FE, gen_asy_dR_probe_FE;
 
   std::vector<TH1F*> histograms;
 
@@ -200,18 +188,18 @@ class MySelector : public TSelector {
   TH1F *h_JetPt;
   TH1F *h_PU;
 
-  TH1F *h_rho;
-  TH1F *h_rhoFWD;
+  TH1F *h_rho_SM;
+  TH1F *h_rho_FE;
 
-  TH1F *h_JetAvePt;
-  TH1F *h_Jet1Pt;
-  TH1F *h_Jet2Pt;
-  TH1F *h_Jet3Pt;
+  TH1F *h_JetAvePt_SM;
+  TH1F *h_Jet1Pt_SM;
+  TH1F *h_Jet2Pt_SM;
+  TH1F *h_Jet3Pt_SM;
 
-  TH1F *h_FEJetAvePt;
-  TH1F *h_FEJet1Pt;
-  TH1F *h_FEJet2Pt;
-  TH1F *h_FEJet3Pt;
+  TH1F *h_JetAvePt_FE;
+  TH1F *h_Jet1Pt_FE;
+  TH1F *h_Jet2Pt_FE;
+  TH1F *h_Jet3Pt_FE;
 };
 
 #endif
@@ -251,9 +239,9 @@ void MySelector::Init(TTree *tree){
   fChain->SetBranchAddress("probejet_eta", &probejet_eta, &b_probejet_eta);
   fChain->SetBranchAddress("probejet_pt", &probejet_pt, &b_probejet_pt);
   fChain->SetBranchAddress("asymmetry", &asymmetry, &b_asymmetry);
-  fChain->SetBranchAddress("alpha", &alpha, &b_alpha);
+  fChain->SetBranchAddress("alpha", &alpha_, &b_alpha);
   fChain->SetBranchAddress("Ngenjet", &ngenjet, &b_ngenjet);
-  fChain->SetBranchAddress("gen_pt_ave", &pt_ave, &b_pt_ave);
+  fChain->SetBranchAddress("gen_pt_ave", &gen_pt_ave, &b_pt_ave);
   fChain->SetBranchAddress("genjet1_pt", &genjet1_pt, &b_genjet1_pt);
   fChain->SetBranchAddress("genjet2_pt", &genjet2_pt, &b_genjet2_pt);
   fChain->SetBranchAddress("genjet3_pt", &genjet3_pt, &b_genjet3_pt);
@@ -265,7 +253,7 @@ void MySelector::Init(TTree *tree){
   fChain->SetBranchAddress("probegenjet_phi", &probegenjet_phi, &b_probegenjet_phi);
   fChain->SetBranchAddress("probegenjet_eta", &probegenjet_eta, &b_probegenjet_eta);
   fChain->SetBranchAddress("probegenjet_pt", &probegenjet_pt, &b_probegenjet_pt);
-  fChain->SetBranchAddress("gen_alpha", &gen_alpha, &b_gen_alpha);
+  fChain->SetBranchAddress("gen_alpha", &gen_alpha_, &b_gen_alpha);
   fChain->SetBranchAddress("gen_asymmetry", &gen_asymmetry, &b_gen_asymmetry);
   fChain->SetBranchAddress("weight", &weight, &b_weight);
   fChain->SetBranchAddress("weight_pu", &weight_pu, &b_weight_pu);

@@ -16,10 +16,10 @@ void LoadSF(std::vector<std::vector<std::vector<double>>> &SFs, TString filename
   std::vector<double> SF_uncorrelated_SM_error;			//3
   std::vector<double> SF_correlated_SM;        		 	//4
   std::vector<double> SF_correlated_SM_error;   		//5
-	std::vector<double> SF_uncorrelated_SM_ptdep_min; //6
-	std::vector<double> SF_uncorrelated_SM_ptdep_max;	//7
-	std::vector<double> SF_correlated_SM_ptdep_min;   //8
-	std::vector<double> SF_correlated_SM_ptdep_max;   //9
+  std::vector<double> SF_uncorrelated_SM_ptdep_min; //6
+  std::vector<double> SF_uncorrelated_SM_ptdep_max;	//7
+  std::vector<double> SF_correlated_SM_ptdep_min;   //8
+  std::vector<double> SF_correlated_SM_ptdep_max;   //9
 
   // SF_uncorrelated_FE, SF_uncorrelated_FE_error, SF_correlated_FE, SF_correlated_FE_error, eta_bin_FE_center, eta_bin_FE_error;
   std::ifstream file(filename, ios::in);
@@ -48,16 +48,18 @@ void LoadSF(std::vector<std::vector<std::vector<double>>> &SFs, TString filename
   file.close();
 }
 
-
+// SFs == (n_systematics, columns in files, eta_bins)
 void plot_SF_systematics() {
 
   int shift_SM = 3;
   int shift_FE = 3;
+  int shift_barrel = 1;
   std::vector<double> eta_bins_all(eta_bins, eta_bins + sizeof(eta_bins)/sizeof(double));
   std::vector<double> eta_bins_SM(eta_bins, eta_bins + sizeof(eta_bins)/sizeof(double) - shift_SM);
-  std::vector<double> eta_bins_FE(eta_bins + shift_FE, eta_bins + sizeof(eta_bins)/sizeof(double));
+  std::vector<double> eta_bins_FE(eta_bins + shift_barrel, eta_bins + sizeof(eta_bins)/sizeof(double));
 
   int method = 4; //2-uncorr 4-corr
+  int pt_dep_method = 4; //4-min value 5-max value
   std::vector<int> colors;
   colors.push_back(kBlue-4);
   colors.push_back(kGreen-2);
@@ -99,8 +101,9 @@ void plot_SF_systematics() {
   for (unsigned int i = 0; i < systematics.size(); i++) {
     TString temp = central_SM.Copy();
     TString sys = systematics.at(i);
+    // pt_dep values are saved in all the folder. But the one in the nominal folder are calculated wrt to nominal values. It is saved only the Max and Min value of the difference of the SF
     if (sys.Contains("_")) filename = path+temp.ReplaceAll("standard",sys(0,sys.First("_"))+"/"+sys(sys.First("_")+1,sys.Length()));
-		else if (sys.Contains("pTdep"))filename = path+central_SM;
+    else if (sys.Contains("pTdep"))filename = path+central_SM;
     else filename = path+temp.ReplaceAll("standard",sys);
     LoadSF(SFs_SM, filename);
   }
@@ -109,13 +112,15 @@ void plot_SF_systematics() {
   std::vector <std::vector <double> > systematics_SM;
   for (unsigned int i = 0; i < 1+systematics.size(); i++){
     if (i==0) {
+      // Getting Central Values & Statistical Uncertainties
       for (unsigned int j = 0; j < eta_bins_SM.size()-1; j++){
         eta_bin_SM_center.push_back(SFs_SM.at(0).at(0).at(j));
         eta_bin_SM_error.push_back(SFs_SM.at(0).at(1).at(j));
         SF_SM.push_back(SFs_SM.at(0).at(method).at(j));
         stat_SM.push_back(SFs_SM.at(0).at(method+1).at(j));
       }
-    } else if (i != systematics.size()) {
+    } else if (i < systematics.size()) {
+      // Getting Systematics Uncertainties. Diff wrt the nominal value
       std::vector <double> temp;
       for (unsigned int j = 0; j < eta_bins_SM.size()-1; j++) temp.push_back(TMath::Abs(SFs_SM.at(0).at(method).at(j) - SFs_SM.at(i).at(method).at(j)));
       systematics_SM.push_back(temp);
@@ -123,7 +128,8 @@ void plot_SF_systematics() {
     }
     else{
       std::vector <double> temp;
-      for (unsigned int j = 0; j < eta_bins_SM.size()-1; j++) temp.push_back((SFs_SM.at(i).at(method+4).at(j) + SFs_SM.at(i).at(method+5).at(j))/2);
+      // Getting Systematics Uncertainties for pt_dep. It is saved only the Max and Min value
+      for (unsigned int j = 0; j < eta_bins_SM.size()-1; j++) temp.push_back((SFs_SM.at(i).at(method+pt_dep_method).at(j) + SFs_SM.at(i).at(method+pt_dep_method+1).at(j))/2);
       systematics_SM.push_back(temp);
       temp.clear();
     }
@@ -135,13 +141,13 @@ void plot_SF_systematics() {
     for (unsigned int j = 0; j < systematics.size(); j++) err += TMath::Power(systematics_SM.at(j).at(i),2);
     err = TMath::Sqrt(err);
     systematics_SM_all.push_back(err);
-    total_error_SM.push_back(TMath::Sqrt(TMath::Power(systematics_SM_all.at(i),2)+TMath::Power(stat_SM.at(i),2)));
+    total_error_SM.push_back(TMath::Sqrt(TMath::Power(err,2)+TMath::Power(stat_SM.at(i),2)));
   }
 
   TCanvas* canv_SF_SM = tdrCanvas("Statistics_SM",eta_bins_SM[0]-0.1, eta_bins_SM[eta_bins_SM.size()-1]+0.1, 0.5, 2.0, "#eta", "JER SF");
   canv_SF_SM->SetTickx(0);
   canv_SF_SM->SetTicky(0);
-  TLegend *leg_SM = tdrLeg(0.55,0.67,0.80,0.92);
+  TLegend *leg_SM = tdrLeg(0.45,0.67,0.80,0.92);
   leg_SM->SetTextFont(42);  leg_SM->SetTextSize(0.025);  leg_SM->SetTextColor(kBlack);
   tdrHeader(leg_SM,"Uncertainties", 12);
   TGraphErrors* gr_stat_SM = new TGraphErrors(eta_bins_SM.size()-1, &(eta_bin_SM_center[0]), &SF_SM[0], &(eta_bin_SM_error[0]), &stat_SM[0]);
@@ -158,7 +164,8 @@ void plot_SF_systematics() {
   canv_SF_SM->Print(path+"SF_SM.pdf","pdf");
   canv_SF_SM->Print(path+"SF_SM.png","png");
 
-  TCanvas* canv_stat_SM = tdrCanvas("Uncertainties_SM",eta_bins_SM[0]-0.1, eta_bins_SM[eta_bins_SM.size()-1]+0.1, 0.0001, 5.0, "#eta", "Uncertainties");
+
+  TCanvas* canv_stat_SM = tdrCanvas("Uncertainties_SM",eta_bins_SM[0]-0.1, eta_bins_SM[eta_bins_SM.size()-1]+0.1, 0.0001, 100.0, "#eta", "Uncertainties");
   canv_stat_SM->SetTickx(0);
   canv_stat_SM->SetTicky(0);
   canv_stat_SM->SetLogy();
@@ -172,10 +179,10 @@ void plot_SF_systematics() {
     TH1F* h_SM = new TH1F("", "", eta_bins_SM.size()-1, &eta_bins_SM[0] );
     h_SM->SetLineWidth(5);
     for (unsigned int i = 0; i < eta_bins_SM.size()-1; i++) {h_SM->SetBinContent(i+1,systematics_SM.at(j).at(i));}
-    tdrDraw(h_SM, "hist", kFullDotLarge, colors[j], kSolid, colors[j], 4005, colors[j]);
+    tdrDraw(h_SM, "hist", kFullDotLarge, colors[j], kSolid, colors[j], 0, colors[j]);
     leg_SM->AddEntry(h_SM, systematics[j],"l");
   }
-  tdrDraw(h_SM, "hist", kFullDotLarge, kRed, kSolid, kRed, 4005, kRed);
+  tdrDraw(h_SM, "hist", kFullDotLarge, kRed, kSolid, kRed, 0, kRed);
   h_SM->SetLineWidth(8); h_SM->SetLineStyle(9);
   leg_SM->Draw("same");
 
@@ -195,7 +202,7 @@ void plot_SF_systematics() {
     TString temp = central_FE.Copy();
     TString sys = systematics.at(i);
     if (sys.Contains("_")) filename = path+temp.ReplaceAll("standard",sys(0,sys.First("_"))+"/"+sys(sys.First("_")+1,sys.Length()));
-		else if (sys.Contains("pTdep"))filename = path+central_FE;
+    else if (sys.Contains("pTdep"))filename = path+central_FE;
     else filename = path+temp.ReplaceAll("standard",sys);
     LoadSF(SFs_FE, filename);
   }
@@ -210,7 +217,7 @@ void plot_SF_systematics() {
         SF_FE.push_back(SFs_FE.at(0).at(method).at(j));
         stat_FE.push_back(SFs_FE.at(0).at(method+1).at(j));
       }
-    } else if (i != systematics.size()) {
+    } else if (i < systematics.size()) {
       std::vector <double> temp;
       for (unsigned int j = 0; j < eta_bins_FE.size()-1; j++) temp.push_back(TMath::Abs(SFs_FE.at(0).at(method).at(j) - SFs_FE.at(i).at(method).at(j)));
       systematics_FE.push_back(temp);
@@ -218,7 +225,7 @@ void plot_SF_systematics() {
     }
     else{
       std::vector <double> temp;
-      for (unsigned int j = 0; j < eta_bins_FE.size()-1; j++) temp.push_back((SFs_FE.at(i).at(method+4).at(j) + SFs_FE.at(i).at(method+5).at(j))/2);
+      for (unsigned int j = 0; j < eta_bins_FE.size()-1; j++) temp.push_back((SFs_FE.at(i).at(method+pt_dep_method).at(j) + SFs_FE.at(i).at(method+pt_dep_method+1).at(j))/2);
       systematics_FE.push_back(temp);
       temp.clear();
     }
@@ -230,13 +237,13 @@ void plot_SF_systematics() {
     for (unsigned int j = 0; j < systematics.size(); j++) err += TMath::Power(systematics_FE.at(j).at(i),2);
     err = TMath::Sqrt(err);
     systematics_FE_all.push_back(err);
-    total_error_FE.push_back(TMath::Sqrt(TMath::Power(systematics_FE_all.at(i),2)+TMath::Power(stat_FE.at(i),2)));
+    total_error_FE.push_back(TMath::Sqrt(TMath::Power(err,2)+TMath::Power(stat_FE.at(i),2)));
   }
 
   TCanvas* canv_SF_FE = tdrCanvas("Statistics_FE",eta_bins_FE[0]-0.1, eta_bins_FE[eta_bins_FE.size()-1]+0.1, 0., 5.0, "#eta", "JER SF");
   canv_SF_FE->SetTickx(0);
   canv_SF_FE->SetTicky(0);
-  TLegend *leg_FE = tdrLeg(0.55,0.67,0.80,0.92);
+  TLegend *leg_FE = tdrLeg(0.45,0.67,0.80,0.92);
   leg_FE->SetTextFont(42);  leg_FE->SetTextSize(0.025);  leg_FE->SetTextColor(kBlack);
   tdrHeader(leg_FE,"Uncertainties", 12);
   TGraphErrors* gr_stat_FE = new TGraphErrors(eta_bins_FE.size()-1, &(eta_bin_FE_center[0]), &SF_FE[0], &(eta_bin_FE_error[0]), &stat_FE[0]);
@@ -253,7 +260,7 @@ void plot_SF_systematics() {
   canv_SF_FE->Print(path+"SF_FE.pdf","pdf");
   canv_SF_FE->Print(path+"SF_FE.png","png");
 
-  TCanvas* canv_stat_FE = tdrCanvas("Uncertainties_FE",eta_bins_FE[0]-0.1, eta_bins_FE[eta_bins_FE.size()-1]+0.1, 0.0001, 100.0, "#eta", "Uncertainties");
+  TCanvas* canv_stat_FE = tdrCanvas("Uncertainties_FE",eta_bins_FE[0]-0.1, eta_bins_FE[eta_bins_FE.size()-1]+0.1, 0.0001, 1000.0, "#eta", "Uncertainties");
   canv_stat_FE->SetTickx(0);
   canv_stat_FE->SetTicky(0);
   canv_stat_FE->SetLogy();
@@ -267,10 +274,10 @@ void plot_SF_systematics() {
     TH1F* h_FE = new TH1F("", "", eta_bins_FE.size()-1, &eta_bins_FE[0] );
     h_FE->SetLineWidth(5);
     for (unsigned int i = 0; i < eta_bins_FE.size()-1; i++) {h_FE->SetBinContent(i+1,systematics_FE.at(j).at(i));}
-    tdrDraw(h_FE, "hist", kFullDotLarge, colors[j], kSolid, colors[j], 4005, colors[j]);
+    tdrDraw(h_FE, "hist", kFullDotLarge, colors[j], kSolid, colors[j], 0, colors[j]);
     leg_FE->AddEntry(h_FE, systematics[j],"l");
   }
-  tdrDraw(h_FE, "hist", kFullDotLarge, kRed, kSolid, kRed, 4005, kRed);
+  tdrDraw(h_FE, "hist", kFullDotLarge, kRed, kSolid, kRed, 0, kRed);
   h_FE->SetLineWidth(8); h_FE->SetLineStyle(9);
   leg_FE->Draw("same");
 
@@ -278,6 +285,11 @@ void plot_SF_systematics() {
   canv_stat_FE->Print(path+"Uncertainties_FE.png","png");
 
   std::vector <double> SF_final, SF_final_error, eta_bin_all_center, eta_bin_all_error;
+  SF_final.clear();
+  SF_final_error.clear();
+  eta_bin_all_center.clear();
+  eta_bin_all_error.clear();
+
   for (unsigned int i = 0; i < eta_bins_all.size()-1; i++) {
     if (i < shift_FE){
       eta_bin_all_center.push_back(eta_bin_SM_center.at(i));
@@ -285,20 +297,20 @@ void plot_SF_systematics() {
       SF_final.push_back(SF_SM.at(i));
       SF_final_error.push_back(total_error_SM.at(i));
     } else if (i < eta_bins_all.size() - 1 - shift_SM){
-      eta_bin_all_center.push_back(eta_bin_FE_center.at(i-shift_FE));
-      eta_bin_all_error.push_back(eta_bin_FE_error.at(i-shift_FE));
-      SF_final.push_back((SF_SM.at(i)+SF_FE.at(i-shift_FE))/2);
-      SF_final_error.push_back(TMath::Sqrt(TMath::Power((stat_SM.at(i)+stat_FE.at(i-shift_FE))/2, 2)+TMath::Power((systematics_SM_all.at(i)+systematics_FE_all.at(i-shift_FE))/2, 2)+TMath::Power((SF_SM.at(i)-SF_FE.at(i-shift_FE))/2, 2)));
+      eta_bin_all_center.push_back(eta_bin_SM_center.at(i));
+      eta_bin_all_error.push_back(eta_bin_SM_error.at(i));
+      SF_final.push_back((SF_SM.at(i)+SF_FE.at(i-shift_FE+shift_barrel+1))/2);
+      SF_final_error.push_back(TMath::Sqrt(TMath::Power((stat_SM.at(i)+stat_FE.at(i-shift_FE+shift_barrel+1))/2, 2)+TMath::Power((systematics_SM_all.at(i)+systematics_FE_all.at(i-shift_FE+shift_barrel+1))/2, 2)+TMath::Power((SF_SM.at(i)-SF_FE.at(i-shift_FE+shift_barrel+1))/2, 2)));
     } else {
-      eta_bin_all_center.push_back(eta_bin_FE_center.at(i-shift_FE));
-      eta_bin_all_error.push_back(eta_bin_FE_error.at(i-shift_FE));
-      SF_final.push_back(SF_FE.at(i-shift_FE));
+      eta_bin_all_center.push_back(eta_bin_FE_center.at(i-1));
+      eta_bin_all_error.push_back(eta_bin_FE_error.at(i-1));
+      SF_final.push_back(SF_FE.at(i-shift_barrel));
       SF_final_error.push_back(total_error_FE.at(i-shift_FE));
     }
   }
 
 
-  TCanvas* canv_SF_final = tdrCanvas("SF_final", eta_bins_all.at(0)-0.1, eta_bins_all.at(eta_bins_all.size()-1)+0.5, 0., 3.0, "#eta", "JER SF");
+  TCanvas* canv_SF_final = tdrCanvas("SF_final", eta_bins_all.at(0)-0.1, eta_bins_all.at(eta_bins_all.size()-1)+0.5, 0., 5.0, "#eta", "JER SF");
   canv_SF_final->SetTickx(0);
   canv_SF_final->SetTicky(0);
   TLegend *leg_final = tdrLeg(0.55,0.67,0.80,0.92);

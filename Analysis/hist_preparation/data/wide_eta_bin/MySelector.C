@@ -33,14 +33,87 @@
 #include "MyJet.h"
 #include "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/JER2017/include/constants.hpp"
 
+#define FILL_HISTOS(region,method)                                     \
+asymmetries_##region.at(r).at(k).at(m) -> Fill( asy , weight );        \
+asymmetries_pt_##region.at(r).at(k).at(m) -> Fill( pt_ave, weight );   \
+asymmetries_rho_##region.at(r).at(k).at(m) -> Fill( rho, weight );     \
+asymmetries_pt3_##region.at(r).at(k).at(m) -> Fill( jet3_pt, weight ); \
+if ( m == AlphaBins-1 ) {                                              \
+  h_JetAvePt_##method -> Fill( pt_ave, weight );                       \
+  h_Jet1Pt_##method -> Fill( jet1_pt, weight );                        \
+  h_Jet2Pt_##method -> Fill( jet2_pt, weight );                        \
+  h_Jet3Pt_##method -> Fill( jet3_pt, weight );                        \
+}                                                                      \
+
+#define SELECT_ETA_ALPHA_BIN(region,method,cond1,cond2,cond3) \
+if (cond1 || cond2) {                                         \
+  h_alpha_select -> Fill( alpha, 1 );                         \
+  for ( int m = 0 ; m < AlphaBins ; m++ ) {                   \
+    if ( alpha < Alpha_bins[m] ) {                            \
+      double asy = asymmetry;                                 \
+      if (cond3) {                                            \
+        asy = - asymmetry;                                    \
+      }                                                       \
+      FILL_HISTOS(region,method)                              \
+      if ( excl_bin ) break;                                  \
+    }                                                         \
+  }                                                           \
+  alpha_spectrum_##region.at(r).at(k) -> Fill(alpha, weight);	\
+}                                                             \
+
+#define WRITE_HISTOS(region)                                  \
+for( int m = 0; m < EtaBins_##region; m++ ) {                 \
+  f->cd();                                                    \
+  asymmetries_##region.at(m).at(p).at(r) -> Write();          \
+  asymmetries_pt_##region.at(m).at(p).at(r) -> Write();       \
+  f1->cd();                                                   \
+  asymmetries_rho_##region.at(m).at(p).at(r) -> Write();      \
+  asymmetries_pt3_##region.at(m).at(p).at(r) -> Write();      \
+  f_alpha->cd();                                              \
+  alpha_spectrum_##region.at(m).at(p) -> Write();             \
+}                                                             \
+
 bool sortFunct( MyJet a, MyJet b) { return ( a.Pt() > b.Pt() ); }
 
-void MySelector::BuildEvent(){
+void MakeHistograms(std::vector< std::vector< std::vector< TH1F* > > > &asymmetries, std::vector< std::vector< std::vector< TH1F* > > > &asymmetries_pt, std::vector< std::vector< std::vector< TH1F* > > > &asymmetries_rho, std::vector< std::vector< std::vector< TH1F* > > > &asymmetries_pt3, std::vector< std::vector< TH1F* > > &alpha_spectrum, TString text, TString extraText, int etaBins, int ptBins, int AlphaBins, int etaShift, int ptShift, int alphaShift) {
+  for( int m = etaShift; m < etaBins+etaShift; m++ ) {
+    std::vector< std::vector< TH1F* > > temp2, temp2pt, temp2rho, temp2pt3;
+    std::vector< TH1F* > alpha_temp2;
+    for( int p = 0; p < ptBins; p++ ) {
+      std::vector< TH1F* > temp1, temp1pt, temp1rho, temp1pt3;
+      TString name_alpha = "alpha"; name_alpha += extraText; name_alpha += "_eta"; name_alpha += m+1; name_alpha += "_pt"; name_alpha += p+1;
+      TH1F *h1_alpha = new TH1F( name_alpha, name_alpha, 80, 0., 0.8 );
+      h1_alpha ->GetYaxis()->SetTitle("a.u.");    h1_alpha ->GetXaxis()->SetTitle("Alpha");
+      h1_alpha -> Sumw2(); alpha_temp2.push_back(h1_alpha);
+      for( int r = 0; r < AlphaBins; r++ ) {
+        TString name     = text;        name 		 += extraText; name 		+= "_eta"; name     += m+1; name     += "_pt"; name     += p+1; name     += "_alpha"; name     += r+1;
+        TString name_pt  = text+"pt"; 	name_pt  += extraText; name_pt  += "_eta"; name_pt  += m+1; name_pt  += "_pt"; name_pt  += p+1; name_pt  += "_alpha"; name_pt  += r+1;
+        TString name_rho = text+"rho";	name_rho += extraText; name_rho += "_eta"; name_rho += m+1; name_rho += "_pt"; name_rho += p+1; name_rho += "_alpha"; name_rho += r+1;
+        TString name_pt3 = text+"pt3";	name_pt3 += extraText; name_pt3 += "_eta"; name_pt3 += m+1; name_pt3 += "_pt"; name_pt3 += p+1; name_pt3 += "_alpha"; name_pt3 += r+1;
+        TH1F *h1 = new TH1F( name, name, 160, -0.8, 0.8 );
+        h1 ->GetYaxis()->SetTitle("a.u.");    h1 ->GetXaxis()->SetTitle("Asymmetry");
+        h1 -> Sumw2(); temp1.push_back(h1);
+        TH1F *h2 = new TH1F( name_pt, name_pt, 50, 0, 1500 );
+        h2 ->GetYaxis()->SetTitle("a.u.");    h2 ->GetXaxis()->SetTitle("Pt[GeV]");
+        h2 -> Sumw2(); temp1pt.push_back(h2);
+        TH1F *h3 = new TH1F( name_rho, name_rho, 100, 0, 100 );
+        h3 ->GetYaxis()->SetTitle("a.u.");    h3 ->GetXaxis()->SetTitle("rho");
+        h3 -> Sumw2(); temp1rho.push_back(h3);
+        TH1F *h4 = new TH1F( name_pt3, name_pt3, 50, 0, 1500 );
+        h4 ->GetYaxis()->SetTitle("a.u.");    h4 ->GetXaxis()->SetTitle("Pt[GeV]");
+        h4 -> Sumw2(); temp1pt3.push_back(h4);
+      }
+      temp2.push_back(temp1); temp2pt.push_back(temp1pt); temp2rho.push_back(temp1rho);  temp2pt3.push_back(temp1pt3);
+    }
+    asymmetries.push_back(temp2); asymmetries_pt.push_back(temp2pt); asymmetries_rho.push_back(temp2rho); asymmetries_pt3.push_back(temp2pt3);
+    alpha_spectrum.push_back(alpha_temp2);
+  }
 }
 
+void MySelector::BuildEvent() {
+}
 
-void MySelector::Begin(TTree * /*tree*/){
-
+void MySelector::Begin(TTree * /*tree*/) {
 
   // The Begin() function is called at the start of the query.
   // When running with PROOF Begin() is only called on the client.
@@ -49,55 +122,54 @@ void MySelector::Begin(TTree * /*tree*/){
   TString option = GetOption();
 
   TotalEvents = 0;
-
 }
 
-void MySelector::SlaveBegin(TTree * /*tree*/){
+void MySelector::SlaveBegin(TTree * /*tree*/) {
   // The SlaveBegin() function is called after the Begin() function.
   // When running with PROOF SlaveBegin() is called on each slave server.
   // The tree argument is deprecated (on PROOF 0 is passed).
 
   TString option = GetOption();
 
-  h_JetAvePt = new TH1F( "JetAvePt" , "Inclusive Jet Ave Pt" , 50 , 0 , 2000 );
-  h_JetAvePt -> SetXTitle( "Pt_{ave}[GeV]" );
-  h_JetAvePt -> Sumw2();
-  // histograms.push_back(h_JetAvePt);
+  h_JetAvePt_SM = new TH1F( "JetAvePt" , "Inclusive Jet Ave Pt" , 50 , 0 , 2000 );
+  h_JetAvePt_SM -> SetXTitle( "Pt_{ave}[GeV]" );
+  h_JetAvePt_SM -> Sumw2();
+  // histograms.push_back(h_JetAvePt_SM);
 
-  h_Jet1Pt = new TH1F( "Jet1Pt" , "Inclusive Jet 1 Pt" , 50 , 0 , 2000 );
-  h_Jet1Pt -> SetXTitle( "Pt_1[GeV]" );
-  h_Jet1Pt -> Sumw2();
-  // histograms.push_back(h_Jet1Pt);
+  h_Jet1Pt_SM = new TH1F( "Jet1Pt" , "Inclusive Jet 1 Pt" , 50 , 0 , 2000 );
+  h_Jet1Pt_SM -> SetXTitle( "Pt_1[GeV]" );
+  h_Jet1Pt_SM -> Sumw2();
+  // histograms.push_back(h_Jet1Pt_SM);
 
-  h_Jet2Pt = new TH1F( "Jet2Pt" , "Inclusive Jet 2 Pt" , 50 , 0 , 2000 );
-  h_Jet2Pt -> SetXTitle( "Pt_2[GeV]" );
-  h_Jet2Pt -> Sumw2();
-  // histograms.push_back(h_Jet2Pt);
+  h_Jet2Pt_SM = new TH1F( "Jet2Pt" , "Inclusive Jet 2 Pt" , 50 , 0 , 2000 );
+  h_Jet2Pt_SM -> SetXTitle( "Pt_2[GeV]" );
+  h_Jet2Pt_SM -> Sumw2();
+  // histograms.push_back(h_Jet2Pt_SM);
 
-  h_Jet3Pt = new TH1F( "Jet3Pt" , "Inclusive Jet 3 Pt" , 50 , 0 , 2000 );
-  h_Jet3Pt -> SetXTitle( "Pt_3[GeV]" );
-  h_Jet3Pt -> Sumw2();
-  // histograms.push_back(h_Jet3Pt);
+  h_Jet3Pt_SM = new TH1F( "Jet3Pt" , "Inclusive Jet 3 Pt" , 50 , 0 , 2000 );
+  h_Jet3Pt_SM -> SetXTitle( "Pt_3[GeV]" );
+  h_Jet3Pt_SM -> Sumw2();
+  // histograms.push_back(h_Jet3Pt_SM);
 
-  h_FEJetAvePt = new TH1F( "FEJetAvePt" , "Inclusive FEJet Ave Pt" , 50 , 0 , 2000 );
-  h_FEJetAvePt -> SetXTitle( "Pt_{ave}[GeV]" );
-  h_FEJetAvePt -> Sumw2();
-  // histograms.push_back(h_FEJetAvePt);
+  h_JetAvePt_FE = new TH1F( "FEJetAvePt" , "Inclusive FEJet Ave Pt" , 50 , 0 , 2000 );
+  h_JetAvePt_FE -> SetXTitle( "Pt_{ave}[GeV]" );
+  h_JetAvePt_FE -> Sumw2();
+  // histograms.push_back(h_JetAvePt_FE);
 
-  h_FEJet1Pt = new TH1F( "FEJet1Pt" , "Inclusive FEJet 1 Pt" , 50 , 0 , 2000 );
-  h_FEJet1Pt -> SetXTitle( "Pt_1[GeV]" );
-  h_FEJet1Pt -> Sumw2();
-  histograms.push_back(h_FEJet1Pt);
+  h_Jet1Pt_FE = new TH1F( "FEJet1Pt" , "Inclusive FEJet 1 Pt" , 50 , 0 , 2000 );
+  h_Jet1Pt_FE -> SetXTitle( "Pt_1[GeV]" );
+  h_Jet1Pt_FE -> Sumw2();
+  histograms.push_back(h_Jet1Pt_FE);
 
-  h_FEJet2Pt = new TH1F( "FEJet2Pt" , "Inclusive FEJet 2 Pt" , 50 , 0 , 2000 );
-  h_FEJet2Pt -> SetXTitle( "Pt_2[GeV]" );
-  h_FEJet2Pt -> Sumw2();
-  histograms.push_back(h_FEJet2Pt);
+  h_Jet2Pt_FE = new TH1F( "FEJet2Pt" , "Inclusive FEJet 2 Pt" , 50 , 0 , 2000 );
+  h_Jet2Pt_FE -> SetXTitle( "Pt_2[GeV]" );
+  h_Jet2Pt_FE -> Sumw2();
+  histograms.push_back(h_Jet2Pt_FE);
 
-  h_FEJet3Pt = new TH1F( "FEJet3Pt" , "Inclusive FEJet 3 Pt" , 50 , 0 , 2000 );
-  h_FEJet3Pt -> SetXTitle( "Pt_3[GeV]" );
-  h_FEJet3Pt -> Sumw2();
-  // histograms.push_back(h_FEJet3Pt);
+  h_Jet3Pt_FE = new TH1F( "FEJet3Pt" , "Inclusive FEJet 3 Pt" , 50 , 0 , 2000 );
+  h_Jet3Pt_FE -> SetXTitle( "Pt_3[GeV]" );
+  h_Jet3Pt_FE -> Sumw2();
+  // histograms.push_back(h_Jet3Pt_FE);
 
   h_PU = new TH1F( "PileUp" , "PU distribution" , 60 , 0 , 60 );
   h_PU -> SetXTitle( "PU" );
@@ -112,160 +184,31 @@ void MySelector::SlaveBegin(TTree * /*tree*/){
   h_alpha_select -> SetXTitle( "#alpha" );
   h_alpha_select -> Sumw2();
 
-  EtaBinsNo = 10;            // st method bins
-  EtaForwardBinsNo = 3;     // st method bins with fw triggers ?
-  EtaFtControlBinsNo = 8;   // fw method bins with normal triggers
-  EtaFtBinsNo = 3;          // fw method bins with fw triggers
+  EtaBins_SM						= 10; // st method bins
+  EtaBins_SM_control 		=  3; // st method bins control
+  EtaBins_FE_reference	=  3; // fe method bins reference
+  EtaBins_FE_control		=  7; // fe method bins control
+  EtaBins_FE						=  3; // fe method bins
 
-  PtBinsNo = n_pt_bins_Si;
-  PtFTBinsNo = n_pt_bins_Si_HF;
-  AlphaBinsNo = 6;
+  etaShift_SM 					= 0;
+  etaShift_SM_control 	= EtaBins_SM;
+  etaShift_FE_reference = 0;
+  etaShift_FE_control 	= EtaBins_FE_reference;
+  etaShift_FE 					= EtaBins_FE_reference + EtaBins_FE_control;
 
-  // I define histograms for the "normal" JER calculation
+  PtBins_Central = n_pt_bins_Si;
+  PtBins_HF = n_pt_bins_Si_HF;
+  AlphaBins = 6;
 
-  for( int m = 0; m < EtaBinsNo; m++ ){
-    std::vector< std::vector< TH1F* > > temp2, temp2pt, temp2rho, temp2pt3;
-    std::vector< TH1F* > alpha_temp2;
-    for( int p = 0; p < PtBinsNo; p++ ){
-      std::vector< TH1F* > temp1, temp1pt, temp1rho, temp1pt3;
-      char name_alpha[100];
-      sprintf(name_alpha, "alpha_eta%d_pt_%d",m ,p );
-      TH1F *h1_alpha = new TH1F( name_alpha, name_alpha, 80, 0., 0.8 );
-      h1_alpha ->GetYaxis()->SetTitle("a.u.");    h1_alpha ->GetXaxis()->SetTitle("Alpha");
-      h1_alpha -> Sumw2(); alpha_temp2.push_back(h1_alpha);
-      for( int r = 0; r < AlphaBinsNo; r++ ){
-        TString name_fw = "asymm_"; name_fw += "eta"; name_fw += m+1; name_fw += "_pt"; name_fw += p+1; name_fw += "_alpha"; name_fw += r+1;
-        TString name_fw_pt = "asymmpt_"; name_fw_pt += "probe"; name_fw_pt += m+1; name_fw_pt += "_pt"; name_fw_pt += p+1; name_fw_pt += "_alpha"; name_fw_pt += r+1;
-        TString name_fw_rho = "asymmrho_"; name_fw_rho += "probe"; name_fw_rho += m+1; name_fw_rho += "_pt"; name_fw_rho += p+1; name_fw_rho += "_alpha"; name_fw_rho += r+1;
-        TString name_fw_pt3 = "asymmpt3_"; name_fw_pt3 += "probe"; name_fw_pt3 += m+1; name_fw_pt3 += "_pt"; name_fw_pt3 += p+1; name_fw_pt3 += "_alpha"; name_fw_pt3 += r+1;
-        TH1F *h1 = new TH1F( name_fw, name_fw, 160, -0.8, 0.8 );
-        h1 ->GetYaxis()->SetTitle("a.u.");    h1 ->GetXaxis()->SetTitle("Asymmetry");
-        h1 -> Sumw2(); temp1.push_back(h1);
-        TH1F *h2 = new TH1F( name_fw_pt, name_fw_pt, 50, 0, 1500 );
-        h2 ->GetYaxis()->SetTitle("a.u.");    h2 ->GetXaxis()->SetTitle("Pt[GeV]");
-        h2 -> Sumw2(); temp1pt.push_back(h2);
-        TH1F *h3 = new TH1F( name_fw_rho, name_fw_rho, 100, 0, 100 );
-        h3 ->GetYaxis()->SetTitle("a.u.");    h3 ->GetXaxis()->SetTitle("rho");
-        h3 -> Sumw2(); temp1rho.push_back(h3);
-        TH1F *h4 = new TH1F( name_fw_pt3, name_fw_pt3, 50, 0, 1500 );
-        h4 ->GetYaxis()->SetTitle("a.u.");    h4 ->GetXaxis()->SetTitle("Pt[GeV]");
-        h4 -> Sumw2(); temp1pt3.push_back(h4);
-      }
-      temp2.push_back(temp1); temp2pt.push_back(temp1pt); temp2rho.push_back(temp1rho);  temp2pt3.push_back(temp1pt3);
-    }
-    asymmetries_all.push_back(temp2); asymmetries_pt_all.push_back(temp2pt); asymmetries_rho_all.push_back(temp2rho); asymmetries_pt3_all.push_back(temp2pt3);
-    alpha_spectrum.push_back(alpha_temp2);
-  }
-
-  for( int m = 0; m < EtaForwardBinsNo; m++ ){
-    std::vector< std::vector< TH1F* > > temp2, temp2pt, temp2rho, temp2pt3;
-    std::vector< TH1F* > alpha_temp2;
-    for( int p = 0; p < PtFTBinsNo; p++ ){
-      std::vector< TH1F* > temp1, temp1pt, temp1rho, temp1pt3;
-      char name_alpha[100];
-      sprintf(name_alpha, "alpha_eta%d_pt_%d",m+ EtaBinsNo ,p );
-      TH1F *h1_alpha = new TH1F( name_alpha, name_alpha, 80, 0., 0.8 );
-      h1_alpha ->GetYaxis()->SetTitle("a.u.");    h1_alpha ->GetXaxis()->SetTitle("Alpha");
-      h1_alpha -> Sumw2(); alpha_temp2.push_back(h1_alpha);
-      for( int r = 0; r < AlphaBinsNo; r++ ){
-        TString name_fw = "asymm_"; name_fw += "eta"; name_fw += m+1+EtaBinsNo; name_fw += "_pt"; name_fw += p+1; name_fw += "_alpha"; name_fw += r+1;
-        TString name_fw_pt = "asymmpt_"; name_fw_pt += "probe"; name_fw_pt += m+1+EtaBinsNo; name_fw_pt += "_pt"; name_fw_pt += p+1; name_fw_pt += "_alpha"; name_fw_pt += r+1;
-        TString name_fw_rho = "asymmrho_"; name_fw_rho += "probe"; name_fw_rho += m+1+EtaBinsNo; name_fw_rho += "_pt"; name_fw_rho += p+1; name_fw_rho += "_alpha"; name_fw_rho += r+1;
-        TString name_fw_pt3 = "asymmpt3_"; name_fw_pt3 += "probe"; name_fw_pt3 += m+1+EtaBinsNo; name_fw_pt3 += "_pt"; name_fw_pt3 += p+1; name_fw_pt3 += "_alpha"; name_fw_pt3 += r+1;
-        TH1F *h1 = new TH1F( name_fw, name_fw, 160, -0.8, 0.8 );
-        h1 ->GetYaxis()->SetTitle("a.u.");    h1 ->GetXaxis()->SetTitle("Asymmetry");
-        h1 -> Sumw2(); temp1.push_back(h1);
-        TH1F *h2 = new TH1F( name_fw_pt, name_fw_pt, 50, 0, 1500 );
-        h2 ->GetYaxis()->SetTitle("a.u.");    h2 ->GetXaxis()->SetTitle("Pt[GeV]");
-        h2 -> Sumw2(); temp1pt.push_back(h2);
-        TH1F *h3 = new TH1F( name_fw_rho, name_fw_rho, 100, 0, 100 );
-        h3 ->GetYaxis()->SetTitle("a.u.");    h3 ->GetXaxis()->SetTitle("rho");
-        h3 -> Sumw2(); temp1rho.push_back(h3);
-        TH1F *h4 = new TH1F( name_fw_pt3, name_fw_pt3, 50, 0, 1500 );
-        h4 ->GetYaxis()->SetTitle("a.u.");    h4 ->GetXaxis()->SetTitle("Pt[GeV]");
-        h4 -> Sumw2(); temp1pt3.push_back(h4);
-      }
-      temp2.push_back(temp1); temp2pt.push_back(temp1pt); temp2rho.push_back(temp1rho); temp2pt3.push_back(temp1pt3);
-    }
-    asymmetries_all.push_back(temp2); asymmetries_pt_all.push_back(temp2pt); asymmetries_rho_all.push_back(temp2rho); asymmetries_pt3_all.push_back(temp2pt3);
-    alpha_spectrum.push_back(alpha_temp2);
-  }
-
-  // I define histograms used in forward extension for reference eta ( 0, s_eta_barr )
-
-  for( int m = 0; m < EtaFtBinsNo; m++ ){
-    std::vector< std::vector< TH1F* > > temp2, temp2pt, temp2rho, temp2pt3;
-    std::vector< TH1F* > alpha_temp2;
-    for( int p = 0; p < PtFTBinsNo; p++ ){
-      std::vector< TH1F* > temp1, temp1pt, temp1rho, temp1pt3;
-      char name_alpha[100];
-      sprintf(name_alpha, "forward_alpha_eta%d_pt_%d",m + 2 + EtaFtControlBinsNo ,p );
-      TH1F *h1_alpha = new TH1F( name_alpha, name_alpha, 80, 0., 0.8 );
-      h1_alpha ->GetYaxis()->SetTitle("a.u.");    h1_alpha ->GetXaxis()->SetTitle("Alpha");
-      h1_alpha -> Sumw2(); alpha_temp2.push_back(h1_alpha);
-      for( int r = 0; r < AlphaBinsNo; r++ ){
-        TString name_fw = "forward_"; name_fw += "probe"; name_fw += m+2+EtaFtControlBinsNo; name_fw += "_pt"; name_fw += p+1; name_fw += "_alpha"; name_fw += r+1;
-        TString name_fw_pt = "forwardpt_"; name_fw_pt += "probe"; name_fw_pt += m+2+EtaFtControlBinsNo; name_fw_pt += "_pt"; name_fw_pt += p+1; name_fw_pt += "_alpha"; name_fw_pt += r+1;
-        TString name_fw_rho = "forwardrho_"; name_fw_rho += "probe"; name_fw_rho += m+2+EtaFtControlBinsNo; name_fw_rho += "_pt"; name_fw_rho += p+1; name_fw_rho += "_alpha"; name_fw_rho += r+1;
-        TString name_fw_pt3 = "forwardpt3_"; name_fw_pt3 += "probe"; name_fw_pt3 += m+2+EtaFtControlBinsNo; name_fw_pt3 += "_pt"; name_fw_pt3 += p+1; name_fw_pt3 += "_alpha"; name_fw_pt3 += r+1;
-        TH1F *h1 = new TH1F( name_fw, name_fw, 160, -0.8, 0.8 );
-        h1 ->GetYaxis()->SetTitle("a.u.");    h1 ->GetXaxis()->SetTitle("Asymmetry");
-        h1 -> Sumw2(); temp1.push_back(h1);
-        TH1F *h2 = new TH1F( name_fw_pt, name_fw_pt, 50, 0, 1500 );
-        h2 ->GetYaxis()->SetTitle("a.u.");    h2 ->GetXaxis()->SetTitle("Pt[GeV]");
-        h2 -> Sumw2(); temp1pt.push_back(h2);
-        TH1F *h3 = new TH1F( name_fw_rho, name_fw_rho, 100, 0, 100 );
-        h3 ->GetYaxis()->SetTitle("a.u.");    h3 ->GetXaxis()->SetTitle("rho");
-        h3 -> Sumw2(); temp1rho.push_back(h3);
-        TH1F *h4 = new TH1F( name_fw_pt3, name_fw_pt3, 50, 0, 1500 );
-        h4 ->GetYaxis()->SetTitle("a.u.");    h4 ->GetXaxis()->SetTitle("Pt[GeV]");
-        h4 -> Sumw2(); temp1pt3.push_back(h4);
-      }
-      temp2.push_back(temp1); temp2pt.push_back(temp1pt); temp2rho.push_back(temp1rho); temp2pt3.push_back(temp1pt3);
-    }
-    forward_hist.push_back(temp2); forward_pt_hist.push_back(temp2pt); forward_rho_hist.push_back(temp2rho); forward_pt3_hist.push_back(temp2pt3);
-    forward_alpha_spectrum.push_back(alpha_temp2);
-  }
-
-  // I define histograms for the control eta bins for forward method calculation
-
-  for( int m = 0; m < EtaFtControlBinsNo; m++ ){
-    std::vector< std::vector< TH1F* > > temp2, temp2pt, temp2rho, temp2pt3;
-    std::vector< TH1F* > alpha_temp2;
-    for( int p = 0; p < PtBinsNo; p++ ){
-      std::vector< TH1F* > temp1, temp1pt, temp1rho, temp1pt3;
-      char name_alpha[100];
-      sprintf(name_alpha, "forward_alpha_eta%d_pt_%d", m + 2, p );
-      TH1F *h1_alpha = new TH1F( name_alpha, name_alpha, 80, 0., 0.8 );
-      h1_alpha ->GetYaxis()->SetTitle("a.u.");    h1_alpha ->GetXaxis()->SetTitle("Alpha");
-      h1_alpha -> Sumw2(); alpha_temp2.push_back(h1_alpha);
-      for( int r = 0; r < AlphaBinsNo; r++ ){
-        TString name_fw = "forward_control_"; name_fw += "probe"; name_fw += m+2; name_fw += "_pt"; name_fw += p+1; name_fw += "_alpha"; name_fw += r+1;
-        TString name_fw_pt = "forwardpt_control_"; name_fw_pt += "probe"; name_fw_pt += m+2; name_fw_pt += "_pt"; name_fw_pt += p+1; name_fw_pt += "_alpha"; name_fw_pt += r+1;
-        TString name_fw_rho = "forwardrho_control_"; name_fw_rho += "probe"; name_fw_rho += m+2; name_fw_rho += "_pt"; name_fw_rho += p+1; name_fw_rho += "_alpha"; name_fw_rho += r+1;
-        TString name_fw_pt3 = "forwardpt3_control_"; name_fw_pt3 += "probe"; name_fw_pt3 += m+2; name_fw_pt3 += "_pt"; name_fw_pt3 += p+1; name_fw_pt3 += "_alpha"; name_fw_pt3 += r+1;
-        TH1F *h1 = new TH1F( name_fw, name_fw, 160, -0.8, 0.8 );
-        h1 ->GetYaxis()->SetTitle("a.u.");    h1 ->GetXaxis()->SetTitle("Asymmetry");
-        h1 -> Sumw2(); temp1.push_back(h1);
-        TH1F *h2 = new TH1F( name_fw_pt, name_fw_pt, 50, 0, 1500 );
-        h2 ->GetYaxis()->SetTitle("a.u.");    h2 ->GetXaxis()->SetTitle("Pt[GeV]");
-        h2 -> Sumw2(); temp1pt.push_back(h2);
-        TH1F *h3 = new TH1F( name_fw_rho, name_fw_rho, 100, 0, 100 );
-        h3 ->GetYaxis()->SetTitle("a.u.");    h3 ->GetXaxis()->SetTitle("rho");
-        h3 -> Sumw2(); temp1rho.push_back(h3);
-        TH1F *h4 = new TH1F( name_fw_pt3, name_fw_pt3, 50, 0, 1500 );
-        h4 ->GetYaxis()->SetTitle("a.u.");    h4 ->GetXaxis()->SetTitle("Pt[GeV]");
-        h4 -> Sumw2(); temp1pt3.push_back(h4);
-      }
-      temp2.push_back(temp1); temp2pt.push_back(temp1pt); temp2rho.push_back(temp1rho); temp2pt3.push_back(temp1pt3);
-    }
-    forward_hist_dijet.push_back(temp2); forward_pt_hist_dijet.push_back(temp2pt); forward_rho_hist_dijet.push_back(temp2rho); forward_pt3_hist_dijet.push_back(temp2pt3);
-    forward_alpha_spectrum_dijet.push_back(alpha_temp2);
-  }
+  MakeHistograms(asymmetries_SM, 						asymmetries_pt_SM,						asymmetries_rho_SM,						asymmetries_pt3_SM, 					alpha_spectrum_SM,						"asymm", "_SM",						EtaBins_SM,						PtBins_Central,	AlphaBins, etaShift_SM,						0, 0);
+  MakeHistograms(asymmetries_SM_control,		asymmetries_pt_SM_control,		asymmetries_rho_SM_control,		asymmetries_pt3_SM_control,		alpha_spectrum_SM_control,		"asymm", "_SM_control",		EtaBins_SM_control,		PtBins_HF,			AlphaBins, etaShift_SM_control,		0, 0);
+  MakeHistograms(asymmetries_FE_reference,	asymmetries_pt_FE_reference,	asymmetries_rho_FE_reference,	asymmetries_pt3_FE_reference,	alpha_spectrum_FE_reference,	"asymm", "_FE_reference",	EtaBins_FE_reference,	PtBins_Central, AlphaBins, etaShift_FE_reference,	0, 0);
+  MakeHistograms(asymmetries_FE_control,		asymmetries_pt_FE_control,		asymmetries_rho_FE_control,		asymmetries_pt3_FE_control,		alpha_spectrum_FE_control,		"asymm", "_FE_control",		EtaBins_FE_control,		PtBins_Central, AlphaBins, etaShift_FE_control,		0, 0);
+  MakeHistograms(asymmetries_FE, 						asymmetries_pt_FE,						asymmetries_rho_FE,						asymmetries_pt3_FE, 					alpha_spectrum_FE,						"asymm", "_FE",						EtaBins_FE,						PtBins_HF,			AlphaBins, etaShift_FE,						0, 0);
 
 }
 
-Bool_t MySelector::Process(Long64_t entry){
+Bool_t MySelector::Process(Long64_t entry) {
   // The Process() function is called for each entry in the tree (or possibly
   // keyed object in the case of PROOF) to be processed. The entry argument
   // specifies which entry in the currently loaded tree is to be processed.
@@ -285,232 +228,134 @@ Bool_t MySelector::Process(Long64_t entry){
   // The return value is currently not used.
 
   ++TotalEvents;
+  if ( TotalEvents%100000 == 0 ) {  std::cout << "            Analyzing event #" << TotalEvents << std::endl; }
 
   GetEntry( entry );
-
   BuildEvent();
 
   //2017
-  std::vector<int> p_bins(pt_bins_Si, pt_bins_Si + sizeof(pt_bins_Si)/sizeof(double));
-  std::vector<int> p_bins_FT(pt_bins_Si_HF, pt_bins_Si_HF + sizeof(pt_bins_Si_HF)/sizeof(double));
-  std::vector<double> eta_bins_all(eta_bins, eta_bins + sizeof(eta_bins)/sizeof(double));
-  std::vector<double> eta_ref_down(eta_bins+10, eta_bins + sizeof(eta_bins)/sizeof(double)-1);
-  std::vector<double> eta_ref_up(eta_bins+11, eta_bins + sizeof(eta_bins)/sizeof(double));
-  std::vector<double> eta_bins_control(eta_bins+3, eta_bins + sizeof(eta_bins)/sizeof(double)-3);
-  eta_bins_control.insert(eta_bins_control.begin(), 0.);
-  p_bins.push_back(1500);
-  p_bins_FT.push_back(1500);
+  std::vector<double> Eta_bins_SM(           	eta_bins + etaShift_SM,						eta_bins + etaShift_SM + EtaBins_SM + 1);
+  std::vector<double> Eta_bins_SM_control(  	eta_bins + etaShift_SM_control,		eta_bins + etaShift_SM_control + EtaBins_SM_control + 1);
+  std::vector<double> Eta_bins_FE_reference(	eta_bins + etaShift_FE_reference,	eta_bins + etaShift_FE_reference + EtaBins_FE_reference + 1);
+  std::vector<double> Eta_bins_FE_control(   	eta_bins + etaShift_FE_control,		eta_bins + etaShift_FE_control + EtaBins_FE_control + 1);
+  std::vector<double> Eta_bins_FE(           	eta_bins + etaShift_FE,						eta_bins + etaShift_FE + EtaBins_FE + 1);
 
-  std::vector<double> alpha_bins;
-  alpha_bins.push_back(0.05); alpha_bins.push_back(0.1);  alpha_bins.push_back(0.15); alpha_bins.push_back(0.20); alpha_bins.push_back(0.25); alpha_bins.push_back(0.3);
+  std::vector<int> Pt_bins_Central(pt_bins_Si, pt_bins_Si + sizeof(pt_bins_Si)/sizeof(double));
+  std::vector<int> Pt_bins_HF(pt_bins_Si_HF, pt_bins_Si_HF + sizeof(pt_bins_Si_HF)/sizeof(double));
+  Pt_bins_Central.push_back(1500);
+  Pt_bins_HF.push_back(1500);
 
+  std::vector<double> Alpha_bins;
+  Alpha_bins.push_back(0.05); Alpha_bins.push_back(0.1);  Alpha_bins.push_back(0.15); Alpha_bins.push_back(0.20); Alpha_bins.push_back(0.25); Alpha_bins.push_back(0.3);
+  bool cond1, cond2, cond3;
 
   // Triggers are called by index of this list
-  bool trigger[PtBinsNo];
-  bool ftrigger[PtFTBinsNo];
+  bool trigger[PtBins_Central];
+  bool ftrigger[PtBins_HF];
 
-  std::fill_n(trigger, PtBinsNo, false);
-  std::fill_n(ftrigger, PtFTBinsNo, false);
+  std::fill_n(trigger, PtBins_Central, false);
+  std::fill_n(ftrigger, PtBins_HF, false);
 
-  if(pass_trigger_bl){
-    for( int i = 0; i < PtBinsNo; i++ ){
-      if(p_bins[i] <= pt_ave && p_bins[i + 1] >= pt_ave){
+  if (pass_trigger_bl) {
+    for( int i = 0; i < PtBins_Central; i++ ) {
+      if (Pt_bins_Central[i] <= pt_ave && Pt_bins_Central[i + 1] >= pt_ave) {
         trigger[i] = true;
       }
     }
   }
-  if(pass_trigger_hf){ // FIXME this is only a temporal solution
-    for( int i = 0; i < PtFTBinsNo; i++ ){
-      if(p_bins_FT[i] <= pt_ave && p_bins_FT[i + 1] >= pt_ave){
+  if (pass_trigger_hf) { // FIXME this is only a temporal solution
+    for( int i = 0; i < PtBins_HF; i++ ) {
+      if (Pt_bins_HF[i] <= pt_ave && Pt_bins_HF[i + 1] >= pt_ave) {
         ftrigger[i] = true;
       }
     }
   }
 
-  double weight;
-
-  weight = 1.0;
-
-  if( TotalEvents%100000 == 0 ){  std::cout << "            Analyzing event #" << TotalEvents << std::endl; }
-
   h_PU -> Fill( npuIT, 1 );
 
-  double jet_threshold=10;
-
-  double alpha_raw;
-
-  if ( jet3_pt > jet_threshold ){
-    alpha_raw =  2 * jet3_pt/( jet1_pt + jet2_pt );
-  }
+  double weight = 1.0;
+  double jet_threshold = 15;
+  double alpha_raw = alpha_;
 
   h_alpha_raw -> Fill( alpha_raw, 1 );
-
   double parallel, perpendicular, complete, alpha;
 
   // Below I choose what kind of asymmetries I want to study!
-
   //    bool excl_bin = true;  // exclusive
   bool excl_bin = false; // inclusive
 
   int flag1 = 0; // 0 -> complete_alpha
   // 1 -> parallel
   // 2 -> perpendicular
-  bool pass_trigger = false;
 
-  if ( jet2_pt > jet_threshold ){
-    if ( jet3_pt > jet_threshold ){
+  if ( jet2_pt > jet_threshold &&  (njet > 1) ) {
+    if ( jet3_pt > jet_threshold ) {
       complete =  alpha_raw; //2 * jet3_pt/( jet1_pt + jet2_pt );
       parallel = alpha_raw; //(2*Jets[2]*(Jets[0]-Jets[1]))/((Jets[0]-Jets[1]).Pt()*( jet1_pt + jet2_pt ));
-      perpendicular = alpha_raw; //TMath::Sqrt( TMath::Power( complete, 2 ) - TMath::Power( parallel, 2) );
+      perpendicular = alpha_raw; //TMath::Sqrt( TMath::Power(complete, 2 ) - TMath::Power(parallel, 2) );
     } else {
-      complete = 0 ;
-      parallel = 0 ;
-      perpendicular = 0 ;
+      if ((njet <3)) {
+        complete = 0. ;
+        parallel = 0. ;
+        perpendicular = 0. ;
+      } else {
+        complete = 1. ;
+        parallel = 1. ;
+        perpendicular = 1. ;
+      }
     }
-
     if (flag1 == 0 ) alpha = TMath::Abs(complete);
     if (flag1 == 1 ) alpha = TMath::Abs(parallel);
     if (flag1 == 2 ) alpha = TMath::Abs(perpendicular);
 
-    if ( TMath::Abs(TVector2::Phi_mpi_pi((probejet_phi - barreljet_phi)))  > 2.7 ){ // I fill alpha_max histograms
-      for ( int k = 0 ; k < PtBinsNo ; k++ ){
-        if(trigger[k]){
-          if ((0.5*(jet1_pt+jet2_pt) > p_bins[k]) &&
-          (0.5*(jet1_pt+jet2_pt) < p_bins[k+1]) ){
-            pass_trigger = true;
-            for ( int r = 0 ; r < EtaBinsNo ; r++ ){
-              if (TMath::Abs( probejet_eta ) > eta_bins_all[r] &&
-              TMath::Abs( probejet_eta ) < eta_bins_all[r+1] &&
-              TMath::Abs( barreljet_eta) > eta_bins_all[r] &&
-              TMath::Abs( barreljet_eta) < eta_bins_all[r+1] ){
+    if ( TMath::Abs(TVector2::Phi_mpi_pi((probejet_phi - barreljet_phi))) > 2.7 ) {
+      for ( int k = 0 ; k < PtBins_Central ; k++ ) {
+        if (trigger[k]) {
+          if ((pt_ave > Pt_bins_Central[k]) && (pt_ave < Pt_bins_Central[k+1]) ) {
 
-                h_alpha_select -> Fill( alpha, 1 );
-                for ( int m = 0 ; m < AlphaBinsNo ; m++ ){
-                  if ( alpha < alpha_bins[ m+1 ] ){
-                    double asy = asymmetry;
-                    if (((rand()%2)+1)==1 ) { asy = - asy;}
-                    asymmetries_all.at(r).at(k).at(m) -> Fill( asy , weight );
-                    asymmetries_pt_all.at(r).at(k).at(m) -> Fill( 0.5 * ( jet1_pt + jet2_pt ), weight );
-                    asymmetries_rho_all.at(r).at(k).at(m) -> Fill( rho, weight );
-                    asymmetries_pt3_all.at(r).at(k).at(m) -> Fill( jet3_pt, weight );
-                    if ( m == AlphaBinsNo-1 ){
-                      h_JetAvePt -> Fill( 0.5 * ( jet1_pt + jet2_pt ), weight );
-                      h_Jet1Pt -> Fill( jet1_pt, weight );
-                      h_Jet2Pt -> Fill( jet2_pt, weight );
-                      h_Jet3Pt -> Fill( jet3_pt, weight );
-                    }
-                    if ( excl_bin ) break;
-                  }
-                }
-                alpha_spectrum.at(r).at(k) -> Fill(alpha, weight);
-              }
+            for ( int r = 0 ; r < EtaBins_SM ; r++ ) {
+              cond1 = (TMath::Abs(barreljet_eta) > Eta_bins_SM[r] && TMath::Abs(barreljet_eta) < Eta_bins_SM[r+1] && TMath::Abs(probejet_eta) > Eta_bins_SM[r] && TMath::Abs(probejet_eta) < Eta_bins_SM[r+1]);
+              cond2 = false;
+              cond3 = ((rand()%2)+1)==1;
+              SELECT_ETA_ALPHA_BIN(SM,SM,cond1,cond2,cond3)
             }
-            for ( int r = 0 ; r < EtaFtControlBinsNo ; r++ ){
-              if (( TMath::Abs( probejet_eta ) > 0. &&
-              TMath::Abs( probejet_eta ) < s_eta_barr &&
-              TMath::Abs( barreljet_eta ) > eta_bins_control[r] &&
-              TMath::Abs( barreljet_eta ) < eta_bins_control[r+1]) ||
-              (TMath::Abs( barreljet_eta ) > 0. &&
-              TMath::Abs( barreljet_eta ) < s_eta_barr &&
-              TMath::Abs( probejet_eta ) > eta_bins_control[r] &&
-              TMath::Abs( probejet_eta ) < eta_bins_control[r+1]) ){
-                for ( int m = 0 ; m < AlphaBinsNo ; m++ ){
-                  if ( alpha < alpha_bins[ m+1 ] ){
-                    double Delta_R_radiation;
-                    if ((TMath::Abs( barreljet_eta ) > 0. && TMath::Abs( barreljet_eta ) < s_eta_barr && TMath::Abs( probejet_eta ) > eta_bins_control[r] && TMath::Abs( probejet_eta ) < eta_bins_control[r+1])) { Delta_R_radiation = TMath::Sqrt(TMath::Power( barreljet_eta - jet3_eta,2) + TMath::Power(TVector2::Phi_mpi_pi( barreljet_phi - jet3_phi),2)); }
-                    if ((TMath::Abs( probejet_eta ) > 0. && TMath::Abs( probejet_eta ) < s_eta_barr && TMath::Abs( barreljet_eta ) > eta_bins_control[r] && TMath::Abs( barreljet_eta ) < eta_bins_control[r+1])) { Delta_R_radiation = TMath::Sqrt(TMath::Power( probejet_eta - jet3_eta,2) + TMath::Power(TVector2::Phi_mpi_pi( probejet_phi - jet3_phi),2)); }
-                    if (false) continue;
-                    // if (Delta_R_radiation < 1.0) continue;
-                    // if (Delta_R_radiation < 1.0) continue;
-                    double asy = asymmetry;
-                    if ((TMath::Abs( probejet_eta ) > 0. && TMath::Abs( probejet_eta ) < s_eta_barr && TMath::Abs( barreljet_eta ) > eta_bins_control[r] && TMath::Abs( barreljet_eta ) < eta_bins_control[r+1])) { asy = - asymmetry;}
-                    if ( (((rand()%2)+1)==1) && r ==0 ) { asy = - asy;}
-                    forward_hist_dijet.at(r).at(k).at(m) -> Fill( asy , weight );
-                    forward_pt_hist_dijet.at(r).at(k).at(m) -> Fill( 0.5 * ( jet1_pt + jet2_pt ), weight );
-                    forward_rho_hist_dijet.at(r).at(k).at(m) -> Fill( rho, weight );
-                    forward_pt3_hist_dijet.at(r).at(k).at(m) -> Fill( jet3_pt, weight );
-                    if ( m == AlphaBinsNo-1 ){
-                      h_FEJetAvePt -> Fill( 0.5 * ( jet1_pt + jet2_pt ), weight );
-                      h_FEJet1Pt -> Fill( jet1_pt, weight );
-                      h_FEJet2Pt -> Fill( jet2_pt, weight );
-                      h_FEJet3Pt -> Fill( jet3_pt, weight );
-                    }
-                    if ( excl_bin ) break;
-                  }
-                }
-                forward_alpha_spectrum_dijet.at(r).at(k) -> Fill(alpha, weight);
+            for ( int r = 0 ; r < EtaBins_FE_reference ; r++ ) {
+              cond1 = (TMath::Abs(barreljet_eta)> 0. && TMath::Abs(barreljet_eta)< 1.131 && TMath::Abs(probejet_eta) > Eta_bins_FE_reference[r] && TMath::Abs(probejet_eta) < Eta_bins_FE_reference[r+1]);
+              cond2 = (TMath::Abs(probejet_eta) > 0. && TMath::Abs(probejet_eta) < 1.131 && TMath::Abs(barreljet_eta)> Eta_bins_FE_reference[r] && TMath::Abs(barreljet_eta)< Eta_bins_FE_reference[r+1]);
+              if (Eta_bins_FE_reference[r] < 1.131) {
+                cond3 = ((rand()%2)+1)==1;
               }
+              else{
+                cond3 = cond2;
+              }
+              SELECT_ETA_ALPHA_BIN(FE_reference,FE,cond1,cond2,cond3)
+            }
+            for ( int r = 0 ; r < EtaBins_FE_control ; r++ ) {
+              cond1 = (TMath::Abs(barreljet_eta)> 0. && TMath::Abs(barreljet_eta)< 1.131 && TMath::Abs(probejet_eta) > Eta_bins_FE_control[r] && TMath::Abs(probejet_eta) < Eta_bins_FE_control[r+1]);
+              cond2 = (TMath::Abs(probejet_eta) > 0. && TMath::Abs(probejet_eta) < 1.131 && TMath::Abs(barreljet_eta)> Eta_bins_FE_control[r] && TMath::Abs(barreljet_eta)< Eta_bins_FE_control[r+1]);
+              cond3 = cond2;
+              SELECT_ETA_ALPHA_BIN(FE_control,FE,cond1,cond2,cond3)
             }
             break;
           }
         }
       }
-      for ( int k = 0 ; k < PtFTBinsNo ; k++ ){
-        if(ftrigger[k]){
-          if ((0.5*(jet1_pt+jet2_pt) > p_bins_FT[k]) &&
-          (0.5*(jet1_pt+jet2_pt) < p_bins_FT[k+1])){
-            pass_trigger = true;
-            for ( int r = 0 ; r < EtaFtBinsNo ; r++ ){
-              if (( TMath::Abs( probejet_eta ) > 0. &&
-              TMath::Abs( probejet_eta ) < s_eta_barr &&
-              TMath::Abs( barreljet_eta ) > eta_ref_down[r] &&
-              TMath::Abs( barreljet_eta ) < eta_ref_up[r]) ||
-              (TMath::Abs( barreljet_eta ) > 0. &&
-              TMath::Abs( barreljet_eta ) < s_eta_barr &&
-              TMath::Abs( probejet_eta ) > eta_ref_down[r] &&
-              TMath::Abs( probejet_eta ) < eta_ref_up[r]) ){
-                for ( int m = 0 ; m < AlphaBinsNo; m++ ){
-                  if ( alpha < alpha_bins[ m+1 ] ){
-                    double Delta_R_radiation;
-                    if ((TMath::Abs( barreljet_eta ) > 0. && TMath::Abs( barreljet_eta ) < s_eta_barr && TMath::Abs( probejet_eta ) > eta_ref_down[r] && TMath::Abs( probejet_eta ) < eta_ref_up[r])) { Delta_R_radiation = TMath::Sqrt(TMath::Power( barreljet_eta - jet3_eta,2) + TMath::Power(TVector2::Phi_mpi_pi( barreljet_phi - jet3_phi),2)); }
-                    if ((TMath::Abs( probejet_eta ) > 0. && TMath::Abs( probejet_eta ) < s_eta_barr && TMath::Abs( barreljet_eta ) > eta_ref_down[r] && TMath::Abs( barreljet_eta ) < eta_ref_up[r])) { Delta_R_radiation = TMath::Sqrt(TMath::Power( probejet_eta - jet3_eta,2) + TMath::Power(TVector2::Phi_mpi_pi( probejet_phi - jet3_phi),2)); }
-                    if (false) continue;
-                    // if (Delta_R_radiation < 1.0) continue;
-                    // if (Delta_R_radiation > 1.0) continue;
-                    double asy = asymmetry;
-                    if ((TMath::Abs( probejet_eta ) > 0. && TMath::Abs( probejet_eta ) < s_eta_barr && TMath::Abs( barreljet_eta ) > eta_ref_down[r] && TMath::Abs( barreljet_eta ) < eta_ref_up[r])) { asy = - asymmetry;}
-                    forward_hist.at(r).at(k).at(m) -> Fill( asy , weight );
-                    forward_pt_hist.at(r).at(k).at(m) -> Fill( 0.5 * ( jet1_pt + jet2_pt ), weight );
-                    forward_rho_hist.at(r).at(k).at(m) -> Fill( rho, weight );
-                    forward_pt3_hist.at(r).at(k).at(m) -> Fill( jet3_pt, weight );
-                    if ( m == AlphaBinsNo-1 ){
-                      h_FEJetAvePt -> Fill( 0.5 * ( jet1_pt + jet2_pt ), weight );
-                      h_FEJet1Pt -> Fill( jet1_pt, weight );
-                      h_FEJet2Pt -> Fill( jet2_pt, weight );
-                      h_FEJet3Pt -> Fill( jet3_pt, weight );
-                    }
-                    if ( excl_bin ) break;
-                  }
-                }
-                forward_alpha_spectrum.at(r).at(k) -> Fill(alpha, weight);
-              }
+      for ( int k = 0 ; k < PtBins_HF ; k++ ) {
+        if (ftrigger[k]) {
+          if ((pt_ave > Pt_bins_HF[k]) && (pt_ave < Pt_bins_HF[k+1]) ) {
+            for ( int r = 0 ; r < EtaBins_SM_control; r++ ) {
+              cond1 = (TMath::Abs(barreljet_eta) > Eta_bins_SM_control[r] && TMath::Abs(barreljet_eta) < Eta_bins_SM_control[r+1] && TMath::Abs(probejet_eta) > Eta_bins_SM_control[r] && TMath::Abs(probejet_eta) < Eta_bins_SM_control[r+1]);
+              cond2 = false;
+              cond3 = ((rand()%2)+1)==1;
+              SELECT_ETA_ALPHA_BIN(SM_control,SM,cond1,cond2,cond3)
             }
-            for ( int r = 0 ; r < EtaForwardBinsNo; r++ ){
-              if (TMath::Abs( probejet_eta ) > eta_bins_all[r+EtaBinsNo] &&
-              TMath::Abs( probejet_eta ) < eta_bins_all[r+1+EtaBinsNo] &&
-              TMath::Abs( barreljet_eta ) > eta_bins_all[r+EtaBinsNo] &&
-              TMath::Abs( barreljet_eta ) < eta_bins_all[r+1+EtaBinsNo] ){
-                h_alpha_select -> Fill( alpha, 1 );
-                for ( int m = 0 ; m < AlphaBinsNo ; m++ ){
-                  if ( alpha < alpha_bins[ m+1 ] ){
-                    double asy = asymmetry;
-                    if (((rand()%2)+1)==1 ) { asy = - asymmetry;}
-                    asymmetries_all.at(r+EtaBinsNo).at(k).at(m) -> Fill( asy , weight );
-                    asymmetries_pt_all.at(r+EtaBinsNo).at(k).at(m) -> Fill( 0.5 * ( jet1_pt + jet2_pt ), weight );
-                    asymmetries_rho_all.at(r).at(k).at(m) -> Fill( rho, weight );
-                    asymmetries_pt3_all.at(r).at(k).at(m) -> Fill( jet3_pt, weight );
-                    if ( m == AlphaBinsNo-1 ){
-                      h_JetAvePt -> Fill( 0.5 * ( jet1_pt + jet2_pt ), weight );
-                      h_Jet1Pt -> Fill( jet1_pt, weight );
-                      h_Jet2Pt -> Fill( jet2_pt, weight );
-                      h_Jet3Pt -> Fill( jet3_pt, weight );
-                    }
-                    if ( excl_bin ) break;
-                  }
-                }
-                alpha_spectrum.at(r).at(k) -> Fill(alpha, weight);
-              }
+            for ( int r = 0 ; r < EtaBins_FE ; r++ ) {
+              cond1 = (TMath::Abs(barreljet_eta)> 0. && TMath::Abs(barreljet_eta)< 1.131 && TMath::Abs(probejet_eta) > Eta_bins_FE[r] && TMath::Abs(probejet_eta) < Eta_bins_FE[r+1]);
+              cond2 = (TMath::Abs(probejet_eta) > 0. && TMath::Abs(probejet_eta) < 1.131 && TMath::Abs(barreljet_eta)> Eta_bins_FE[r] && TMath::Abs(barreljet_eta)< Eta_bins_FE[r+1]);
+              cond3 = cond2;
+              SELECT_ETA_ALPHA_BIN(FE,FE,cond1,cond2,cond3)
             }
+
             break;
           }
         }
@@ -520,14 +365,12 @@ Bool_t MySelector::Process(Long64_t entry){
   return kTRUE;
 }
 
-void MySelector::SlaveTerminate(){
+void MySelector::SlaveTerminate() {
   // The SlaveTerminate() function is called after all entries or objects
   // have been processed. When running with PROOF SlaveTerminate() is called
   // on each slave server.
 
   std::cout <<"            Analyzed events #" <<  TotalEvents << std::endl;
-
-
 
   std::ofstream mytxtfile;
   mytxtfile.open ("counts.txt");
@@ -538,16 +381,15 @@ void MySelector::SlaveTerminate(){
   fpt->cd();
   h_alpha_raw -> Write();
   h_alpha_select -> Write();
-  h_FEJetAvePt -> Write();
-  h_FEJet1Pt -> Write();
-  h_FEJet2Pt -> Write();
-  h_FEJet3Pt -> Write();
-  h_JetAvePt -> Write();
-  h_Jet1Pt -> Write();
-  h_Jet2Pt -> Write();
-  h_Jet3Pt -> Write();
+  h_JetAvePt_FE -> Write();
+  h_Jet1Pt_FE -> Write();
+  h_Jet2Pt_FE -> Write();
+  h_Jet3Pt_FE -> Write();
+  h_JetAvePt_SM -> Write();
+  h_Jet1Pt_SM -> Write();
+  h_Jet2Pt_SM -> Write();
+  h_Jet3Pt_SM -> Write();
   fpt->Close();
-
 
   TFile *fprim = new TFile("PU_incl_full.root","RECREATE"); ;
   fprim->cd();
@@ -556,115 +398,54 @@ void MySelector::SlaveTerminate(){
 
   TFile *f = new TFile("histograms_data_incl_full.root","RECREATE");
   TFile *f1 = new TFile("histograms_data_incl_full_control.root","RECREATE");
+  TFile *f_alpha = new TFile("alpha_spectrum.root","RECREATE"); ;
 
-  for( int m = 0; m < EtaBinsNo; m++ ){
-    for( int p = 0; p < PtBinsNo; p++ ){
-      for( int r = 0; r < AlphaBinsNo; r++ ){
-        f->cd();
-        asymmetries_all.at(m).at(p).at(r) -> Write();
-        asymmetries_pt_all.at(m).at(p).at(r) -> Write();
-        f1->cd();
-        asymmetries_rho_all.at(m).at(p).at(r) -> Write();
-        asymmetries_pt3_all.at(m).at(p).at(r) -> Write();
-      }
+  for( int r = 0; r < AlphaBins; r++ ) {
+    for( int p = 0; p < PtBins_Central; p++ ) {
+      WRITE_HISTOS(SM)
+      WRITE_HISTOS(FE_reference)
+      WRITE_HISTOS(FE_control)
     }
-  }
-
-  for( int m = 0; m < EtaForwardBinsNo; m++ ){
-    for( int p = 0; p < PtFTBinsNo; p++ ){
-      for( int r = 0; r < AlphaBinsNo; r++ ){
-        f->cd();
-        asymmetries_all.at(m+EtaBinsNo).at(p).at(r) -> Write();
-        asymmetries_pt_all.at(m+EtaBinsNo).at(p).at(r) -> Write();
-        f1->cd();
-        asymmetries_rho_all.at(m+EtaBinsNo).at(p).at(r) -> Write();
-        asymmetries_pt3_all.at(m+EtaBinsNo).at(p).at(r) -> Write();
-      }
-    }
-  }
-
-  for( int m = 0; m < EtaFtBinsNo; m++ ){
-    for( int p = 0; p < PtFTBinsNo; p++ ){
-      for( int r = 0; r < AlphaBinsNo; r++ ){
-        f->cd();
-        forward_hist.at(m).at(p).at(r) -> Write();
-        forward_pt_hist.at(m).at(p).at(r) -> Write();
-        f1->cd();
-        forward_rho_hist.at(m).at(p).at(r) -> Write();
-        forward_pt3_hist.at(m).at(p).at(r) -> Write();
-      }
-    }
-  }
-
-  for( int m = 0; m < EtaFtControlBinsNo; m++ ){
-    for( int p = 0; p < PtBinsNo; p++ ){
-      for( int r = 0; r < AlphaBinsNo; r++ ){
-        f->cd();
-        forward_hist_dijet.at(m).at(p).at(r) -> Write();
-        forward_pt_hist_dijet.at(m).at(p).at(r) -> Write();
-        f1->cd();
-        forward_rho_hist_dijet.at(m).at(p).at(r) -> Write();
-        forward_pt3_hist_dijet.at(m).at(p).at(r) -> Write();
-      }
+    for( int p = 0; p < PtBins_HF; p++ ) {
+      WRITE_HISTOS(SM_control)
+      WRITE_HISTOS(FE)
     }
   }
 
   f -> Close();
   f1-> Close();
-
-
-  TFile *f_alpha = new TFile("alpha_spectrum.root","RECREATE"); ;
-
-  for( int m = 0; m < asymmetries_all.size() ; m++ ){
-    for( int p = 0; p < asymmetries_all.at(m).size(); p++ ){
-      alpha_spectrum.at(m).at(p) -> Write();
-    }
-  }
-
-  for( int m = 0; m < forward_alpha_spectrum.size(); m++ ){
-    for( int p = 0; p < forward_alpha_spectrum.at(m).size(); p++ ){
-      forward_alpha_spectrum.at(m).at(p) -> Write();
-    }
-  }
-
-  for( int m = 0; m < forward_alpha_spectrum_dijet.size(); m++ ){
-    for( int p = 0; p < forward_alpha_spectrum_dijet.at(m).size(); p++ ){
-      forward_alpha_spectrum_dijet.at(m).at(p) -> Write();
-    }
-  }
-
   f_alpha -> Close();
 
 }
 
-void MySelector::Terminate(){
+void MySelector::Terminate() {
   // The Terminate() function is the last function to be called during
   // a query. It always runs on the client, it can be used to present
   // the results graphically or save the results to file.
 
 }
 
-
-double Weight( std::string filename ){
-  if ( filename.std::string::find("Pt_5to10") != std::string::npos )      return 6.102e+10/3422691;
-  if ( filename.std::string::find("Pt_10to15") != std::string::npos )     return 5.888e+09/3490055;
-  if ( filename.std::string::find("Pt_15to30") != std::string::npos )     return 1.837e+09/4936496;
-  if ( filename.std::string::find("Pt_30to50") != std::string::npos )     return 1.409e+08/4899251;
-  if ( filename.std::string::find("Pt_50to80") != std::string::npos )     return 1.92e+07/4966990;
-  if ( filename.std::string::find("Pt_80to120") != std::string::npos )    return 2.763e+06/3465021;
-  if ( filename.std::string::find("Pt_120to170") != std::string::npos )   return 4.711e+05/3446207;
-  if ( filename.std::string::find("Pt_170to300") != std::string::npos )   return 1.173e+05/3438066;
-  if ( filename.std::string::find("Pt_300to470") != std::string::npos )   return 7823./2930578;
-  if ( filename.std::string::find("Pt_470to600") != std::string::npos )   return 648.2/1939229;
-  if ( filename.std::string::find("Pt_600to800") != std::string::npos )   return 186.9/1890256;
-  if ( filename.std::string::find("Pt_800to1000") != std::string::npos )  return 32.29/1911296;
-  if ( filename.std::string::find("Pt_1000to1400") != std::string::npos ) return 9.418/1461216;
-  if ( filename.std::string::find("Pt_1400to1800") != std::string::npos ) return 0.8426/197959;
-  if ( filename.std::string::find("Pt_1800to2400") != std::string::npos ) return 0.1149/194924;
-  if ( filename.std::string::find("Pt_2400to3200") != std::string::npos ) return 0.00683/198383;
-  if ( filename.std::string::find("Pt_3200toInf") != std::string::npos )  return 0.0001654/188696;
+double Weight( std::string filename ) {
+  if ( filename.std::string::find("QCDPt15to30")      != std::string::npos )  return 1837410000.0000  /19777211;
+  if ( filename.std::string::find("QCDPt30to50")      != std::string::npos )  return 140932000.0000   /19693825;
+  if ( filename.std::string::find("QCDPt50to80")      != std::string::npos )  return 19204300.0000    /19191105;
+  if ( filename.std::string::find("QCDPt80to120")     != std::string::npos )  return 2762530.0000     /28780800;
+  if ( filename.std::string::find("QCDPt120to170")    != std::string::npos )  return 471100.0000      /26840644;
+  if ( filename.std::string::find("QCDPt170to300")    != std::string::npos )  return 117276.0000      /29725594;
+  if ( filename.std::string::find("QCDPt300to470")    != std::string::npos )  return 7823.0000        /53285022;
+  if ( filename.std::string::find("QCDPt470to600")    != std::string::npos )  return 648.2000         /26439242;
+  if ( filename.std::string::find("QCDPt600to800")    != std::string::npos )  return 186.9000         /63545546;
+  if ( filename.std::string::find("QCDPt800to1000")   != std::string::npos )  return 32.2930          /37632352;
+  if ( filename.std::string::find("QCDPt1000to1400")  != std::string::npos )  return 9.4183           /19552294;
+  if ( filename.std::string::find("QCDPt1400to1800")  != std::string::npos )  return 0.8427           /5669140;
+  if ( filename.std::string::find("QCDPt1800to2400")  != std::string::npos )  return 0.1149           /2923941;
+  if ( filename.std::string::find("QCDPt2400to3200")  != std::string::npos )  return 0.0068           /1910526;
+  if ( filename.std::string::find("QCDPt3200toInf")   != std::string::npos )  return 0.0002           /770558;
   else {
-    std::cout << "fail" << std::endl;
-    return 0.0;
+    //std::cout << "failed to get pt_hat weight" << std::endl;
+    std::cout << "failed to get QCD HT sample weight" << std::endl;
+    std::cout << "This is for filename " << filename << std::endl;
+    return 0;
+    //return 1e+12;
   }
 }

@@ -4,7 +4,7 @@
 #define  CONSTANTS_H
 
 // barrel region (|eta| < 1.3)
-constexpr static float s_eta_barr = 1.3;
+constexpr static float s_eta_barr = 1.131;
 // two back-to-back leading jets (delta_phi(j1,j2) = min(|phi1 - phi2|, 2PI - |phi2 - phi1|) > 2.7)
 constexpr static float s_delta_phi = 2.7;
 

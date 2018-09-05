@@ -48,10 +48,9 @@ class MySelector : public TSelector {
   Float_t probejet_eta;
   Float_t asymmetry;
   Float_t rho;
-  Float_t alpha;
+  Float_t alpha_;
   Int_t pass_trigger_hf;
   Int_t pass_trigger_bl;
-  TBranch *b_alpha;
   TBranch *b_njet;
   TBranch *b_pt_ave;
   TBranch *b_jet1_pt;
@@ -70,11 +69,11 @@ class MySelector : public TSelector {
   TBranch *b_pass_trigger_hf;
   TBranch *b_pass_trigger_bl;
   TBranch *b_asymmetry;
+  TBranch *b_alpha;
   TBranch *b_rho;
 
 
   // List of branches
-
   TBranch        *b_npuIT;   //!
 
   MySelector(TTree * /*tree*/ =0) : fChain(0) { }
@@ -99,33 +98,22 @@ class MySelector : public TSelector {
   void BuildEvent();
 
   int TotalEvents;
-  int EtaForwardBinsNo;
-  int EtaBinsNo;
-  int EtaFtBinsNo;
-  int EtaFtControlBinsNo;
-  int PtBinsNo;
-  int PtFTBinsNo;
-  int AlphaBinsNo;
+
+	int EtaBins_SM, EtaBins_SM_control, EtaBins_FE_reference, EtaBins_FE_control, EtaBins_FE;
+	int etaShift_SM, etaShift_SM_control, etaShift_FE_reference, etaShift_FE_control, etaShift_FE;
+	int PtBins_Central, PtBins_HF;
+	int AlphaBins;
+
   TString whichRun;
   std::vector<MyJet> Jets;
 
-  std::vector< std::vector< std::vector< TH1F* > > > forward_hist;
-  std::vector< std::vector< std::vector< TH1F* > > > forward_hist_dijet;
-  std::vector< std::vector< std::vector< TH1F* > > > asymmetries_all;
+  std::vector< std::vector< std::vector< TH1F* > > > asymmetries_SM, 						asymmetries_pt_SM,						asymmetries_rho_SM,						asymmetries_pt3_SM;
+  std::vector< std::vector< std::vector< TH1F* > > > asymmetries_SM_control, 		asymmetries_pt_SM_control,		asymmetries_rho_SM_control,		asymmetries_pt3_SM_control;
+  std::vector< std::vector< std::vector< TH1F* > > > asymmetries_FE_reference, 	asymmetries_pt_FE_reference,	asymmetries_rho_FE_reference,	asymmetries_pt3_FE_reference;
+  std::vector< std::vector< std::vector< TH1F* > > > asymmetries_FE_control, 		asymmetries_pt_FE_control,		asymmetries_rho_FE_control,		asymmetries_pt3_FE_control;
+  std::vector< std::vector< std::vector< TH1F* > > > asymmetries_FE, 						asymmetries_pt_FE,						asymmetries_rho_FE,						asymmetries_pt3_FE;
 
-  std::vector< std::vector< std::vector< TH1F* > > > forward_pt_hist;
-  std::vector< std::vector< std::vector< TH1F* > > > forward_pt_hist_dijet;
-  std::vector< std::vector< std::vector< TH1F* > > > asymmetries_pt_all;
-
-  std::vector< std::vector< std::vector< TH1F* > > > forward_pt3_hist;
-  std::vector< std::vector< std::vector< TH1F* > > > forward_pt3_hist_dijet;
-  std::vector< std::vector< std::vector< TH1F* > > > asymmetries_pt3_all;
-
-  std::vector< std::vector< std::vector< TH1F* > > > forward_rho_hist;
-  std::vector< std::vector< std::vector< TH1F* > > > forward_rho_hist_dijet;
-  std::vector< std::vector< std::vector< TH1F* > > > asymmetries_rho_all;
-
-  std::vector< std::vector< TH1F* > > alpha_spectrum, forward_alpha_spectrum, forward_alpha_spectrum_dijet;
+  std::vector< std::vector< TH1F* > > alpha_spectrum_SM, alpha_spectrum_SM_control, alpha_spectrum_FE_reference, alpha_spectrum_FE_control, alpha_spectrum_FE;
 
   std::vector<TH1F*> histograms;
 
@@ -133,15 +121,15 @@ class MySelector : public TSelector {
   TH1F *h_alpha_raw;
   TH1F *h_alpha_select;
 
-  TH1F *h_JetAvePt;
-  TH1F *h_Jet1Pt;
-  TH1F *h_Jet2Pt;
-  TH1F *h_Jet3Pt;
+	TH1F *h_JetAvePt_SM;
+  TH1F *h_Jet1Pt_SM;
+  TH1F *h_Jet2Pt_SM;
+  TH1F *h_Jet3Pt_SM;
 
-  TH1F *h_FEJetAvePt;
-  TH1F *h_FEJet1Pt;
-  TH1F *h_FEJet2Pt;
-  TH1F *h_FEJet3Pt;
+  TH1F *h_JetAvePt_FE;
+  TH1F *h_Jet1Pt_FE;
+  TH1F *h_Jet2Pt_FE;
+  TH1F *h_Jet3Pt_FE;
 };
 
 #endif
@@ -179,7 +167,7 @@ void MySelector::Init(TTree *tree){
   fChain->SetBranchAddress("probejet_phi", &probejet_phi, &b_probejet_phi);
   fChain->SetBranchAddress("probejet_eta", &probejet_eta, &b_probejet_eta);
   fChain->SetBranchAddress("asymmetry", &asymmetry, &b_asymmetry);
-  fChain->SetBranchAddress("alpha", &alpha, &b_alpha);
+  fChain->SetBranchAddress("alpha", &alpha_, &b_alpha);
   fChain->SetBranchAddress("hf_trigger", &pass_trigger_hf, &b_pass_trigger_hf);
   fChain->SetBranchAddress("bl_trigger", &pass_trigger_bl, &b_pass_trigger_bl);
   fChain->SetBranchAddress("rho", &rho, &b_rho);
