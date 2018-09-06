@@ -26,11 +26,11 @@
 #include <iostream>
 #include <algorithm>
 #include <TH2.h>
+#include <TH3.h>
 #include <TStyle.h>
 #include <TLorentzVector.h>
 #include <TRandom3.h>
 #include "MySelector.h"
-#include "MyJet.h"
 #include "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/JER2017/include/constants.hpp"
 
 #define FILL_HISTOS(region,method)                                     \
@@ -58,7 +58,7 @@ if (cond1 || cond2) {                                         \
       if ( excl_bin ) break;                                  \
     }                                                         \
   }                                                           \
-  alpha_spectrum_##region.at(r).at(k) -> Fill(alpha, weight);	\
+  alpha_spectrum_##region.at(r).at(k) -> Fill(alpha, weight); \
 }                                                             \
 
 #define WRITE_HISTOS(region)                                  \
@@ -73,8 +73,6 @@ for( int m = 0; m < EtaBins_##region; m++ ) {                 \
   alpha_spectrum_##region.at(m).at(p) -> Write();             \
 }                                                             \
 
-bool sortFunct( MyJet a, MyJet b) { return ( a.Pt() > b.Pt() ); }
-
 void MakeHistograms(std::vector< std::vector< std::vector< TH1F* > > > &asymmetries, std::vector< std::vector< std::vector< TH1F* > > > &asymmetries_pt, std::vector< std::vector< std::vector< TH1F* > > > &asymmetries_rho, std::vector< std::vector< std::vector< TH1F* > > > &asymmetries_pt3, std::vector< std::vector< TH1F* > > &alpha_spectrum, TString text, TString extraText, int etaBins, int ptBins, int AlphaBins, int etaShift, int ptShift, int alphaShift) {
   for( int m = etaShift; m < etaBins+etaShift; m++ ) {
     std::vector< std::vector< TH1F* > > temp2, temp2pt, temp2rho, temp2pt3;
@@ -86,10 +84,10 @@ void MakeHistograms(std::vector< std::vector< std::vector< TH1F* > > > &asymmetr
       h1_alpha ->GetYaxis()->SetTitle("a.u.");    h1_alpha ->GetXaxis()->SetTitle("Alpha");
       h1_alpha -> Sumw2(); alpha_temp2.push_back(h1_alpha);
       for( int r = 0; r < AlphaBins; r++ ) {
-        TString name     = text;        name 		 += extraText; name 		+= "_eta"; name     += m+1; name     += "_pt"; name     += p+1; name     += "_alpha"; name     += r+1;
-        TString name_pt  = text+"pt"; 	name_pt  += extraText; name_pt  += "_eta"; name_pt  += m+1; name_pt  += "_pt"; name_pt  += p+1; name_pt  += "_alpha"; name_pt  += r+1;
-        TString name_rho = text+"rho";	name_rho += extraText; name_rho += "_eta"; name_rho += m+1; name_rho += "_pt"; name_rho += p+1; name_rho += "_alpha"; name_rho += r+1;
-        TString name_pt3 = text+"pt3";	name_pt3 += extraText; name_pt3 += "_eta"; name_pt3 += m+1; name_pt3 += "_pt"; name_pt3 += p+1; name_pt3 += "_alpha"; name_pt3 += r+1;
+        TString name     = text;        name      += extraText; name     += "_eta"; name     += m+1; name     += "_pt"; name     += p+1; name     += "_alpha"; name     += r+1;
+        TString name_pt  = text+"pt";   name_pt  += extraText; name_pt  += "_eta"; name_pt  += m+1; name_pt  += "_pt"; name_pt  += p+1; name_pt  += "_alpha"; name_pt  += r+1;
+        TString name_rho = text+"rho";  name_rho += extraText; name_rho += "_eta"; name_rho += m+1; name_rho += "_pt"; name_rho += p+1; name_rho += "_alpha"; name_rho += r+1;
+        TString name_pt3 = text+"pt3";  name_pt3 += extraText; name_pt3 += "_eta"; name_pt3 += m+1; name_pt3 += "_pt"; name_pt3 += p+1; name_pt3 += "_alpha"; name_pt3 += r+1;
         TH1F *h1 = new TH1F( name, name, 160, -0.8, 0.8 );
         h1 ->GetYaxis()->SetTitle("a.u.");    h1 ->GetXaxis()->SetTitle("Asymmetry");
         h1 -> Sumw2(); temp1.push_back(h1);
@@ -114,7 +112,6 @@ void MySelector::BuildEvent() {
 }
 
 void MySelector::Begin(TTree * /*tree*/) {
-
   // The Begin() function is called at the start of the query.
   // When running with PROOF Begin() is only called on the client.
   // The tree argument is deprecated (on PROOF 0 is passed).
@@ -184,27 +181,27 @@ void MySelector::SlaveBegin(TTree * /*tree*/) {
   h_alpha_select -> SetXTitle( "#alpha" );
   h_alpha_select -> Sumw2();
 
-  EtaBins_SM						= 10; // st method bins
-  EtaBins_SM_control 		=  3; // st method bins control
-  EtaBins_FE_reference	=  3; // fe method bins reference
-  EtaBins_FE_control		=  7; // fe method bins control
-  EtaBins_FE						=  3; // fe method bins
+  EtaBins_SM            = 10; // st method bins
+  EtaBins_SM_control    =  3; // st method bins control
+  EtaBins_FE_reference  =  3; // fe method bins reference
+  EtaBins_FE_control    =  7; // fe method bins control
+  EtaBins_FE            =  3; // fe method bins
 
-  etaShift_SM 					= 0;
-  etaShift_SM_control 	= EtaBins_SM;
+  etaShift_SM           = 0;
+  etaShift_SM_control   = EtaBins_SM;
   etaShift_FE_reference = 0;
-  etaShift_FE_control 	= EtaBins_FE_reference;
-  etaShift_FE 					= EtaBins_FE_reference + EtaBins_FE_control;
+  etaShift_FE_control   = EtaBins_FE_reference;
+  etaShift_FE           = EtaBins_FE_reference + EtaBins_FE_control;
 
   PtBins_Central = n_pt_bins_Si;
   PtBins_HF = n_pt_bins_Si_HF;
   AlphaBins = 6;
 
-  MakeHistograms(asymmetries_SM, 						asymmetries_pt_SM,						asymmetries_rho_SM,						asymmetries_pt3_SM, 					alpha_spectrum_SM,						"asymm", "_SM",						EtaBins_SM,						PtBins_Central,	AlphaBins, etaShift_SM,						0, 0);
-  MakeHistograms(asymmetries_SM_control,		asymmetries_pt_SM_control,		asymmetries_rho_SM_control,		asymmetries_pt3_SM_control,		alpha_spectrum_SM_control,		"asymm", "_SM_control",		EtaBins_SM_control,		PtBins_HF,			AlphaBins, etaShift_SM_control,		0, 0);
-  MakeHistograms(asymmetries_FE_reference,	asymmetries_pt_FE_reference,	asymmetries_rho_FE_reference,	asymmetries_pt3_FE_reference,	alpha_spectrum_FE_reference,	"asymm", "_FE_reference",	EtaBins_FE_reference,	PtBins_Central, AlphaBins, etaShift_FE_reference,	0, 0);
-  MakeHistograms(asymmetries_FE_control,		asymmetries_pt_FE_control,		asymmetries_rho_FE_control,		asymmetries_pt3_FE_control,		alpha_spectrum_FE_control,		"asymm", "_FE_control",		EtaBins_FE_control,		PtBins_Central, AlphaBins, etaShift_FE_control,		0, 0);
-  MakeHistograms(asymmetries_FE, 						asymmetries_pt_FE,						asymmetries_rho_FE,						asymmetries_pt3_FE, 					alpha_spectrum_FE,						"asymm", "_FE",						EtaBins_FE,						PtBins_HF,			AlphaBins, etaShift_FE,						0, 0);
+  MakeHistograms(asymmetries_SM,            asymmetries_pt_SM,            asymmetries_rho_SM,            asymmetries_pt3_SM,            alpha_spectrum_SM,            "asymm", "_SM",            EtaBins_SM,            PtBins_Central, AlphaBins, etaShift_SM,            0, 0);
+  MakeHistograms(asymmetries_SM_control,    asymmetries_pt_SM_control,    asymmetries_rho_SM_control,    asymmetries_pt3_SM_control,    alpha_spectrum_SM_control,    "asymm", "_SM_control",    EtaBins_SM_control,    PtBins_HF,      AlphaBins, etaShift_SM_control,    0, 0);
+  MakeHistograms(asymmetries_FE_reference,  asymmetries_pt_FE_reference,  asymmetries_rho_FE_reference,  asymmetries_pt3_FE_reference,  alpha_spectrum_FE_reference,  "asymm", "_FE_reference",  EtaBins_FE_reference,  PtBins_Central, AlphaBins, etaShift_FE_reference,  0, 0);
+  MakeHistograms(asymmetries_FE_control,    asymmetries_pt_FE_control,    asymmetries_rho_FE_control,    asymmetries_pt3_FE_control,    alpha_spectrum_FE_control,    "asymm", "_FE_control",    EtaBins_FE_control,    PtBins_Central, AlphaBins, etaShift_FE_control,    0, 0);
+  MakeHistograms(asymmetries_FE,            asymmetries_pt_FE,            asymmetries_rho_FE,            asymmetries_pt3_FE,            alpha_spectrum_FE,            "asymm", "_FE",            EtaBins_FE,            PtBins_HF,      AlphaBins, etaShift_FE,            0, 0);
 
 }
 
@@ -234,11 +231,11 @@ Bool_t MySelector::Process(Long64_t entry) {
   BuildEvent();
 
   //2017
-  std::vector<double> Eta_bins_SM(           	eta_bins + etaShift_SM,						eta_bins + etaShift_SM + EtaBins_SM + 1);
-  std::vector<double> Eta_bins_SM_control(  	eta_bins + etaShift_SM_control,		eta_bins + etaShift_SM_control + EtaBins_SM_control + 1);
-  std::vector<double> Eta_bins_FE_reference(	eta_bins + etaShift_FE_reference,	eta_bins + etaShift_FE_reference + EtaBins_FE_reference + 1);
-  std::vector<double> Eta_bins_FE_control(   	eta_bins + etaShift_FE_control,		eta_bins + etaShift_FE_control + EtaBins_FE_control + 1);
-  std::vector<double> Eta_bins_FE(           	eta_bins + etaShift_FE,						eta_bins + etaShift_FE + EtaBins_FE + 1);
+  std::vector<double> Eta_bins_SM(             eta_bins + etaShift_SM,            eta_bins + etaShift_SM + EtaBins_SM + 1);
+  std::vector<double> Eta_bins_SM_control(    eta_bins + etaShift_SM_control,    eta_bins + etaShift_SM_control + EtaBins_SM_control + 1);
+  std::vector<double> Eta_bins_FE_reference(  eta_bins + etaShift_FE_reference,  eta_bins + etaShift_FE_reference + EtaBins_FE_reference + 1);
+  std::vector<double> Eta_bins_FE_control(     eta_bins + etaShift_FE_control,    eta_bins + etaShift_FE_control + EtaBins_FE_control + 1);
+  std::vector<double> Eta_bins_FE(             eta_bins + etaShift_FE,            eta_bins + etaShift_FE + EtaBins_FE + 1);
 
   std::vector<int> Pt_bins_Central(pt_bins_Si, pt_bins_Si + sizeof(pt_bins_Si)/sizeof(double));
   std::vector<int> Pt_bins_HF(pt_bins_Si_HF, pt_bins_Si_HF + sizeof(pt_bins_Si_HF)/sizeof(double));
@@ -373,11 +370,11 @@ void MySelector::SlaveTerminate() {
   std::cout <<"            Analyzed events #" <<  TotalEvents << std::endl;
 
   std::ofstream mytxtfile;
-  mytxtfile.open ("counts.txt");
+  mytxtfile.open (outdir+"counts.txt");
   mytxtfile << "Analyzed events #" <<  TotalEvents << "\n";
   mytxtfile.close();
 
-  TFile *fpt = new TFile("pt_data_incl_full.root","RECREATE"); ;
+  TFile *fpt = new TFile(outdir+"pt_data_incl_full.root","RECREATE"); ;
   fpt->cd();
   h_alpha_raw -> Write();
   h_alpha_select -> Write();
@@ -391,14 +388,14 @@ void MySelector::SlaveTerminate() {
   h_Jet3Pt_SM -> Write();
   fpt->Close();
 
-  TFile *fprim = new TFile("PU_incl_full.root","RECREATE"); ;
+  TFile *fprim = new TFile(outdir+"PU_incl_full.root","RECREATE"); ;
   fprim->cd();
   h_PU -> Write();
   fprim -> Close();
 
-  TFile *f = new TFile("histograms_data_incl_full.root","RECREATE");
-  TFile *f1 = new TFile("histograms_data_incl_full_control.root","RECREATE");
-  TFile *f_alpha = new TFile("alpha_spectrum.root","RECREATE"); ;
+  TFile *f  = new TFile(outdir+"histograms_data_incl_full.root","RECREATE");
+  TFile *f1 = new TFile(outdir+"histograms_data_incl_full_control.root","RECREATE");
+  TFile *f_alpha = new TFile(outdir+"alpha_spectrum.root","RECREATE"); ;
 
   for( int r = 0; r < AlphaBins; r++ ) {
     for( int p = 0; p < PtBins_Central; p++ ) {

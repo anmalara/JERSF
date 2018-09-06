@@ -4,7 +4,7 @@
 <!-- Generic Value -->
 <!ENTITY NEVT                       "-1">
 <!ENTITY CACHEABLE                  "False">
-<!ENTITY OUTDIR                     "/nfs/dust/cms/user/amalara/sframe_all/JER2017_QCD/Fall17_17Nov2017_V10/AK4CHS/PU/down/">
+<!ENTITY OUTDIR                     "/nfs/dust/cms/user/amalara/sframe_all/JER2017_v2_QCD/Fall17_17Nov2017_V10/AK4CHS/PU/down/">
 
 <!-- Jet Variables -->
 <!ENTITY JEC_VERSION                "Fall17_17Nov2017_V10">
@@ -20,6 +20,7 @@
 <!ENTITY TRIGGER_FWD                "false">    <!--Trigger Flag -->
 <!ENTITY PtBinsTrigger              "Single">   <!-- Single, DiJet, ZeroBias -->
 <!ENTITY test_trigger               "False">    <!-- True for HLT_ZeroBias_partX studies -->
+<!ENTITY isThreshold                "False">    <!-- True for Threshold studies -->
 
 <!-- MC PuReweighting -->
 <!ENTITY DO_PU_REWEIGHTING          "true">     <!-- true, false -->
@@ -43,59 +44,59 @@
 <!ENTITY WEIGHT_PATH                "/nfs/dust/cms/user/multh/JEC/2016ReReco/Residuals/Summer16_03Feb2017_V3/AK4CHS/MC_Reweighted_chsMET_NewTriggerSetup_ForWeights/">
 
 <!-- MC Samples -->
-<!ENTITY QCDPt15to30        SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/MC_QCD_Ptbinned_15to30_woHOTVR_woXCONE.xml">
-<!ENTITY QCDPt30to50        SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/MC_QCD_Ptbinned_30to50_woHOTVR_woXCONE.xml">
-<!ENTITY QCDPt50to80        SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/MC_QCD_Ptbinned_50to80_woHOTVR_woXCONE.xml">
-<!ENTITY QCDPt80to120       SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/MC_QCD_Ptbinned_80to120_woHOTVR_woXCONE.xml">
-<!ENTITY QCDPt120to170      SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/MC_QCD_Ptbinned_120to170_woHOTVR_woXCONE.xml">
-<!ENTITY QCDPt170to300      SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/MC_QCD_Ptbinned_170to300_woHOTVR_woXCONE.xml">
-<!ENTITY QCDPt300to470      SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/MC_QCD_Ptbinned_300to470_woHOTVR_woXCONE.xml">
-<!ENTITY QCDPt470to600      SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/MC_QCD_Ptbinned_470to600_woHOTVR_woXCONE.xml">
-<!ENTITY QCDPt600to800      SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/MC_QCD_Ptbinned_600to800_woHOTVR_woXCONE.xml">
-<!ENTITY QCDPt800to1000     SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/MC_QCD_Ptbinned_800to1000_woHOTVR_woXCONE.xml">
-<!ENTITY QCDPt1000to1400    SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/MC_QCD_Ptbinned_1000to1400_woHOTVR_woXCONE.xml">
-<!ENTITY QCDPt1400to1800    SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/MC_QCD_Ptbinned_1400to1800_woHOTVR_woXCONE.xml">
-<!ENTITY QCDPt1800to2400    SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/MC_QCD_Ptbinned_1800to2400_woHOTVR_woXCONE.xml">
-<!ENTITY QCDPt2400to3200    SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/MC_QCD_Ptbinned_2400to3200_woHOTVR_woXCONE.xml">
-<!ENTITY QCDPt3200toInf     SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/MC_QCD_Ptbinned_3200toInf_woHOTVR_woXCONE.xml">
+<!ENTITY QCDPt15to30        SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/MC_QCD_Pt-15to30_TuneCP5_Flat2017_13TeV_pythia8_withLowPtJets.xml">
+<!ENTITY QCDPt30to50        SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/MC_QCD_Pt-30to50_TuneCP5_Flat2017_13TeV_pythia8_withLowPtJets.xml">
+<!ENTITY QCDPt50to80        SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/MC_QCD_Pt-50to80_TuneCP5_Flat2017_13TeV_pythia8_withLowPtJets.xml">
+<!ENTITY QCDPt80to120       SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/MC_QCD_Pt-80to120_TuneCP5_Flat2017_13TeV_pythia8_withLowPtJets.xml">
+<!ENTITY QCDPt120to170      SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/MC_QCD_Pt-120to170_TuneCP5_Flat2017_13TeV_pythia8_withLowPtJets.xml">
+<!ENTITY QCDPt170to300      SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/MC_QCD_Pt-170to300_TuneCP5_Flat2017_13TeV_pythia8_withLowPtJets.xml">
+<!ENTITY QCDPt300to470      SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/MC_QCD_Pt-300to470_TuneCP5_Flat2017_13TeV_pythia8_withLowPtJets.xml">
+<!ENTITY QCDPt470to600      SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/MC_QCD_Pt-470to600_TuneCP5_Flat2017_13TeV_pythia8_withLowPtJets.xml">
+<!ENTITY QCDPt600to800      SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/MC_QCD_Pt-600to800_TuneCP5_Flat2017_13TeV_pythia8_withLowPtJets.xml">
+<!ENTITY QCDPt800to1000     SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/MC_QCD_Pt-800to1000_TuneCP5_Flat2017_13TeV_pythia8_withLowPtJets.xml">
+<!ENTITY QCDPt1000to1400    SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/MC_QCD_Pt-1000to1400_TuneCP5_Flat2017_13TeV_pythia8_withLowPtJets.xml">
+<!ENTITY QCDPt1400to1800    SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/MC_QCD_Pt-1400to1800_TuneCP5_Flat2017_13TeV_pythia8_withLowPtJets.xml">
+<!ENTITY QCDPt1800to2400    SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/MC_QCD_Pt-1800to2400_TuneCP5_Flat2017_13TeV_pythia8_withLowPtJets.xml">
+<!ENTITY QCDPt2400to3200    SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/MC_QCD_Pt-2400to3200_TuneCP5_Flat2017_13TeV_pythia8_withLowPtJets.xml">
+<!ENTITY QCDPt3200toInf     SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/MC_QCD_Pt-3200toInf_TuneCP5_Flat2017_13TeV_pythia8_withLowPtJets.xml">
 
-<!ENTITY QCDPt15to7000_MB   SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94_Crab/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/MC_QCD_Pt-15to7000_TuneCP5_Flat2017_13TeV_pythia8_withLowPtJets.xml">
-<!ENTITY QCDPt15to30_MB     SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/scripts/Ntuple_QCD_Pt_15to30.xml">
-<!ENTITY QCDPt30to50_MB     SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/scripts/Ntuple_QCD_Pt_30to50.xml">
-<!ENTITY QCDPt50to80_MB     SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/scripts/Ntuple_QCD_Pt_50to80.xml">
-<!ENTITY QCDPt80to120_MB    SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/scripts/Ntuple_QCD_Pt_80to120.xml">
-<!ENTITY QCDPt120to170_MB   SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/scripts/Ntuple_QCD_Pt_120to170.xml">
-<!ENTITY QCDPt170to300_MB   SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/scripts/Ntuple_QCD_Pt_170to300.xml">
-<!ENTITY QCDPt300to470_MB   SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/scripts/Ntuple_QCD_Pt_300to470.xml">
-<!ENTITY QCDPt470to600_MB   SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/scripts/Ntuple_QCD_Pt_470to600.xml">
-<!ENTITY QCDPt600to800_MB   SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/scripts/Ntuple_QCD_Pt_600to800.xml">
-<!ENTITY QCDPt800to1000_MB  SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/scripts/Ntuple_QCD_Pt_800to1000.xml">
-<!ENTITY QCDPt1000to1400_MB SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/scripts/Ntuple_QCD_Pt_1000to1400.xml">
-<!ENTITY QCDPt1400to1800_MB SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/scripts/Ntuple_QCD_Pt_1400to1800.xml">
-<!ENTITY QCDPt1800to2400_MB SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/scripts/Ntuple_QCD_Pt_1800to2400.xml">
-<!ENTITY QCDPt2400to3200_MB SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/scripts/Ntuple_QCD_Pt_2400to3200.xml">
-<!ENTITY QCDPt3200toInf_MB  SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/scripts/Ntuple_QCD_Pt_3200toInf.xml">
+<!ENTITY QCDPt15to7000_MB   SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/MC_QCD_Pt-15to7000_TuneCP5_Flat2017_13TeV_pythia8_withLowPtJets.xml">
+<!ENTITY QCDPt15to30_MB     SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/MC_QCD_Pt-15to30_TuneCP5_Flat2017_13TeV_pythia8_withLowPtJets.xml">
+<!ENTITY QCDPt30to50_MB     SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/MC_QCD_Pt-30to50_TuneCP5_Flat2017_13TeV_pythia8_withLowPtJets.xml">
+<!ENTITY QCDPt50to80_MB     SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/MC_QCD_Pt-50to80_TuneCP5_Flat2017_13TeV_pythia8_withLowPtJets.xml">
+<!ENTITY QCDPt80to120_MB    SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/MC_QCD_Pt-80to120_TuneCP5_Flat2017_13TeV_pythia8_withLowPtJets.xml">
+<!ENTITY QCDPt120to170_MB   SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/MC_QCD_Pt-120to170_TuneCP5_Flat2017_13TeV_pythia8_withLowPtJets.xml">
+<!ENTITY QCDPt170to300_MB   SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/MC_QCD_Pt-170to300_TuneCP5_Flat2017_13TeV_pythia8_withLowPtJets.xml">
+<!ENTITY QCDPt300to470_MB   SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/MC_QCD_Pt-300to470_TuneCP5_Flat2017_13TeV_pythia8_withLowPtJets.xml">
+<!ENTITY QCDPt470to600_MB   SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/MC_QCD_Pt-470to600_TuneCP5_Flat2017_13TeV_pythia8_withLowPtJets.xml">
+<!ENTITY QCDPt600to800_MB   SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/MC_QCD_Pt-600to800_TuneCP5_Flat2017_13TeV_pythia8_withLowPtJets.xml">
+<!ENTITY QCDPt800to1000_MB  SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/MC_QCD_Pt-800to1000_TuneCP5_Flat2017_13TeV_pythia8_withLowPtJets.xml">
+<!ENTITY QCDPt1000to1400_MB SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/MC_QCD_Pt-1000to1400_TuneCP5_Flat2017_13TeV_pythia8_withLowPtJets.xml">
+<!ENTITY QCDPt1400to1800_MB SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/MC_QCD_Pt-1400to1800_TuneCP5_Flat2017_13TeV_pythia8_withLowPtJets.xml">
+<!ENTITY QCDPt1800to2400_MB SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/MC_QCD_Pt-1800to2400_TuneCP5_Flat2017_13TeV_pythia8_withLowPtJets.xml">
+<!ENTITY QCDPt2400to3200_MB SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/MC_QCD_Pt-2400to3200_TuneCP5_Flat2017_13TeV_pythia8_withLowPtJets.xml">
+<!ENTITY QCDPt3200toInf_MB  SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/MC_QCD_Pt-3200toInf_TuneCP5_Flat2017_13TeV_pythia8_withLowPtJets.xml">
 
 
 <!-- Data Samples -->
-<!ENTITY DATA_RunB          SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/DATA_JetHT_RunB_17Nov2017_wCHSMETfixed.xml">
-<!ENTITY DATA_RunC          SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/DATA_JetHT_RunC_17Nov2017_wCHSMETfixed.xml">
-<!ENTITY DATA_RunD          SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/DATA_JetHT_RunD_17Nov2017_wCHSMETfixed.xml">
-<!ENTITY DATA_RunE          SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/DATA_JetHT_RunE_17Nov2017_wCHSMETfixed.xml">
-<!ENTITY DATA_RunF          SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/DATA_JetHT_RunF_17Nov2017_wCHSMETfixed.xml">
+<!ENTITY DATA_RunB          SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/DATA_JetHT_Run2017B_withL1seeds_withL1prescales_withLowPtJets.xml">
+<!ENTITY DATA_RunC          SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/DATA_JetHT_Run2017C_withL1seeds_withL1prescales_withLowPtJets.xml">
+<!ENTITY DATA_RunD          SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/DATA_JetHT_Run2017D_withL1seeds_withL1prescales_withLowPtJets.xml">
+<!ENTITY DATA_RunE          SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/DATA_JetHT_Run2017E_withL1seeds_withL1prescales_withLowPtJets.xml">
+<!ENTITY DATA_RunF          SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/DATA_JetHT_Run2017F_withL1seeds_withL1prescales_withLowPtJets.xml">
 
-<!ENTITY DATA_RunB_MB       SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94_Crab/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/DATA_ZeroBias_Run2017B_withL1seeds_withL1prescales_withLowPtJets.xml">
-<!ENTITY DATA_RunC_MB       SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94_Crab/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/DATA_ZeroBias_Run2017C_withL1seeds_withL1prescales_withLowPtJets.xml">
-<!ENTITY DATA_RunD_MB       SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94_Crab/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/DATA_ZeroBias_Run2017D_withL1seeds_withL1prescales_withLowPtJets.xml">
-<!ENTITY DATA_RunE_MB       SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94_Crab/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/DATA_ZeroBias_Run2017E_withL1seeds_withL1prescales_withLowPtJets.xml">
-<!ENTITY DATA_RunF_MB       SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94_Crab/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/DATA_ZeroBias_Run2017F_withL1seeds_withL1prescales_withLowPtJets.xml">
+<!ENTITY DATA_RunB_MB       SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/DATA_ZeroBias_Run2017B_withL1seeds_withL1prescales_withLowPtJets.xml">
+<!ENTITY DATA_RunC_MB       SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/DATA_ZeroBias_Run2017C_withL1seeds_withL1prescales_withLowPtJets.xml">
+<!ENTITY DATA_RunD_MB       SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/DATA_ZeroBias_Run2017D_withL1seeds_withL1prescales_withLowPtJets.xml">
+<!ENTITY DATA_RunE_MB       SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/DATA_ZeroBias_Run2017E_withL1seeds_withL1prescales_withLowPtJets.xml">
+<!ENTITY DATA_RunF_MB       SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v2/DATA_ZeroBias_Run2017F_withL1seeds_withL1prescales_withLowPtJets.xml">
 
 ]>
 
 
 <!--
 <ConfigParse NEventsBreak="0" FileSplit="60" AutoResubmit="5"/>
-<ConfigSGE RAM ="4" DISK ="2" Mail="andrea.malara@desy.de" Notification="as" Workdir="workdir_JER2017_QCDPt3200toInf_PUdown"/>
+<ConfigSGE RAM ="4" DISK ="2" Mail="andrea.malara@desy.de" Notification="as" Workdir="workdir_JER2017"/>
 -->
 
 <!-- OutputLevel controls which messages are printed; set to VERBOSE or DEBUG for more verbosity, to WARNING or ERROR for less -->
@@ -142,6 +143,7 @@
       <Item Name="trigger500"                 Value="HLT_PFJet500_v*"/>
 
       <Item Name="test_trigger"               Value="&test_trigger;"/>
+      <Item Name="isThreshold"                Value="&isThreshold;"/>
 
       <!-- tell AnalysisModuleRunner NOT to use the MC event weight from SFrame; rather let
       MCLumiWeight (called via CommonModules) calculate the MC event weight. The MC

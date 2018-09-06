@@ -16,7 +16,7 @@ using namespace std;
 int main ( int argc, char *argv[] )
 //int main()
 {
-  if ( argc != 2 ) // argc should be 2 for correct execution
+  if ( argc > 3 ) // argc should be 2 for correct execution
   // We print argv[0] assuming it is the program name
   std::cout<<"usage: "<< argv[0] <<" <filename>\n";
   else {
@@ -26,7 +26,6 @@ int main ( int argc, char *argv[] )
     if ( !path_to_file_with_list_of_inputfiles.is_open() )
     std::cout<<"Could not open file\n";
     else {
-
       char x;
       // path_to_file_with_list_of_inputfiles.get ( x ) returns false if the end of the file
       //  is reached or an error occurs
@@ -40,7 +39,14 @@ int main ( int argc, char *argv[] )
     // the_file is closed implicitly here
   }
 
-  MySelector *A = new MySelector();
+  TString outdirname = "./";
+  if (argc >= 3) {
+    outdirname = argv[2];
+  }
+
+  std::cout << "outdirname: " << outdirname <<std::endl;
+
+  MySelector *A = new MySelector(outdirname);
 
   TChain* ch = new TChain("AnalysisTree");
   //TChain* ch = new TChain("AK4PFCHS/t");

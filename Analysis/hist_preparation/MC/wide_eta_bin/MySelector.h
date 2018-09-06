@@ -20,14 +20,15 @@
 #include <TH3F.h>
 #include <TMath.h>
 #include <TDirectory.h>
-#include "MyJet.h"
 #include <vector>
 
 
 double Weight( std::string filename );
 
 class MySelector : public TSelector {
-  public:
+public:
+  
+  TString outdir;
 
   TTree *fChain;   //!pointer to the analyzed TTree or TChain
   // Declaration of leaf types
@@ -76,7 +77,7 @@ class MySelector : public TSelector {
   TBranch *b_barreljet_pt;
   TBranch *b_asymmetry;
   TBranch *b_alpha;
-  TBranch *b_rho; // Read out from tree for smearing purposes
+  TBranch *b_rho;
 
   Int_t ngenjet;
   Float_t gen_pt_ave;
@@ -117,7 +118,7 @@ class MySelector : public TSelector {
   TBranch        *b_pthat;   //!
   TBranch        *b_npuIT;   //!
 
-  MySelector(TTree * /*tree*/ =0) : fChain(0) { }
+  MySelector(TString name, TTree * /*tree*/ =0) : fChain(0), outdir(name) { }
   virtual ~MySelector() { }
   virtual Int_t   Version() const { return 2; }
   virtual void    Begin(TTree *tree);
@@ -141,13 +142,12 @@ class MySelector : public TSelector {
 
   int TotalEvents, unmachedJets, unmatchegGenJets;
 
-	int EtaBins_SM, EtaBins_SM_control, EtaBins_FE_reference, EtaBins_FE_control, EtaBins_FE;
-	int etaShift_SM, etaShift_SM_control, etaShift_FE_reference, etaShift_FE_control, etaShift_FE;
-	int PtBins_Central, PtBins_HF;
-	int AlphaBins;
+  int EtaBins_SM, EtaBins_SM_control, EtaBins_FE_reference, EtaBins_FE_control, EtaBins_FE;
+  int etaShift_SM, etaShift_SM_control, etaShift_FE_reference, etaShift_FE_control, etaShift_FE;
+  int PtBins_Central, PtBins_HF;
+  int AlphaBins;
 
   TString whichRun;
-  std::vector<MyJet> Jets;
 
   std::vector< std::vector< std::vector< TH1F* > > > asymmetries_SM, 						asymmetries_pt_SM,						asymmetries_rho_SM,						asymmetries_pt3_SM;
   std::vector< std::vector< std::vector< TH1F* > > > asymmetries_SM_control, 		asymmetries_pt_SM_control,		asymmetries_rho_SM_control,		asymmetries_pt3_SM_control;
@@ -156,23 +156,23 @@ class MySelector : public TSelector {
   std::vector< std::vector< std::vector< TH1F* > > > asymmetries_FE, 						asymmetries_pt_FE,						asymmetries_rho_FE,						asymmetries_pt3_FE;
 
 
-	std::vector< std::vector< std::vector< TH1F* > > > gen_asymmetries_SM, 						gen_asymmetries_pt_SM,						gen_asymmetries_rho_SM,						gen_asymmetries_pt3_SM;
-	std::vector< std::vector< std::vector< TH1F* > > > gen_asymmetries_SM_control, 		gen_asymmetries_pt_SM_control,		gen_asymmetries_rho_SM_control,		gen_asymmetries_pt3_SM_control;
-	std::vector< std::vector< std::vector< TH1F* > > > gen_asymmetries_FE_reference, 	gen_asymmetries_pt_FE_reference,	gen_asymmetries_rho_FE_reference,	gen_asymmetries_pt3_FE_reference;
-	std::vector< std::vector< std::vector< TH1F* > > > gen_asymmetries_FE_control, 		gen_asymmetries_pt_FE_control,		gen_asymmetries_rho_FE_control,		gen_asymmetries_pt3_FE_control;
-	std::vector< std::vector< std::vector< TH1F* > > > gen_asymmetries_FE, 						gen_asymmetries_pt_FE,						gen_asymmetries_rho_FE,						gen_asymmetries_pt3_FE;
+  std::vector< std::vector< std::vector< TH1F* > > > gen_asymmetries_SM, 						gen_asymmetries_pt_SM,						gen_asymmetries_rho_SM,						gen_asymmetries_pt3_SM;
+  std::vector< std::vector< std::vector< TH1F* > > > gen_asymmetries_SM_control, 		gen_asymmetries_pt_SM_control,		gen_asymmetries_rho_SM_control,		gen_asymmetries_pt3_SM_control;
+  std::vector< std::vector< std::vector< TH1F* > > > gen_asymmetries_FE_reference, 	gen_asymmetries_pt_FE_reference,	gen_asymmetries_rho_FE_reference,	gen_asymmetries_pt3_FE_reference;
+  std::vector< std::vector< std::vector< TH1F* > > > gen_asymmetries_FE_control, 		gen_asymmetries_pt_FE_control,		gen_asymmetries_rho_FE_control,		gen_asymmetries_pt3_FE_control;
+  std::vector< std::vector< std::vector< TH1F* > > > gen_asymmetries_FE, 						gen_asymmetries_pt_FE,						gen_asymmetries_rho_FE,						gen_asymmetries_pt3_FE;
 
   std::vector< std::vector< TH1F* > > alpha_spectrum_SM, alpha_spectrum_SM_control, alpha_spectrum_FE_reference, alpha_spectrum_FE_control, alpha_spectrum_FE;
-	std::vector< std::vector< std::vector< TH1F* > > > MC_Truth_asymmetries_SM, MC_Truth_asymmetries_SM_control, MC_Truth_asymmetries_FE_reference, MC_Truth_asymmetries_FE_control, MC_Truth_asymmetries_FE;
+  std::vector< std::vector< std::vector< TH1F* > > > MC_Truth_asymmetries_SM, MC_Truth_asymmetries_SM_control, MC_Truth_asymmetries_FE_reference, MC_Truth_asymmetries_FE_control, MC_Truth_asymmetries_FE;
 
   std::vector< std::vector< std::vector< TH2F* > > > dR_SM, 					gen_dR_SM,						dR_probe_SM,						gen_dR_probe_SM,            dR_barrel_SM,						gen_dR_barrel_SM;
-	std::vector< std::vector< std::vector< TH2F* > > > dR_SM_control, 	gen_dR_SM_control,		dR_probe_SM_control,		gen_dR_probe_SM_control,    dR_barrel_SM_control,		gen_dR_barrel_SM_control;
+  std::vector< std::vector< std::vector< TH2F* > > > dR_SM_control, 	gen_dR_SM_control,		dR_probe_SM_control,		gen_dR_probe_SM_control,    dR_barrel_SM_control,		gen_dR_barrel_SM_control;
   std::vector< std::vector< std::vector< TH2F* > > > dR_FE_reference, gen_dR_FE_reference,  dR_probe_FE_reference,  gen_dR_probe_FE_reference,  dR_barrel_FE_reference, gen_dR_barrel_FE_reference;
   std::vector< std::vector< std::vector< TH2F* > > > dR_FE_control, 	gen_dR_FE_control,	  dR_probe_FE_control,		gen_dR_probe_FE_control,    dR_barrel_FE_control,		gen_dR_barrel_FE_control;
   std::vector< std::vector< std::vector< TH2F* > > > dR_FE, 					gen_dR_FE,						dR_probe_FE,						gen_dR_probe_FE,            dR_barrel_FE,						gen_dR_barrel_FE;
 
   std::vector< std::vector< std::vector< TH3F* > > > dR3_SM,            gen_dR3_SM;
-	std::vector< std::vector< std::vector< TH3F* > > > dR3_SM_control,    gen_dR3_SM_control;
+  std::vector< std::vector< std::vector< TH3F* > > > dR3_SM_control,    gen_dR3_SM_control;
   std::vector< std::vector< std::vector< TH3F* > > > dR3_FE_reference,  gen_dR3_FE_reference;
   std::vector< std::vector< std::vector< TH3F* > > > dR3_FE_control,    gen_dR3_FE_control;
   std::vector< std::vector< std::vector< TH3F* > > > dR3_FE,            gen_dR3_FE;
@@ -183,14 +183,11 @@ class MySelector : public TSelector {
 
   std::vector<TH1F*> histograms;
 
-  TH1F *make_histogram( TString name, int bin_no, double range_min, double range_max, TString xaxis, TString yaxis );
-
   TH1F *h_JetPt;
   TH1F *h_PU;
 
   TH1F *h_rho_SM;
   TH1F *h_rho_FE;
-
   TH1F *h_JetAvePt_SM;
   TH1F *h_Jet1Pt_SM;
   TH1F *h_Jet2Pt_SM;

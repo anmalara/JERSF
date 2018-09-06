@@ -12,7 +12,7 @@ LFLAGS =
 RCXX=$(CFLAGS) $(ROOTCFLAGS)
 RLXX=$(LFLAGS) $(ROOTLIBS)
 
-SRC1= MySelector.o MyJet.o
+SRC1= MySelector.o
 
 %.o: %.C %.h
 		$(C) $(RCXX) -c $<

@@ -17,16 +17,18 @@
 #include <sstream>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TH3F.h>
 #include <TMath.h>
 #include <TDirectory.h>
-#include "MyJet.h"
 #include <vector>
 
 
 double Weight( std::string filename );
 
 class MySelector : public TSelector {
-  public:
+public:
+  
+  TString outdir;
 
   TTree *fChain;   //!pointer to the analyzed TTree or TChain
   // Declaration of leaf types
@@ -44,8 +46,10 @@ class MySelector : public TSelector {
   Float_t jet3_phi;
   Float_t barreljet_phi;
   Float_t barreljet_eta;
+  Float_t barreljet_pt;
   Float_t probejet_phi;
   Float_t probejet_eta;
+  Float_t probejet_pt;
   Float_t asymmetry;
   Float_t rho;
   Float_t alpha_;
@@ -64,8 +68,10 @@ class MySelector : public TSelector {
   TBranch *b_jet3_phi;
   TBranch *b_probejet_phi;
   TBranch *b_probejet_eta;
+  TBranch *b_probejet_pt;
   TBranch *b_barreljet_phi;
   TBranch *b_barreljet_eta;
+  TBranch *b_barreljet_pt;
   TBranch *b_pass_trigger_hf;
   TBranch *b_pass_trigger_bl;
   TBranch *b_asymmetry;
@@ -76,7 +82,7 @@ class MySelector : public TSelector {
   // List of branches
   TBranch        *b_npuIT;   //!
 
-  MySelector(TTree * /*tree*/ =0) : fChain(0) { }
+  MySelector(TString name, TTree * /*tree*/ =0) : fChain(0), outdir(name) { }
   virtual ~MySelector() { }
   virtual Int_t   Version() const { return 2; }
   virtual void    Begin(TTree *tree);
@@ -99,13 +105,12 @@ class MySelector : public TSelector {
 
   int TotalEvents;
 
-	int EtaBins_SM, EtaBins_SM_control, EtaBins_FE_reference, EtaBins_FE_control, EtaBins_FE;
-	int etaShift_SM, etaShift_SM_control, etaShift_FE_reference, etaShift_FE_control, etaShift_FE;
-	int PtBins_Central, PtBins_HF;
-	int AlphaBins;
+  int EtaBins_SM, EtaBins_SM_control, EtaBins_FE_reference, EtaBins_FE_control, EtaBins_FE;
+  int etaShift_SM, etaShift_SM_control, etaShift_FE_reference, etaShift_FE_control, etaShift_FE;
+  int PtBins_Central, PtBins_HF;
+  int AlphaBins;
 
   TString whichRun;
-  std::vector<MyJet> Jets;
 
   std::vector< std::vector< std::vector< TH1F* > > > asymmetries_SM, 						asymmetries_pt_SM,						asymmetries_rho_SM,						asymmetries_pt3_SM;
   std::vector< std::vector< std::vector< TH1F* > > > asymmetries_SM_control, 		asymmetries_pt_SM_control,		asymmetries_rho_SM_control,		asymmetries_pt3_SM_control;
@@ -121,7 +126,7 @@ class MySelector : public TSelector {
   TH1F *h_alpha_raw;
   TH1F *h_alpha_select;
 
-	TH1F *h_JetAvePt_SM;
+  TH1F *h_JetAvePt_SM;
   TH1F *h_Jet1Pt_SM;
   TH1F *h_Jet2Pt_SM;
   TH1F *h_Jet3Pt_SM;
@@ -164,8 +169,10 @@ void MySelector::Init(TTree *tree){
   fChain->SetBranchAddress("jet3_phi", &jet3_phi, &b_jet3_phi);
   fChain->SetBranchAddress("barreljet_phi", &barreljet_phi, &b_barreljet_phi);
   fChain->SetBranchAddress("barreljet_eta", &barreljet_eta, &b_barreljet_eta);
+  fChain->SetBranchAddress("barreljet_pt", &barreljet_pt, &b_barreljet_pt);
   fChain->SetBranchAddress("probejet_phi", &probejet_phi, &b_probejet_phi);
   fChain->SetBranchAddress("probejet_eta", &probejet_eta, &b_probejet_eta);
+  fChain->SetBranchAddress("probejet_pt", &probejet_pt, &b_probejet_pt);
   fChain->SetBranchAddress("asymmetry", &asymmetry, &b_asymmetry);
   fChain->SetBranchAddress("alpha", &alpha_, &b_alpha);
   fChain->SetBranchAddress("hf_trigger", &pass_trigger_hf, &b_pass_trigger_hf);
@@ -181,15 +188,6 @@ Bool_t MySelector::Notify(){
   // user if needed. The return value is currently not used.
 
   TFile *currentFile = fChain->GetCurrentFile();
-  fChain->SetBranchAddress("nPU", &npuIT, &b_npuIT);
-  TString tempName = currentFile->GetName();
-  if (tempName.Contains("RunB")) {  whichRun = "RunB"; }
-  else if (tempName.Contains("RunC")) {  whichRun = "RunC"; }
-  else if (tempName.Contains("RunD")) {  whichRun = "RunD"; }
-  else if (tempName.Contains("RunE")) {  whichRun = "RunE"; }
-  else if (tempName.Contains("RunF")) {  whichRun = "RunF"; }
-  else { whichRun = "MC"; }
-
   return kTRUE;
 }
 

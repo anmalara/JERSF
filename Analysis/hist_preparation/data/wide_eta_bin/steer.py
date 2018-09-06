@@ -1,15 +1,16 @@
 import sys
 import os
-import subprocess
 import time
+
+sys.path.append("/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/PersonalCode/")
+from parallelise import *
 
 def main_program(path="", list_path="", out_path="", JECVersions=[], JetLabels=[], systematics=[], samples=[], barrel_check = 0):
   list_path_=list_path[:-1]+path[path.find("JER2017")+len("JER2017"):path.find("DATA")-1]+"/"
   out_path_=out_path[:-1]+path[path.find("JER2017")+len("JER2017"):path.find("DATA")-1]+"/"
   for newJECVersion in JECVersions:
     for newJetLabel in JetLabels:
-      # for sys in set(systematics+["", "alpha"]):
-      for sys in set(systematics+[""]):
+      for sys in set(systematics+["", "alpha"]):
         if sys == "alpha":
           alpha_cut = 10
         else:
@@ -53,33 +54,38 @@ def main_program(path="", list_path="", out_path="", JECVersions=[], JetLabels=[
             if barrel_check>0:
               if barrel_check == 1:
                 cmd = 'sed -i -e """s/s_eta_barr/0.522/g" MySelector.C'
-                outdir = out_path_+pattern+"Run"+sample+"barrel_check_1/"
+                outdir = out_path_+pattern+"Run"+sample+"_barrel_check_1/"
               if barrel_check == 2:
                 cmd = 'sed -i -e """s/s_eta_barr/0.783/g" MySelector.C'
-                outdir = out_path_+pattern+"Run"+sample+"barrel_check_2/"
+                outdir = out_path_+pattern+"Run"+sample+"_barrel_check_2/"
               if barrel_check == 3:
                 cmd = 'sed -i -e """s/s_eta_barr/1.131/g" MySelector.C'
-                outdir = out_path_+pattern+"Run"+sample+"barrel_check_3/"
+                outdir = out_path_+pattern+"Run"+sample+"_barrel_check_3/"
               a = os.system(cmd)
               if not os.path.isdir(outdir):
                 os.makedirs(outdir)
+            cmd = "cp Makefile %s" % (outdir)
+            a = os.system(cmd)
+            cmd = "cp *.C %s" % (outdir)
+            a = os.system(cmd)
+            cmd = "cp *.h %s" % (outdir)
+            a = os.system(cmd)
+            os.chdir(outdir)
+            time.sleep(3)
             cmd = "make clean"
             a = os.system(cmd)
-            time.sleep(2)
             cmd = "make"
             a = os.system(cmd)
-            time.sleep(2)
             logfilename = "log.txt"
             f = open(logfilename,'w')
-            command = ['./Analysis.x', run_list]
-            # process = subprocess.Popen(command, stdout=f)
-            process = subprocess.Popen(command)
-            process.wait()
+            cmd = './Analysis.x %s >> log.txt &' % (run_list)
+            # print cmd
+            # a = os.system(cmd)
+            command = [outdir+"Analysis.x", run_list, outdir]
+            list_processes.append(command)
+            list_logfiles.append(outdir+"log.txt")
             f.close()
-            cmd = "mv *.root %s" % (outdir)
-            a = os.system(cmd)
-            cmd = "mv *.txt %s" % (outdir)
-            a = os.system(cmd)
+            os.chdir(common_path+"wide_eta_bin/")
             print ("time needed: "+str((time.time()-temp_time))+" s")
 
 samples = ["B","C","D","E","F","BC","DE","DEF","BCDEF"]
@@ -93,15 +99,20 @@ os.chdir(common_path+"wide_eta_bin/")
 
 sframe_ = "/nfs/dust/cms/user/amalara/sframe_all/"
 
+list_processes = []
+list_logfiles = []
 # for el in ["JER2017_DATA", "JER2017_MB_DATA", "JER2017_MB_test_DATA", "JER2017_Threshold_DATA"]:
-for el in ["JER2017_DATA"]:
+for el in ["JER2017_DATA", "JER2017_MB_DATA"]:
   path = sframe_+el+"/"
   samples = ["BCDEF"]
   JECVersions = ["Fall17_17Nov2017_V10"]
   JetLabels = ["AK4CHS"]
-  systematics = []
+  systematics = ["PU", "JEC"]
+  # systematics = []
   main_program(path, list_path, out_path, JECVersions, JetLabels, systematics, samples)
-  systematics = []
-  main_program(path, list_path, out_path, JECVersions, JetLabels, systematics, samples, barrel_check = 1)
-  main_program(path, list_path, out_path, JECVersions, JetLabels, systematics, samples, barrel_check = 2)
-  main_program(path, list_path, out_path, JECVersions, JetLabels, systematics, samples, barrel_check = 3)
+  if el == "JER2017_DATA":
+    main_program(path, list_path, out_path, JECVersions, JetLabels, [], samples, barrel_check = 1)
+    main_program(path, list_path, out_path, JECVersions, JetLabels, [], samples, barrel_check = 2)
+    main_program(path, list_path, out_path, JECVersions, JetLabels, [], samples, barrel_check = 3)
+
+parallelise(list_processes, 20, list_logfiles)

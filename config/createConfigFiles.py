@@ -1,11 +1,10 @@
 from utils import *
 
 @timeit
-def createConfigFiles(processes=["QCDPt15to30", "QCDPt15to30_MB", "DATA_RunF"], JECVersions=["Fall17_17Nov2017_V6"], JetLabels=["AK4CHS"], systematics=["PU", "JEC", "JER"], original_dir = "./submittedJobs/", original_file = "JER2017.xml", isMB = False, test_trigger=False, isThreshold=False):
-    outdir = original_file[:len(original_file)-4]
+def createConfigFiles(processes=["QCDPt15to30", "QCDPt15to30_MB", "DATA_RunF"], JECVersions_Data=["Fall17_17Nov2017_V6"], JECVersions_MC=["Fall17_17Nov2017_V6"], JetLabels=["AK4CHS"], systematics=["PU", "JEC", "JER"], original_dir = "./submittedJobs/", original_file = "JER2017.xml", outdir="JER2017", isMB = False, test_trigger=False, isThreshold=False):
     add_name = original_dir[original_dir.find("SubmittedJobs")+len("SubmittedJobs"):-1]
     print add_name
-    for newJECVersion in JECVersions:
+    for index_JEC, newJECVersion in enumerate(JECVersions_Data):
         for newJetLabel in JetLabels:
             add_path = newJECVersion+"/"+newJetLabel+"/"
             path = original_dir+add_path
@@ -55,7 +54,10 @@ def createConfigFiles(processes=["QCDPt15to30", "QCDPt15to30_MB", "DATA_RunF"], 
                     controls.append(["<!ENTITY", "OUTDIR", outdir , outdir+"_"+sample+"/"+add_path])
                 if isThreshold:
                     controls.append(["<!ENTITY", "isThreshold", "False" , "True"])
-                controls.append(["<!ENTITY", "JEC_VERSION", '"Fall17_17Nov2017_V6"', '"'+newJECVersion+'"'])
+                if "DATA" in process:
+                    controls.append(["<!ENTITY", "JEC_VERSION", '"Fall17_17Nov2017_V6"', '"'+newJECVersion+'"'])
+                if "QCD" in process:
+                    controls.append(["<!ENTITY", "JEC_VERSION", '"Fall17_17Nov2017_V6"', '"'+JECVersions_MC[index_JEC]+'"'])
                 controls.append(["<!ENTITY", "JETLABEL", '"AK4CHS"', '"'+newJetLabel+'"'])
                 if "AK8" in newJetLabel:
                     controls.append(["<Item", "JetCollection", '"slimmedJets"', '"updatedPatJetsPatJetsAK8PFPUPPI"'])

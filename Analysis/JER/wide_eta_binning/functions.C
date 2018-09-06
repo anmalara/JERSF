@@ -21,8 +21,8 @@
 #include <TMinuit.h>
 #include <TMatrixD.h>
 
-// Code by Marek Niedziela
-// Based on code by Matthias Schröder, Kristin Goebel
+// Code of Andrea Malara
+// Based on code by Marek Niedziela, Matthias Schröder, Kristin Goebel
 
 // Smeared MC instead of data:
 //bool smeared = true;
@@ -95,6 +95,8 @@ void make_lin_fit(double & slope, double & d_slope, double & offset, double & d_
 void chi2_linear(Int_t& npar, Double_t* grad, Double_t& fval, Double_t* p, Int_t status);
 float GetAsymmWidth(TH1F* &htemp, double * xq_IQW, double * yq_IQW, int etabin, int ptbin, int alphabin);
 double sumSquare(double a, double b);
+double findMinMax(std::vector<double> pt_width, TF1* NSC_ratio, TF1* constfit, bool isMin);
+void fitLin( TH1F &hist, double &width, double &error );
 
 
 // Not used
@@ -888,6 +890,18 @@ double findMinMax(std::vector<double> pt_width, TF1* NSC_ratio, TF1* constfit, b
   if (isMin) return min;
   else return max;
 }
+
+void fitLin( TH1F &hist, double &width, double &error ) {
+  TF1 * linfit = new TF1( "linfit", "[0]+x*[1]", 0, 0.3 );
+  linfit -> SetParameter( 0, 0.1 );
+  linfit -> SetParameter( 1, 0.1 );
+  linfit -> SetParLimits( 0, 0., 1. );
+  hist.Fit( "linfit", "QM" );
+  width = linfit -> GetParameter(0);
+  error = 1. * ( linfit -> GetParError(0) );
+  delete linfit;
+}
+
 
 
 

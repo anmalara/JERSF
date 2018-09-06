@@ -1,8 +1,8 @@
 from createConfigFiles import *
 
-def cont_event(paths ="./submittedJobs/" , JECVersions=["Fall17_17Nov2017_V6"], JetLabels=["AK4CHS"], systematics=["", "PU", "JEC", "JER"]):
+def cont_event(paths ="./submittedJobs/" , JECVersions_Data=["Fall17_17Nov2017_V6"], JetLabels=["AK4CHS"], systematics=["", "PU", "JEC", "JER"]):
     count = 0
-    for newJECVersion in JECVersions:
+    for newJECVersion in JECVersions_Data:
         for newJetLabel in JetLabels:
             for sys in systematics+[""]:
                 for dir in ["", "up", "down"]:
@@ -16,9 +16,9 @@ def cont_event(paths ="./submittedJobs/" , JECVersions=["Fall17_17Nov2017_V6"], 
     return count
 
 @timeit
-def condor_control(original_dir ="./submittedJobs/" , JECVersions=["Fall17_17Nov2017_V6"], JetLabels=["AK4CHS"], systematics=["", "PU", "JEC", "JER"], internal_option="-l"):
+def condor_control(original_dir ="./submittedJobs/" , JECVersions_Data=["Fall17_17Nov2017_V6"], JetLabels=["AK4CHS"], systematics=["", "PU", "JEC", "JER"], internal_option="-l"):
     count = 0
-    for newJECVersion in JECVersions:
+    for newJECVersion in JECVersions_Data:
         for newJetLabel in JetLabels:
             for sys in systematics+[""]:
                 for dir in ["", "up", "down"]:
@@ -29,7 +29,7 @@ def condor_control(original_dir ="./submittedJobs/" , JECVersions=["Fall17_17Nov
                         if not ".xml" in sample:
                             continue
                         count += 1
-                        all_events = cont_event(original_dir, JECVersions, JetLabels, systematics)
+                        all_events = cont_event(original_dir, JECVersions_Data, JetLabels, systematics)
                         print "Already completed "+str(count)+" out of "+str(all_events)+" jobs --> "+str(float(count)/float(all_events)*100)+"%."
                         os.chdir(original_dir)
                         os.chdir(path)
@@ -46,16 +46,22 @@ def condor_control(original_dir ="./submittedJobs/" , JECVersions=["Fall17_17Nov
 
 from createConfigFiles import *
 @timeit
-def delete_workdir(original_dir ="./SubmittedJobs/" , JECVersions=["Fall17_17Nov2017_V6", "Fall17_17Nov2017_V10"], JetLabels=["AK4CHS", "AK8PUPPI"], systematics=["", "PU", "JEC", "JER"]):
+def delete_workdir(original_dir ="./SubmittedJobs/" , JECVersions_Data=["Fall17_17Nov2017_V6", "Fall17_17Nov2017_V10"], JetLabels=["AK4CHS", "AK8PUPPI"], systematics=["", "PU", "JEC", "JER"]):
     add_name = original_dir[original_dir.find("SubmittedJobs")+len("SubmittedJobs"):-1]
     for sample in ["DATA", "QCD"]:
-        for newJECVersion in JECVersions:
+        for newJECVersion in JECVersions_Data:
             for newJetLabel in JetLabels:
                 for sys in systematics+[""]:
                     for dir in ["", "up", "down"]:
                         if sys == "" and dir != "":
                             continue
-                        path = "/nfs/dust/cms/user/amalara/sframe_all/JER2017"+add_name+"_"+sample+"/"+newJECVersion+"/"+newJetLabel+"/"+sys+"/"+dir+"/"
+                        path = "/nfs/dust/cms/user/amalara/sframe_all/"+outdir+add_name+"_"+sample+"/"+newJECVersion+"/"+newJetLabel+"/"+sys+"/"+dir+"/"
+                        if os.path.isdir(path):
+                            for workdir in sorted(os.listdir(path)):
+                                if "workdir" in workdir:
+                                    cmd = "rm -fr %s" % (path+workdir)
+                                    a = os.system(cmd)
+                        path = original_dir+newJECVersion+"/"+newJetLabel+"/"+sys+"/"+dir+"/"
                         if os.path.isdir(path):
                             for workdir in sorted(os.listdir(path)):
                                 if "workdir" in workdir:
@@ -120,11 +126,12 @@ Data_process.append("DATA_RunF_MB")
 
 processes = QCD_process+Data_process
 
-JECVersions = ["Fall17_17Nov2017_V6", "Fall17_17Nov2017_V10", "Fall17_17Nov2017_V11"]
+JECVersions_Data = ["Fall17_17Nov2017_V6", "Fall17_17Nov2017_V10", "Fall17_17Nov2017_V11"]
 JetLabels = ["AK4CHS", "AK8PUPPI"]
 systematics = ["PU", "JEC", "JER"]
 
 original_file = "JER2017.xml"
+outdir = "JER2017_v2"
 original_dir_ = os.getcwd()
 
 try:
@@ -149,15 +156,13 @@ else:
 
 
 
-def main_program(option="", internal_option="", processes=[], JECVersions=[], JetLabels=[], systematics=[], original_dir="./SubmittedJobs/", original_file="JER2017.xml", isMB=False, test_trigger=False, isThreshold=False):
+def main_program(option="", internal_option="", processes=[], JECVersions_Data=[], JECVersions_MC=[], JetLabels=[], systematics=[], original_dir="./SubmittedJobs/", original_file="JER2017.xml", isMB=False, test_trigger=False, isThreshold=False):
     if option == "new":
-        cmd = "rm -fr %s" % (original_dir)
-        a = os.system(cmd)
-        createConfigFiles(processes, JECVersions, JetLabels, systematics, original_dir, original_file, isMB, test_trigger, isThreshold)
-    elif option == "delete":
-        delete_workdir(original_dir, JECVersions, JetLabels, systematics)
+        createConfigFiles(processes, JECVersions_Data, JECVersions_MC, JetLabels, systematics, original_dir, original_file, outdir, isMB, test_trigger, isThreshold)
+    elif option == "remove" or option == "delete":
+        delete_workdir(original_dir, JECVersions_Data, JetLabels, systematics)
     else:
-        condor_control(original_dir, JECVersions, JetLabels, systematics, internal_option)
+        condor_control(original_dir, JECVersions_Data, JetLabels, systematics, internal_option)
 
 
 original_dir = original_dir_
@@ -165,10 +170,13 @@ original_dir += "/SubmittedJobs/"
 isMB = False
 test_trigger = False
 isThreshold = False
-JECVersions = ["Fall17_17Nov2017_V10"]
-JetLabels = ["AK4CHS", "AK8PUPPI"]
+JECVersions_Data = ["Fall17_17Nov2017_V10","Fall17_17Nov2017_V24"]
+JECVersions_MC = ["Fall17_17Nov2017_V10", "Fall17_17Nov2017_V23"]
+# JECVersions_Data = ["Fall17_17Nov2017_V10"]
+# JECVersions_MC = ["Fall17_17Nov2017_V10"]
+JetLabels = ["AK4CHS"]
 systematics = ["PU", "JEC"]
-main_program(option, internal_option, processes, JECVersions, JetLabels, systematics, original_dir, original_file, isMB, test_trigger, isThreshold)
+main_program(option, internal_option, processes, JECVersions_Data, JECVersions_MC, JetLabels, systematics, original_dir, original_file, isMB, test_trigger, isThreshold)
 
 
 original_dir = original_dir_
@@ -176,10 +184,11 @@ original_dir += "/SubmittedJobs_MB/"
 isMB = True
 test_trigger = False
 isThreshold = False
-JECVersions = ["Fall17_17Nov2017_V10"]
+JECVersions_Data = ["Fall17_17Nov2017_V24"]
+JECVersions_MC = ["Fall17_17Nov2017_V23"]
 JetLabels = ["AK4CHS"]
 systematics = []
-main_program(option, internal_option, processes, JECVersions, JetLabels, systematics, original_dir, original_file, isMB, test_trigger, isThreshold)
+main_program(option, internal_option, processes, JECVersions_Data, JECVersions_MC, JetLabels, systematics, original_dir, original_file, isMB, test_trigger, isThreshold)
 
 
 original_dir = original_dir_
@@ -187,10 +196,11 @@ original_dir += "/SubmittedJobs_MB_test/"
 isMB = True
 test_trigger = True
 isThreshold = False
-JECVersions = ["Fall17_17Nov2017_V10"]
+JECVersions_Data = ["Fall17_17Nov2017_V24"]
+JECVersions_MC = ["Fall17_17Nov2017_V23"]
 JetLabels = ["AK4CHS"]
 systematics = []
-main_program(option, internal_option, processes, JECVersions, JetLabels, systematics, original_dir, original_file, isMB, test_trigger, isThreshold)
+# main_program(option, internal_option, processes, JECVersions_Data, JECVersions_MC, JetLabels, systematics, original_dir, original_file, isMB, test_trigger, isThreshold)
 
 
 original_dir = original_dir_
@@ -198,7 +208,8 @@ original_dir += "/SubmittedJobs_Threshold/"
 isMB = False
 test_trigger = False
 isThreshold = True
-JECVersions = ["Fall17_17Nov2017_V10"]
-JetLabels = ["AK4CHS", "AK8PUPPI"]
+JECVersions_Data = ["Fall17_17Nov2017_V24"]
+JECVersions_MC = ["Fall17_17Nov2017_V23"]
+JetLabels = ["AK4CHS"]
 systematics = []
-main_program(option, internal_option, processes, JECVersions, JetLabels, systematics, original_dir, original_file, isMB, test_trigger, isThreshold)
+# main_program(option, internal_option, processes, JECVersions_Data, JECVersions_MC, JetLabels, systematics, original_dir, original_file, isMB, test_trigger, isThreshold)
