@@ -18,3 +18,4 @@ config/workdir*
 config/save*
 config/submitted*
 config/Submitted*
+**/*.pyc
