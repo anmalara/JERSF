@@ -78,24 +78,24 @@ fit_data data;
 void histLoadAsym( TFile &f, bool data, TString text, std::vector< std::vector< std::vector< TH1F* > > > &Asymmetry, std::vector< std::vector< std::vector< TH1F* > > > &GenAsymmetry, int etaBins, int ptBins, int AlphaBins, int etaShift);
 void histMeanPt( std::vector< std::vector< std::vector< TH1F* > > > &Asymmetry , std::vector< std::vector< std::vector< double > > > &Widths );
 void histWidthAsym_old( std::vector<std::vector<std::vector<TH1F*> > > &Asymmetry , std::vector<std::vector<std::vector<double> > > &Widths, std::vector<std::vector<std::vector<double> > > &WidthsError , bool fill_all );
-void histWidthAsym( std::vector< std::vector< std::vector< TH1F* > > > &Asymmetry , std::vector< std::vector< std::vector< double > > > &Widths, std::vector< std::vector< std::vector< double > > > &WidthsError , bool fill_all, double alpha = 0.985 );
+void histWidthAsym( std::vector< std::vector< std::vector< TH1F* > > > &Asymmetry , std::vector< std::vector< std::vector< double > > > &Widths, std::vector< std::vector< std::vector< double > > > &WidthsError , bool fill_all, double alpha = 0.985, bool isFE = 0);
 void histWidthMCTruth( std::vector<std::vector<std::vector<TH1F*> > > &Asymmetry , std::vector<std::vector<std::vector<double> > > &Widths, std::vector<std::vector<std::vector<double> > > &WidthsError );
 void fill_widths_hists( TString name1, std::vector< std::vector< TH1F* > > &widths , std::vector< std::vector< std::vector< double > > > Widths, std::vector< std::vector< std::vector< double > > > WidthsError);
-void histLinFit( std::vector< std::vector< TH1F* > > widths_hist_all , std::vector< std::vector< double > > &Widths, std::vector< std::vector< double > > &WidthsError );
-void histLinCorFit( std::vector< std::vector< std::vector< double > > > Widths, std::vector< std::vector< std::vector< double > > > WidthsError, std::vector< std::vector< TGraphErrors* > > &output_graph, std::vector< std::vector< double > > &output, std::vector< std::vector< double > > &output_error, bool isFE );
+void histLinFit( std::vector< std::vector< TH1F* > > widths_hist_all , std::vector< std::vector< double > > &Widths, std::vector< std::vector< double > > &WidthsError, bool isFE );
+void histLinCorFit( std::vector< std::vector< std::vector< double > > > Widths, std::vector< std::vector< std::vector< double > > > WidthsError, std::vector< std::vector< TGraphErrors* > > &output_graph, std::vector< std::vector< double > > &output, std::vector< std::vector< double > > &output_error, bool isFE, bool isMC);
 void widths_015_ratios( TString name1, std::vector<TH1F*> &widths, std::vector<std::vector<std::vector<double> > > Widths, std::vector<std::vector<std::vector<double> > > WidthsError, std::vector<std::vector<std::vector<double> > > WidthsTwo, std::vector<std::vector<std::vector<double> > > WidthsTwoError, std::vector<std::vector<std::vector<double> > > forward_width_pt );
 void correctJERwithPLI(std::vector< std::vector< double > > &Output, std::vector< std::vector< double > > &OutputError, std::vector< std::vector< double > > Widths, std::vector< std::vector< double > > WidthsError, std::vector< std::vector< double > > PLI, std::vector< std::vector< double > > PLIError, float shift = 0.0);
 void correctJERwithPLI015(std::vector<std::vector<double> > &Output, std::vector<std::vector<double> > &OutputError, std::vector<std::vector<std::vector<double> > > Widths, std::vector<std::vector<std::vector<double> > > WidthsError, std::vector<std::vector<std::vector<double> > > PLI, std::vector<std::vector< std::vector< double > > > PLIError, float shift = 0.0);
-void correctForRef( TString name1, std::vector<std::vector<double> > &Output, std::vector<std::vector<double> > &OutputError, std::vector<std::vector<double> > Input, std::vector<std::vector<double> > InputError, std::vector<std::vector<std::vector<double> > > width_pt, int shift);
+void correctForRef( TString name1, std::vector<std::vector<double> > &Output, std::vector<std::vector<double> > &OutputError, std::vector<std::vector<double> > Input, std::vector<std::vector<double> > InputError, std::vector<std::vector<std::vector<double> > > width_pt, int shift, TString outdir);
 void makeScales( std::vector< std::vector< double > > &Output, std::vector< std::vector< double > > &OutputError, std::vector< std::vector< double > > Input1, std::vector< std::vector< double > > Input1Error, std::vector< std::vector< double > > Input2, std::vector< std::vector< double > > Input2Error );
 void fill_mctruth_hist( TString name1, std::vector< TH1F* > &output, std::vector< std::vector< std::vector< double > > > Widths, std::vector< std::vector< std::vector< double > > > WidthsError, std::vector< std::vector< std::vector< double > > > pt_binning, double range);
 void fill_hist( TString name1, std::vector< TH1F* > &output, std::vector< std::vector< double > > Widths, std::vector< std::vector< double > > WidthsError, std::vector< std::vector< std::vector< double > > > pt_binning, double range, int shift2 = 0);
 void Fill_Map3D(std::vector< std::vector < std::vector < TH1F* > > > &Asymmetry, std::vector < TH2F* > &Map, std::vector < double > &eta_bins, std::vector < double > &pt_bins );
-void make_lin_fit(double & slope, double & d_slope, double & offset, double & d_offset);
+void make_lin_fit(double & slope, double & d_slope, double & offset, double & d_offset, double min_slope, double max_offset);
 void chi2_linear(Int_t& npar, Double_t* grad, Double_t& fval, Double_t* p, Int_t status);
 float GetAsymmWidth(TH1F* &htemp, double * xq_IQW, double * yq_IQW, int etabin, int ptbin, int alphabin);
 double sumSquare(double a, double b);
-double findMinMax(std::vector<double> pt_width, TF1* NSC_ratio, TF1* constfit, bool isMin);
+double findMinMax(TH1F* JER, std::vector< std::vector< double > > pt_width, TF1* NSC_ratio, TF1* constfit, bool isMin);
 void fitLin( TH1F &hist, double &width, double &error );
 
 
@@ -110,7 +110,6 @@ void fill_widths_pt( TString name1, std::vector<TH1F*> &widths, std::vector<std:
 void KFSR_ratios( TString name1, std::vector<TH1F*> &widths, std::vector<std::vector<double> > Widths, std::vector<std::vector<double> > WidthsError, std::vector<std::vector<double> > WidthsTwo, std::vector<std::vector<double> > WidthsTwoError, std::vector<std::vector<std::vector<double> > > forward_width_pt );
 void KNFS_line_fit( TString name1, std::vector<TH1F*> widths, std::vector< TF1* > &functions );
 void correctKFSR( std::vector<std::vector<double> > &Output, std::vector<std::vector<double> > &OutputError, std::vector<std::vector<std::vector<double> > > Widths, std::vector<std::vector<std::vector<double> > > WidthsError, std::vector<TF1*> functions, std::vector<std::vector<std::vector<double> > > forward_width_pt );
-void fitLin( TH1F &hist, double &width, double &error );
 void fitAsym( TH1F &hist, double &width, double &error , double &centre, double &centre_error, double &chisqr, int fitType, double position , bool fix );
 void fitConst( TH1F &hist, double &value, double &error );
 void fitMCTruth( TH1F &hist, double &width, double &error );
@@ -168,7 +167,7 @@ void histMeanPt( std::vector< std::vector< std::vector< TH1F* > > > &Asymmetry ,
   }
 }
 
-void histWidthAsym( std::vector< std::vector< std::vector< TH1F* > > > &Asymmetry , std::vector< std::vector< std::vector< double > > > &Widths, std::vector< std::vector< std::vector< double > > > &WidthsError , bool fill_all, double alpha) {
+void histWidthAsym( std::vector< std::vector< std::vector< TH1F* > > > &Asymmetry , std::vector< std::vector< std::vector< double > > > &Widths, std::vector< std::vector< std::vector< double > > > &WidthsError , bool fill_all, double alpha, bool isFE) {
   double asym;
   double asymerr;
 
@@ -190,18 +189,18 @@ void histWidthAsym( std::vector< std::vector< std::vector< TH1F* > > > &Asymmetr
           temp_hist->GetXaxis()->SetRange(temp_hist->FindBin(yq[0]), temp_hist->FindBin(yq[1]));
           asym = temp_hist->GetRMS();
           asymerr = temp_hist->GetRMSError();
-          if (p == 1 || (m == 7 && p == 10) || (m == 5 && p == 2) || (m == 5 && p == 3) || (m == 8 && p == 2) || (m == 10 && p == 2) ) {
-            TF1* mygaus = new TF1("mygaus","gaus",-1.0, 1.0);
-            TH1F* temp_hist2 = (TH1F*) Asymmetry.at(m).at(p).at(r)->Clone();
-            temp_hist2->Scale(1./temp_hist2->Integral());
-            mygaus->SetParameters(1, 0., 0.2);
-            mygaus->SetParLimits(1, -0.2, 0.2);
-            mygaus->SetParLimits(2, 0.005, 0.3);
-            temp_hist2->Fit("mygaus", "Q+");
-            asym = mygaus->GetParameter(2);
-            asymerr = mygaus->GetParError(2);
-            Asymmetry.at(m).at(p).at(r)->GetListOfFunctions()->Add(mygaus);
-          }
+          // if (p == 1 || (m == 7 && p == 10) || (m == 5 && p == 2) || (m == 5 && p == 3) || (m == 8 && p == 2) || (m == 10 && p == 2) ) {
+          //   TF1* mygaus = new TF1("mygaus","gaus",-1.0, 1.0);
+          //   TH1F* temp_hist2 = (TH1F*) Asymmetry.at(m).at(p).at(r)->Clone();
+          //   temp_hist2->Scale(1./temp_hist2->Integral());
+          //   mygaus->SetParameters(1, 0., 0.2);
+          //   mygaus->SetParLimits(1, -0.2, 0.2);
+          //   mygaus->SetParLimits(2, 0.005, 0.3);
+          //   temp_hist2->Fit("mygaus", "Q+");
+          //   asym = mygaus->GetParameter(2);
+          //   asymerr = mygaus->GetParError(2);
+          //   Asymmetry.at(m).at(p).at(r)->GetListOfFunctions()->Add(mygaus);
+          // }
         } else { asym = 0.; asymerr = 0.; };
 
         if (!fill_all) {
@@ -211,13 +210,19 @@ void histWidthAsym( std::vector< std::vector< std::vector< TH1F* > > > &Asymmetr
           if ( p == 3 && r < 1) { asym = 0.; asymerr = 0.; };
           if ( p == 4 && r < 1) { asym = 0.; asymerr = 0.; };
 					if ( p == 5 && r < 1) { asym = 0.; asymerr = 0.; };
-          if ( m == 6 && p == 2 && r < 3) { asym = 0.; asymerr = 0.; };
-          if ( m == 6 && p == 3 && r < 2) { asym = 0.; asymerr = 0.; };
-          if ( m == 6 && p == 6 && r < 1) { asym = 0.; asymerr = 0.; };
-          if ( m == 6 && p == 9 && r < 1) { asym = 0.; asymerr = 0.; };
-          if ( m == 7 && p == 6 && r < 1) { asym = 0.; asymerr = 0.; };
-          if ( m == 7 && p == 7 && r < 1) { asym = 0.; asymerr = 0.; };
-          if ( m == 7 && p == 8 && r < 1) { asym = 0.; asymerr = 0.; };
+          if (!isFE   && m == 6 && p == 2 && r < 3) { asym = 0.; asymerr = 0.; };
+          if (!isFE   && m == 6 && p == 3 && r < 3) { asym = 0.; asymerr = 0.; };
+          if (!isFE   && m == 5 && p == 6 && r < 1) { asym = 0.; asymerr = 0.; };
+          if (!isFE   && m == 6 && p == 6 && r < 2) { asym = 0.; asymerr = 0.; };
+          if (!isFE   && m == 6 && p == 9 && r < 1) { asym = 0.; asymerr = 0.; };
+          if (!isFE   && m == 7 && p == 6 && r < 1) { asym = 0.; asymerr = 0.; };
+          if (!isFE   && m == 7 && p == 7 && r < 1) { asym = 0.; asymerr = 0.; };
+          if (!isFE   && m == 7 && p == 8 && r < 1) { asym = 0.; asymerr = 0.; };
+          if (!isFE   && m == 8 && p == 2 && r < 3) { asym = 0.; asymerr = 0.; };
+          if (!isFE   && m == 8 && p == 6 && r < 3) { asym = 0.; asymerr = 0.; };
+          if (!isFE   && m == 9 && p == 3 && r < 2) { asym = 0.; asymerr = 0.; };
+          if ( isFE   && m == 9 && p >= 7 && r < 1) { asym = 0.; asymerr = 0.; };
+          if ( isFE   && m == 11&& p == 7 && r < 2) { asym = 0.; asymerr = 0.; };
         }
         temp1.push_back( asym );
         temp_error1.push_back( asymerr );
@@ -279,7 +284,7 @@ void fill_widths_hists( TString name1, std::vector< std::vector< TH1F* > > &widt
   }
 }
 
-void histLinFit( std::vector< std::vector< TH1F* > > widths_hist_all , std::vector< std::vector< double > > &Widths, std::vector< std::vector< double > > &WidthsError ) {
+void histLinFit( std::vector< std::vector< TH1F* > > widths_hist_all , std::vector< std::vector< double > > &Widths, std::vector< std::vector< double > > &WidthsError, bool isFE ) {
   for( unsigned int m = 0; m < widths_hist_all.size(); m++ ) {
     std::vector<double> temp2;
     std::vector<double> temp_error2;
@@ -287,8 +292,22 @@ void histLinFit( std::vector< std::vector< TH1F* > > widths_hist_all , std::vect
       double value, error;
       if ( widths_hist_all.at(m).at(p)->GetEntries() != 0 ) {
         fitLin( *( widths_hist_all.at(m).at(p) ), value, error );
+
         if ( p==0 ) {value = 0; error = 0;}
-        // if ( m == 10 && p==5 && widths_hist_all.size() == 11) {value = 0; error = 0;}
+        if ( !isFE && m==1  && p==1 ) {value = 0; error = 0;}
+        if ( !isFE && m==3  && p==1 ) {value = 0; error = 0;}
+        if ( !isFE && m>=6  && p==1 ) {value = 0; error = 0;}
+        if ( !isFE && m==5  && p==8 ) {value = 0; error = 0;}
+        if ( !isFE && m==6  && p==8 ) {value = 0; error = 0;}
+        if ( !isFE && m==7  && p>=8 ) {value = 0; error = 0;}
+        if ( !isFE && m==8  && p==1 ) {value = 0; error = 0;}
+        if ( !isFE && m==8  && p>=6 ) {value = 0; error = 0;}
+        if ( !isFE && m==9  && p>=5 ) {value = 0; error = 0;}
+        if (  isFE && m==10 && p==6 ) {value = 0; error = 0;}
+        if (  isFE && m==10 && p>=8 ) {value = 0; error = 0;}
+        if (  isFE && m==11 && p>=8 ) {value = 0; error = 0;}
+        if (  isFE && m==12 && p>=7 ) {value = 0; error = 0;}
+        if (  isFE && m>=11 && p==1 ) {value = 0; error = 0;}
         temp2.push_back(value);
         temp_error2.push_back(error);
       } else {
@@ -301,7 +320,7 @@ void histLinFit( std::vector< std::vector< TH1F* > > widths_hist_all , std::vect
   }
 }
 
-void histLinCorFit( std::vector< std::vector< std::vector< double > > > Widths, std::vector< std::vector< std::vector< double > > > WidthsError, std::vector< std::vector< TGraphErrors* > > &output_graph, std::vector< std::vector< double > > &output, std::vector< std::vector< double > > &output_error, bool isFE) {
+void histLinCorFit( std::vector< std::vector< std::vector< double > > > Widths, std::vector< std::vector< std::vector< double > > > WidthsError, std::vector< std::vector< TGraphErrors* > > &output_graph, std::vector< std::vector< double > > &output, std::vector< std::vector< double > > &output_error, bool isFE, bool isMC) {
   for( unsigned int m = 0; m < Widths.size(); m++ ) {
     // eta loop
     std::vector<TGraphErrors*> temp2_graph;
@@ -310,7 +329,6 @@ void histLinCorFit( std::vector< std::vector< std::vector< double > > > Widths, 
     for( unsigned int p = 0; p < Widths.at(m).size(); p++ ) {
       // p_T loop
       std::vector<float> alpha;
-      int no_skip_pts;
       alpha.push_back(0.05); alpha.push_back(0.1); alpha.push_back(0.15); alpha.push_back(0.20); alpha.push_back(0.25); alpha.push_back(0.3);
       std::vector<double> x,x_e;
       for(int ialpha=0; ialpha < 6; ++ialpha) {
@@ -353,29 +371,51 @@ void histLinCorFit( std::vector< std::vector< std::vector< double > > > Widths, 
       data.y_cov = y_cov_mc;
       data.CheckPoints();
       // choose start values for the fit
-      double slope = (Widths.at(m).at(p).at(Widths.at(m).at(p).size()-1) - Widths.at(m).at(p).at(Widths.at(m).at(p).size()-3))/(x.at(x.size()-1) - x.at(x.size()-3));
+      // double slope = (Widths.at(m).at(p).at(Widths.at(m).at(p).size()-1) - Widths.at(m).at(p).at(Widths.at(m).at(p).size()-3))/(x.at(x.size()-1) - x.at(x.size()-3));
+      // double offset = Widths.at(m).at(p).at(Widths.at(m).at(p).size()-1) - (slope*x.at(x.size()-1));
+      double slope  = 0.15;
+      double offset = 0.05;
       double d_slope = slope;
-      double offset = Widths.at(m).at(p).at(Widths.at(m).at(p).size()-1) - (slope*x.at(x.size()-1));
       double d_offset = offset;
+      double min_slope = 0.05;
+      double max_offset = 0.15;
+      if ( !isFE && m == 7 && p == 2) min_slope  = 0.215;
+      if ( !isFE && m == 7 && p == 2) max_offset = 0.07;
+      if ( !isFE && m == 8 && p == 6) min_slope  = 0.09;
+      if ( !isFE && m == 8 && p == 6) max_offset = 0.1;
+      if ( !isFE && m >= 10&& p == 2) max_offset = 0.4;
+      if (isFE&&isMC && m == 10&& p == 6) max_offset = 0.06;
+      if (isFE&&isMC && m == 10&& p == 6) min_slope  = 0.13;
       //         std::cout << "eta: " << m <<  ", p_T: " << p << std::endl;
       //         std::cout << "fit start values: " << "slope: " << slope << " offset: " << offset << std::endl;
-      make_lin_fit(slope, d_slope, offset, d_offset);
+      make_lin_fit(slope, d_slope, offset, d_offset, min_slope, max_offset);
       //         std::cout << "fit values: " << "slope: " << slope << " offset: " << offset << std::endl;
       lin_extrapol_mc->SetParameter(0, offset);
       lin_extrapol_mc->SetParError(0, d_offset);
       lin_extrapol_mc->SetParameter(1, slope);
       lin_extrapol_mc->SetParError(1, d_slope);
+      lin_extrapol_mc->SetChisquare(0.);//TODO: set the correct chi/2
       extrapol_MC->GetListOfFunctions()->Add(lin_extrapol_mc);
 
-      if ( p == 0 ) {
-        temp2.push_back(0.);
-        temp_error2.push_back(0.);
-        temp2_graph.push_back(extrapol_MC);
-      } else {
-        temp2.push_back(offset);
-        temp_error2.push_back(d_offset);
-        temp2_graph.push_back(extrapol_MC);
-      }
+      if ( p==0 ) {offset = 0; d_offset = 0; }
+      if ( !isFE && m==1  && p==1 ) {offset = 0; d_offset = 0; }
+      if ( !isFE && m==3  && p==1 ) {offset = 0; d_offset = 0; }
+      if ( !isFE && m>=6  && p==1 ) {offset = 0; d_offset = 0; }
+      if ( !isFE && m==5  && p==8 ) {offset = 0; d_offset = 0; }
+      if ( !isFE && m==6  && p==8 ) {offset = 0; d_offset = 0; }
+      if ( !isFE && m==7  && p>=8 ) {offset = 0; d_offset = 0; }
+      if ( !isFE && m==8  && p==1 ) {offset = 0; d_offset = 0; }
+      if ( !isFE && m==8  && p>=6 ) {offset = 0; d_offset = 0; }
+      if ( !isFE && m==9  && p>=5 ) {offset = 0; d_offset = 0; }
+      if (  isFE && m==10 && p==6 ) {offset = 0; d_offset = 0; }
+      if (  isFE && m==10 && p>=8 ) {offset = 0; d_offset = 0; }
+      if (  isFE && m==11 && p>=8 ) {offset = 0; d_offset = 0; }
+      if (  isFE && m==12 && p>=7 ) {offset = 0; d_offset = 0; }
+      if (  isFE && m>=11 && p==1 ) {offset = 0; d_offset = 0; }
+
+      temp2.push_back(offset);
+      temp_error2.push_back(d_offset);
+      temp2_graph.push_back(extrapol_MC);
     }
     output.push_back(temp2);
     output_error.push_back(temp_error2);
@@ -450,7 +490,7 @@ void correctJERwithPLI015(std::vector<std::vector<double> > &Output, std::vector
   }
 }
 
-void correctForRef( TString name1, std::vector<std::vector<double> > &Output, std::vector<std::vector<double> > &OutputError, std::vector<std::vector<double> > Input, std::vector<std::vector<double> > InputError, std::vector<std::vector<std::vector<double> > > width_pt, int shift) {
+void correctForRef( TString name1, std::vector<std::vector<double> > &Output, std::vector<std::vector<double> > &OutputError, std::vector<std::vector<double> > Input, std::vector<std::vector<double> > InputError, std::vector<std::vector<std::vector<double> > > width_pt, int shift, TString outdir) {
   double Ref, Probe, RefError, ProbeError, pT;
 
   TH1F *hist = new TH1F( name1+"_hist", name1+"_hist", 1100, 0, 1100 );
@@ -474,8 +514,8 @@ void correctForRef( TString name1, std::vector<std::vector<double> > &Output, st
 
   TCanvas* canv = new TCanvas("nscplot","nscplot",50,50,800,600);
   hist -> Draw();
-  canv -> Print("pdfy/JERs/reference"+name1+".pdf","pdf");
-  canv -> Print("pdfy/JERs/reference"+name1+".png","png");
+  canv -> Print(outdir+"pdfy/JERs/reference"+name1+".pdf","pdf");
+  canv -> Print(outdir+"pdfy/JERs/reference"+name1+".png","png");
 
   for( unsigned int m = 1; m < shift; m++ ) {
     std::vector< double > temp2;
@@ -624,13 +664,15 @@ void Fill_Map3D(std::vector< std::vector < std::vector < TH1F* > > > &Asymmetry,
 }
 
 
-void make_lin_fit(double & slope, double & d_slope, double & offset, double & d_offset) {
+void make_lin_fit(double & slope, double & d_slope, double & offset, double & d_offset, double min_slope, double max_offset) {
   TMinuit min;
   min.SetPrintLevel(-1);
   //min.SetPrintLevel(0);
-  int err = min.DefineParameter(0, "slope", slope, d_slope, 0.05, 1.0);
+  if (slope  < 0.05  || slope  > 0.5) slope  = 0.15;
+  if (offset < 0.001 || offset > 0.1) offset = 0.05;
+  int err = min.DefineParameter(0, "slope", slope, d_slope, min_slope, 0.5);
   assert(err==0);
-  err = min.DefineParameter(1, "offset", offset, d_offset, 0.001, 0.2);
+  err = min.DefineParameter(1, "offset", offset, d_offset, 0.001, max_offset);
   assert(err==0);
   min.SetFCN(chi2_linear);
   min.mnmigr();
@@ -879,11 +921,12 @@ void findExtreme_gr(std::vector<TGraphErrors*> vec, double *x_min, double *x_max
   }
 }
 
-double findMinMax(std::vector<double> pt_width, TF1* NSC_ratio, TF1* constfit, bool isMin) {
+double findMinMax(TH1F* JER, std::vector< std::vector< double > > pt_width, TF1* NSC_ratio, TF1* constfit, bool isMin) {
 	double min = 10000;
   double max = 0;
-	for (unsigned int p = 0; p < pt_width.size(); p++) {
-		double pT = pt_width.at(p);
+	for (unsigned int p = 2; p < pt_width.size(); p++) {// TODO It's set to 2 just because in the following steps pt>2"bin are used
+    double pT = (double)(*std::max_element(pt_width.at(p).begin(),pt_width.at(p).end()));
+    if (JER->GetBinContent(JER->FindBin(pT))== 0.) continue;
 		min = std::min(min, TMath::Abs(NSC_ratio->Eval(pT) - constfit->Eval(pT)));
     max = std::max(min, TMath::Abs(NSC_ratio->Eval(pT) - constfit->Eval(pT)));
 	}
@@ -896,7 +939,7 @@ void fitLin( TH1F &hist, double &width, double &error ) {
   linfit -> SetParameter( 0, 0.1 );
   linfit -> SetParameter( 1, 0.1 );
   linfit -> SetParLimits( 0, 0., 1. );
-  hist.Fit( "linfit", "QM" );
+  hist.Fit( "linfit", "QM+" );
   width = linfit -> GetParameter(0);
   error = 1. * ( linfit -> GetParError(0) );
   delete linfit;
@@ -1131,23 +1174,6 @@ void correctKFSR( std::vector<std::vector<double> > &Output, std::vector<std::ve
     OutputError.push_back(temp_error2);
   }
 }
-
-
-void fitLin( TH1F &hist, double &width, double &error ) {
-  TF1 * linfit = new TF1( "linfit", "[0]+x*[1]", 0, 0.3 );
-
-  linfit -> SetParameter( 0, 0.1 );
-  linfit -> SetParameter( 1, 0.1 );
-
-  linfit -> SetParLimits( 0, 0., 1. );
-
-  hist.Fit( "linfit", "QM" );
-  width = linfit -> GetParameter(0);
-  error = 1. * ( linfit -> GetParError(0) );
-
-  delete linfit;
-}
-
 
 // fitType 0 -> gaussian fit, 1 -> RMS (100% of points), 2 -> shifted gaussian
 void fitAsym( TH1F &hist, double &width, double &error , double &centre, double &centre_error, double &chisqr, int fitType, double position , bool fix ) {

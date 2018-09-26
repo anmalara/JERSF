@@ -45,7 +45,7 @@ def main_function(gaustails=False, shiftForPLI="central"):
   if shiftForPLI=="down":
     outdir = out_path+newJECVersion+"/"+newJetLabel+"/PLI/down/"+run+"/"
     shiftForPLI_num = -0.25
-  print "outdir ", outdir
+  # print "outdir ", outdir
   if os.path.isdir(outdir):
     for el in sorted(os.listdir(outdir)):
       cmd = "rm -fr %s" % (outdir+el)
@@ -69,14 +69,14 @@ def main_function(gaustails=False, shiftForPLI="central"):
   os.makedirs("ClosureTest")
   os.makedirs("output")
   os.makedirs("output/asymmetries")
-  print pattern+run
+  # print pattern+run
   temp_time=time.time()
   # f = open("log.txt",'w')
   MC_type = '\\"MC\\"'
   data_type = '\\"Data\\"'
-  trigger_type = '\\"'+study+'\\"'
-  cmd = 'root -l -b -q "mainRun.cxx(false, %s, %s, %s, %s , %s, %s, %s, %s, %s)" >> log.txt &' % (MC_file, Data_file, LABEL_LUMI_INV_FB, MC_type, data_type, trigger_type, gaustail_num, shiftForPLI_num, ref_shift)
-  # cmd = 'root -l -b -q "mainRun.cxx(false, %s, %s, %s, %s , %s, %s, %s, %s)" ' % (MC_file, Data_file, LABEL_LUMI_INV_FB, MC_type, data_type, trigger_type, gaustail_num, shiftForPLI_num)
+  trigger_type = '\\"'+study[:-1]+'\\"'
+  # cmd = 'root -l -b -q "%smainRun.cxx(false, %s, %s, %s, %s , %s, %s, %s, %s, %s, %s)" >> log.txt &' % (outdir, MC_file, Data_file, LABEL_LUMI_INV_FB, MC_type, data_type, trigger_type, '\\"'+outdir+'\\"', gaustail_num, shiftForPLI_num, ref_shift)
+  cmd = 'root -l -b -q "%smainRun.cxx(false, %s, %s, %s, %s , %s, %s, %s, %s, %s, %s)"             ' % (outdir, MC_file, Data_file, LABEL_LUMI_INV_FB, MC_type, data_type, trigger_type, '\\"'+outdir+'\\"', gaustail_num, shiftForPLI_num, ref_shift)
   print cmd
   a = os.system(cmd)
   print ("time needed: "+str((time.time()-temp_time))+" s")
@@ -93,15 +93,23 @@ dirs = ["", "up", "down"]
 
 
 samples = ["BCDEF"]
-JECVersions=["Fall17_17Nov2017_V10"]
+JECVersions=["Fall17_17Nov2017_V10", "Fall17_17Nov2017_V24"]
+# JECVersions=["Fall17_17Nov2017_V10"]
 JetLabels=["AK4CHS"]
-systematics=[""]
-dirs = [""]
+# systematics=["PU"]
+# dirs = ["up"]
 common_path = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/JER2017/Analysis/JER/wide_eta_binning/"
 source_path = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/JER2017/Analysis/hist_preparation/"
 
 study = "Single/"
-studies = ["Single/"]
+# studies = ["Single/", "LowPtJets/", "Single_MB/", "LowPtJets_MB/"]
+
+studies = ["LowPtJets/"]
+systematics=[""]
+
+JECVersions=["Fall17_17Nov2017_V24"]
+studies = ["StandardPtBins/"]
+# systematics=["", "PU", "JEC", "alpha"]
 
 # extraText = "_barrel_check_1/", [ "_barrel_check_1/","_barrel_check_2/","_barrel_check_3/"]
 
@@ -110,15 +118,15 @@ for extraText in [""]:
     out_path  = common_path+"file/"+study+extraText
     for newJECVersion in JECVersions:
       for newJetLabel in JetLabels:
-        for sys in systematics:
+        for syst in systematics:
           for dir in dirs:
-            if (sys == "" and dir != "") or (sys == "alpha" and dir != "") or ((sys != "" and sys != "alpha") and dir == ""):
+            if (syst == "" and dir != "") or (syst == "alpha" and dir != "") or ((syst != "" and syst != "alpha") and dir == ""):
               continue
-            pattern = newJECVersion+"/"+newJetLabel+"/"+sys+"/"+dir+"/"
-            if sys == "":
+            pattern = newJECVersion+"/"+newJetLabel+"/"+syst+"/"+dir+"/"
+            if syst == "":
               pattern = newJECVersion+"/"+newJetLabel+"/standard/"
-            if sys == "alpha":
-              pattern = newJECVersion+"/"+newJetLabel+"/"+sys+"/"
+            if syst == "alpha":
+              pattern = newJECVersion+"/"+newJetLabel+"/"+syst+"/"
             print "pattern ", pattern
             for sample in samples:
               run = "Run"+sample
@@ -126,12 +134,12 @@ for extraText in [""]:
               LABEL_LUMI_INV_FB = '\\"'+LABEL_LUMI_INV_FB+'\\"'
               MC_file   = '\\"'+source_path+"MC/wide_eta_bin/file/"+study+pattern.replace("/standard","")+extraText+"histograms_mc_incl_full.root"+'\\"'
               Data_file = '\\"'+source_path+"data/wide_eta_bin/file/"+study+pattern.replace("/standard","")+run+extraText+"/histograms_data_incl_full.root"+'\\"'
-              print MC_file, Data_file
+              # print MC_file, Data_file
               if not os.path.isfile(str(MC_file.replace("\\","").strip("\""))) or not os.path.isfile(str(Data_file.replace("\\","").strip("\""))):
                 continue
-              print MC_file, Data_file
+              # print MC_file, Data_file
               main_function(gaustails=False)
-              if sys == "":
-                main_function(gaustails=True, shiftForPLI="central")
-                main_function(gaustails=False, shiftForPLI="up")
-                main_function(gaustails=False, shiftForPLI="down")
+              # if syst == "":
+              #   main_function(gaustails=True, shiftForPLI="central")
+              #   main_function(gaustails=False, shiftForPLI="up")
+              #   main_function(gaustails=False, shiftForPLI="down")

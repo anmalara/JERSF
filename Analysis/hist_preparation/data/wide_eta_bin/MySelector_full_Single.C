@@ -422,22 +422,22 @@ void MySelector::Terminate() {
 
 }
 
-double Weight( std::string filename ) {
-  if ( filename.std::string::find("QCDPt15to30")      != std::string::npos )  return 1837410000.0000  /19777211;
-  if ( filename.std::string::find("QCDPt30to50")      != std::string::npos )  return 140932000.0000   /19693825;
-  if ( filename.std::string::find("QCDPt50to80")      != std::string::npos )  return 19204300.0000    /19191105;
-  if ( filename.std::string::find("QCDPt80to120")     != std::string::npos )  return 2762530.0000     /28780800;
-  if ( filename.std::string::find("QCDPt120to170")    != std::string::npos )  return 471100.0000      /26840644;
-  if ( filename.std::string::find("QCDPt170to300")    != std::string::npos )  return 117276.0000      /29725594;
-  if ( filename.std::string::find("QCDPt300to470")    != std::string::npos )  return 7823.0000        /53285022;
-  if ( filename.std::string::find("QCDPt470to600")    != std::string::npos )  return 648.2000         /26439242;
-  if ( filename.std::string::find("QCDPt600to800")    != std::string::npos )  return 186.9000         /63545546;
-  if ( filename.std::string::find("QCDPt800to1000")   != std::string::npos )  return 32.2930          /37632352;
-  if ( filename.std::string::find("QCDPt1000to1400")  != std::string::npos )  return 9.4183           /19552294;
-  if ( filename.std::string::find("QCDPt1400to1800")  != std::string::npos )  return 0.8427           /5669140;
-  if ( filename.std::string::find("QCDPt1800to2400")  != std::string::npos )  return 0.1149           /2923941;
-  if ( filename.std::string::find("QCDPt2400to3200")  != std::string::npos )  return 0.0068           /1910526;
-  if ( filename.std::string::find("QCDPt3200toInf")   != std::string::npos )  return 0.0002           /770558;
+double Weight( TString filename ) {
+  if ( filename.Contains("QCDPt15to30")     )  return 1837410000.0000  /19792825;
+  if ( filename.Contains("QCDPt30to50")     )  return 140932000.0000   /19731520;
+  if ( filename.Contains("QCDPt50to80")     )  return 19204300.0000    /19220211;
+  if ( filename.Contains("QCDPt80to120")    )  return 2762530.0000     /28787800;
+  if ( filename.Contains("QCDPt120to170")   )  return 471100.0000      /26886608;
+  if ( filename.Contains("QCDPt170to300")   )  return 117276.0000      /29791322;
+  if ( filename.Contains("QCDPt300to470")   )  return 7823.0000        /53526516;
+  if ( filename.Contains("QCDPt470to600")   )  return 648.2000         /26470502;
+  if ( filename.Contains("QCDPt600to800")   )  return 186.9000         /66369216;
+  if ( filename.Contains("QCDPt800to1000")  )  return 32.2930          /37537040;
+  if ( filename.Contains("QCDPt1000to1400") )  return 9.4183           /19571272;
+  if ( filename.Contains("QCDPt1400to1800") )  return 0.8427           /5657036;
+  if ( filename.Contains("QCDPt1800to2400") )  return 0.1149           /2923941;
+  if ( filename.Contains("QCDPt2400to3200") )  return 0.0068           /1910526;
+  if ( filename.Contains("QCDPt3200toInf")  )  return 0.0002           /770558;
   else {
     //std::cout << "failed to get pt_hat weight" << std::endl;
     std::cout << "failed to get QCD HT sample weight" << std::endl;

@@ -6,8 +6,8 @@ sys.path.append("/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/
 from parallelise import *
 
 def main_program(path="", list_path="", out_path="", JECVersions=[], JetLabels=[], systematics=[], samples=[], barrel_check = 0):
-  list_path_=list_path[:-1]+path[path.find("JER2017")+len("JER2017"):path.find("QCD")-1]+"/"
-  out_path_=out_path[:-1]+path[path.find("JER2017")+len("JER2017"):path.find("QCD")-1]+"/"
+  list_path_=list_path[:-1]+path[path.find(inputdir)+len(inputdir):path.find("QCD")-1]+"/"
+  out_path_=out_path[:-1]+path[path.find(inputdir)+len(inputdir):path.find("QCD")-1]+"/"
   for newJECVersion in JECVersions:
     for newJetLabel in JetLabels:
       for sys in set(systematics+["", "alpha"]):
@@ -47,7 +47,7 @@ def main_program(path="", list_path="", out_path="", JECVersions=[], JetLabels=[
             a = os.system(cmd)
             cmd = 'sed -i -e """s/jet_threshold=15/jet_threshold=%s/g" MySelector.C' % (alpha_cut)
             a = os.system(cmd)
-            if "MB" in path:
+            if study == "LowPtJets":
               cmd = 'sed -i -e """s/pt_bins_Si/pt_bins_MB/g" MySelector.C'
               a = os.system(cmd)
             if barrel_check>0:
@@ -87,31 +87,37 @@ def main_program(path="", list_path="", out_path="", JECVersions=[], JetLabels=[
             os.chdir(common_path+"wide_eta_bin/")
             print ("time needed: "+str((time.time()-temp_time))+" s")
 
-
 samples = ["","flat"]
-JECVersions = ["Fall17_17Nov2017_V6", "Fall17_17Nov2017_V10"]
-JetLabels = ["AK4CHS", "AK8PUPPI"]
+JECVersions = ["Fall17_17Nov2017_V6", "Fall17_17Nov2017_V10", "Fall17_17Nov2017_V24"]
+JetLabels   = ["AK4CHS", "AK8PUPPI"]
 systematics = ["PU", "JEC"]
 common_path = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/JER2017/Analysis/hist_preparation/MC/"
-list_path = common_path+"lists/Single/"
-out_path  = common_path+"wide_eta_bin/file/Single/"
+study = "Single"
+study = "LowPtJets"
+study = "StandardPtBins"
+
+list_path   = common_path+"lists/"+study+"/"
+out_path    = common_path+"wide_eta_bin/file/"+study+"/"
 os.chdir(common_path+"wide_eta_bin/")
+
+inputdir = "JER2017_v2"
 
 sframe_ = "/nfs/dust/cms/user/amalara/sframe_all/"
 
 list_processes = []
 list_logfiles = []
 # for el in ["JER2017_QCD", "JER2017_MB_QCD", "JER2017_MB_test_QCD", "JER2017_Threshold_QCD"]:
-for el in ["JER2017_QCD", "JER2017_MB_QCD"]:
-  path = sframe_+el+"/"
+for el in ["", "_MB"]:
+  path = sframe_+inputdir+el+"_QCD/"
   samples = [""]
-  JECVersions = ["Fall17_17Nov2017_V10"]
+  JECVersions = ["Fall17_17Nov2017_V10", "Fall17_17Nov2017_V24"]
   JetLabels = ["AK4CHS"]
   systematics = ["PU", "JEC"]
+  # systematics = []
   main_program(path, list_path, out_path, JECVersions, JetLabels, systematics, samples)
-  if el == "JER2017_QCD":
-    main_program(path, list_path, out_path, JECVersions, JetLabels, [], samples, barrel_check = 1)
-    main_program(path, list_path, out_path, JECVersions, JetLabels, [], samples, barrel_check = 2)
-    main_program(path, list_path, out_path, JECVersions, JetLabels, [], samples, barrel_check = 3)
+  # if el == "":
+  #   main_program(path, list_path, out_path, JECVersions, JetLabels, [], samples, barrel_check = 1)
+  #   main_program(path, list_path, out_path, JECVersions, JetLabels, [], samples, barrel_check = 2)
+  #   main_program(path, list_path, out_path, JECVersions, JetLabels, [], samples, barrel_check = 3)
 
-parallelise(list_processes, 3, list_logfiles)
+parallelise(list_processes, 1, list_logfiles)

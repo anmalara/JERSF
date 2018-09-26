@@ -23,11 +23,11 @@
 #include <vector>
 
 
-double Weight( std::string filename );
+double Weight( TString filename );
 
 class MySelector : public TSelector {
 public:
-  
+
   TString outdir;
 
   TTree *fChain;   //!pointer to the analyzed TTree or TChain

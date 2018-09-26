@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
+#include <unistd.h>
+#include "TROOT.h"
 #include "TMath.h"
 #include "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/JER2017/include/constants.hpp"
 #include "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/PersonalCode/tdrstyle_all.C"
@@ -36,7 +38,10 @@ void LoadSF(std::vector<std::vector<std::vector<double>>> &SFs, TString filename
 
   std::string line;
   getline(file, line);
-  while (!file.eof() && !gSystem->AccessPathName(filename)) {
+
+  if (gSystem->AccessPathName(filename)) return false;
+
+  while (!file.eof()) {
     getline(file, line);
     std::istringstream iss(line);
     std::vector<std::string> results(std::istream_iterator<std::string>{iss}, std::istream_iterator<std::string>());
@@ -49,7 +54,7 @@ void LoadSF(std::vector<std::vector<std::vector<double>>> &SFs, TString filename
 }
 
 // SFs == (n_systematics, columns in files, eta_bins)
-void plot_SF_systematics() {
+void plot_SF_systematics_(TString path = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/JER2017/Analysis/JER/wide_eta_binning/file/Single/Fall17_17Nov2017_V10/AK4CHS/") {
 
   int shift_SM = 3;
   int shift_FE = 3;
@@ -84,9 +89,8 @@ void plot_SF_systematics() {
   systematics.push_back("alpha");
   systematics.push_back("pTdep");
   std::vector<std::vector<std::vector<double>>> SFs_SM, SFs_FE;
-  TString path, central_SM, central_FE, filename;
+  TString central_SM, central_FE, filename;
 
-  path = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/JER2017/Analysis/JER/wide_eta_binning/file/Single/Fall17_17Nov2017_V10/AK4CHS/";
   // path = "AK4CHS/";
   central_SM = "standard/RunBCDEF/output/scalefactors_ST.txt";
   central_FE = "standard/RunBCDEF/output/scalefactors_FE.txt";
@@ -106,6 +110,10 @@ void plot_SF_systematics() {
     else if (sys.Contains("pTdep"))filename = path+central_SM;
     else filename = path+temp.ReplaceAll("standard",sys);
     LoadSF(SFs_SM, filename);
+  }
+
+  if (SFs_SM.size() != systematics.size()+1) {
+    return false;
   }
 
   std::vector <double> SF_SM, stat_SM, eta_bin_SM_center, eta_bin_SM_error;
@@ -207,6 +215,10 @@ void plot_SF_systematics() {
     LoadSF(SFs_FE, filename);
   }
 
+  if (SFs_FE.size() != systematics.size()+1) {
+    return false;
+  }
+
   std::vector <double> SF_FE, stat_FE, eta_bin_FE_center, eta_bin_FE_error;
   std::vector <std::vector <double> > systematics_FE;
   for (unsigned int i = 0; i < 1+systematics.size(); i++){
@@ -222,8 +234,7 @@ void plot_SF_systematics() {
       for (unsigned int j = 0; j < eta_bins_FE.size()-1; j++) temp.push_back(TMath::Abs(SFs_FE.at(0).at(method).at(j) - SFs_FE.at(i).at(method).at(j)));
       systematics_FE.push_back(temp);
       temp.clear();
-    }
-    else{
+    } else{
       std::vector <double> temp;
       for (unsigned int j = 0; j < eta_bins_FE.size()-1; j++) temp.push_back((SFs_FE.at(i).at(method+pt_dep_method).at(j) + SFs_FE.at(i).at(method+pt_dep_method+1).at(j))/2);
       systematics_FE.push_back(temp);
@@ -240,10 +251,10 @@ void plot_SF_systematics() {
     total_error_FE.push_back(TMath::Sqrt(TMath::Power(err,2)+TMath::Power(stat_FE.at(i),2)));
   }
 
-  TCanvas* canv_SF_FE = tdrCanvas("Statistics_FE",eta_bins_FE[0]-0.1, eta_bins_FE[eta_bins_FE.size()-1]+0.1, 0., 5.0, "#eta", "JER SF");
+  TCanvas* canv_SF_FE = tdrCanvas("Statistics_FE",eta_bins_FE[0]-0.1, eta_bins_FE[eta_bins_FE.size()-1]+0.1, 0., 3.0, "#eta", "JER SF");
   canv_SF_FE->SetTickx(0);
   canv_SF_FE->SetTicky(0);
-  TLegend *leg_FE = tdrLeg(0.45,0.67,0.80,0.92);
+  TLegend *leg_FE = tdrLeg(0.60,0.67,0.80,0.92);
   leg_FE->SetTextFont(42);  leg_FE->SetTextSize(0.025);  leg_FE->SetTextColor(kBlack);
   tdrHeader(leg_FE,"Uncertainties", 12);
   TGraphErrors* gr_stat_FE = new TGraphErrors(eta_bins_FE.size()-1, &(eta_bin_FE_center[0]), &SF_FE[0], &(eta_bin_FE_error[0]), &stat_FE[0]);
@@ -260,7 +271,7 @@ void plot_SF_systematics() {
   canv_SF_FE->Print(path+"SF_FE.pdf","pdf");
   canv_SF_FE->Print(path+"SF_FE.png","png");
 
-  TCanvas* canv_stat_FE = tdrCanvas("Uncertainties_FE",eta_bins_FE[0]-0.1, eta_bins_FE[eta_bins_FE.size()-1]+0.1, 0.0001, 1000.0, "#eta", "Uncertainties");
+  TCanvas* canv_stat_FE = tdrCanvas("Uncertainties_FE",eta_bins_FE[0]-0.1, eta_bins_FE[eta_bins_FE.size()-1]+0.1, 0.0001, 100.0, "#eta", "Uncertainties");
   canv_stat_FE->SetTickx(0);
   canv_stat_FE->SetTicky(0);
   canv_stat_FE->SetLogy();
@@ -305,15 +316,15 @@ void plot_SF_systematics() {
       eta_bin_all_center.push_back(eta_bin_FE_center.at(i-1));
       eta_bin_all_error.push_back(eta_bin_FE_error.at(i-1));
       SF_final.push_back(SF_FE.at(i-shift_barrel));
-      SF_final_error.push_back(total_error_FE.at(i-shift_FE));
+      SF_final_error.push_back(total_error_FE.at(i-shift_barrel));
     }
   }
 
 
-  TCanvas* canv_SF_final = tdrCanvas("SF_final", eta_bins_all.at(0)-0.1, eta_bins_all.at(eta_bins_all.size()-1)+0.5, 0., 5.0, "#eta", "JER SF");
+  TCanvas* canv_SF_final = tdrCanvas("SF_final", eta_bins_all.at(0)-0.1, eta_bins_all.at(eta_bins_all.size()-1)+0.5, 0., 3.0, "#eta", "JER SF");
   canv_SF_final->SetTickx(0);
   canv_SF_final->SetTicky(0);
-  TLegend *leg_final = tdrLeg(0.55,0.67,0.80,0.92);
+  TLegend *leg_final = tdrLeg(0.65,0.67,0.80,0.92);
   leg_final->SetTextFont(42);  leg_final->SetTextSize(0.025);  leg_final->SetTextColor(kBlack);
   // tdrHeader(leg_final,"Uncertainties", 12);
   TGraphErrors* gr_final = new TGraphErrors(SF_final.size(), &(eta_bin_all_center[0]), &SF_final[0], &(eta_bin_all_error[0]), &SF_final_error[0]);
@@ -324,7 +335,50 @@ void plot_SF_systematics() {
   canv_SF_final->Print(path+"SF_final.pdf","pdf");
   canv_SF_final->Print(path+"SF_final.png","png");
 
+  ofstream SF_file_final;
+  SF_file_final.open (path+"SF_final_tex.txt");
+  for (unsigned int i = 0; i < SF_final.size(); i++) {
+    SF_file_final << "{{" << eta_bin_all_center[i]+eta_bin_all_error[i] << ", " << SF_final[i] << ", " << SF_final[i]+SF_final_error[i] << ", " << SF_final[i]-SF_final_error[i] << "}},\n";
+  }
+
+  SF_file_final.close();
   return true;
 
+}
 
+
+
+void plot_SF_systematics() {
+
+  TString path = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/JER2017/Analysis/JER/wide_eta_binning/file/Single/Fall17_17Nov2017_V10/AK4CHS/";
+  TString path_ = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/JER2017/Analysis/JER/wide_eta_binning/file/";
+
+  std::vector<TString> studies;
+  // studies.push_back("Single");
+  // studies.push_back("Single_MB");
+  // studies.push_back("LowPtJets");
+  // studies.push_back("LowPtJets_MB");
+  studies.push_back("StandardPtBins");
+
+  std::vector<TString> JECs;
+  JECs.push_back("Fall17_17Nov2017_V10");
+  JECs.push_back("Fall17_17Nov2017_V24");
+
+  std::vector<TString> JETs;
+  JETs.push_back("AK4CHS");
+  JETs.push_back("AK8PUPPI");
+
+
+  for(TString study : studies){
+    for(TString JEC : JECs){
+      for(TString JET : JETs){
+        path = path_+study+"/"+JEC+"/"+JET+"/";
+        if (!gSystem->AccessPathName(path)) {
+          std::cout << path << '\n';
+          plot_SF_systematics_(path);
+          sleep(5);
+        }
+      }
+    }
+  }
 }
