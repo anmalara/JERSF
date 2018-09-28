@@ -356,7 +356,6 @@ JER2017Module::JER2017Module(uhh2::Context & ctx) : sel(ctx) {
       else MAKE_JEC_MC(Fall17_17Nov2017_V10, AK4PFchs)
       else MAKE_JEC_MC(Fall17_17Nov2017_V11, AK4PFchs)
       else MAKE_JEC_MC(Fall17_17Nov2017_V23, AK4PFchs)
-      else MAKE_JEC_MC(Fall17_17Nov2017_V24, AK4PFchs)
       else throw runtime_error("In JER2017Module.cxx: Invalid JEC_Version for deriving residuals on AK4CHS, MC specified ("+JEC_Version+") ");
     }
     else if (jetLabel == "AK8PUPPI") {
@@ -378,6 +377,7 @@ JER2017Module::JER2017Module(uhh2::Context & ctx) : sel(ctx) {
       else MAKE_JEC(Fall17_17Nov2017_V13, AK4PFchs)
       else MAKE_JEC(Fall17_17Nov2017_V23, AK4PFchs)
       else MAKE_JEC(Fall17_17Nov2017_V24, AK4PFchs)
+      else MAKE_JEC(Fall17_17Nov2017_V27, AK4PFchs)
       else throw runtime_error("In JER2017Module.cxx: Invalid JEC_Version for deriving residuals on AK4CHS "+JEC_Version+", DATA specified.");
     }
     else if (jetLabel == "AK8PUPPI") {

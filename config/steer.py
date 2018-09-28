@@ -156,9 +156,9 @@ else:
 
 
 
-def main_program(option="", internal_option="", processes=[], JECVersions_Data=[], JECVersions_MC=[], JetLabels=[], systematics=[], original_dir="./SubmittedJobs/", original_file="JER2017.xml", isMB=False, test_trigger=False, isThreshold=False):
+def main_program(option="", internal_option="", processes=[], JECVersions_Data=[], JECVersions_MC=[], JetLabels=[], systematics=[], original_dir="./SubmittedJobs/", original_file="JER2017.xml", isMB=False, test_trigger=False, isThreshold=False, isLowPt=False):
     if option == "new":
-        createConfigFiles(processes, JECVersions_Data, JECVersions_MC, JetLabels, systematics, original_dir, original_file, outdir, isMB, test_trigger, isThreshold)
+        createConfigFiles(processes, JECVersions_Data, JECVersions_MC, JetLabels, systematics, original_dir, original_file, outdir, isMB, test_trigger, isThreshold,isLowPt)
     elif option == "remove" or option == "delete":
         delete_workdir(original_dir, JECVersions_Data, JetLabels, systematics)
     else:
@@ -167,28 +167,33 @@ def main_program(option="", internal_option="", processes=[], JECVersions_Data=[
 
 original_dir = original_dir_
 original_dir += "/SubmittedJobs/"
+isLowPt = False
 isMB = False
 test_trigger = False
 isThreshold = False
-JECVersions_Data = ["Fall17_17Nov2017_V10","Fall17_17Nov2017_V24"]
-JECVersions_MC = ["Fall17_17Nov2017_V10", "Fall17_17Nov2017_V23"]
+JECVersions_Data = ["Fall17_17Nov2017_V27"]
+JECVersions_MC = ["Fall17_17Nov2017_V23"]
 # JECVersions_Data = ["Fall17_17Nov2017_V10"]
 # JECVersions_MC = ["Fall17_17Nov2017_V10"]
 JetLabels = ["AK4CHS"]
 systematics = ["PU", "JEC"]
-main_program(option, internal_option, processes, JECVersions_Data, JECVersions_MC, JetLabels, systematics, original_dir, original_file, isMB, test_trigger, isThreshold)
-
-
+# main_program(option, internal_option, processes, JECVersions_Data, JECVersions_MC, JetLabels, systematics, original_dir, original_file, isMB, test_trigger, isThreshold, isLowPt)
 original_dir = original_dir_
-original_dir += "/SubmittedJobs_MB/"
-isMB = True
-test_trigger = False
-isThreshold = False
-JECVersions_Data = ["Fall17_17Nov2017_V24"]
-JECVersions_MC = ["Fall17_17Nov2017_V23"]
-JetLabels = ["AK4CHS"]
-systematics = []
-main_program(option, internal_option, processes, JECVersions_Data, JECVersions_MC, JetLabels, systematics, original_dir, original_file, isMB, test_trigger, isThreshold)
+original_dir += "/SubmittedJobs_LowPt/"
+isLowPt = True
+main_program(option, internal_option, processes, JECVersions_Data, JECVersions_MC, JetLabels, systematics, original_dir, original_file, isMB, test_trigger, isThreshold, isLowPt)
+
+
+# original_dir = original_dir_
+# original_dir += "/SubmittedJobs_MB/"
+# isMB = True
+# test_trigger = False
+# isThreshold = False
+# JECVersions_Data = ["Fall17_17Nov2017_V24"]
+# JECVersions_MC = ["Fall17_17Nov2017_V23"]
+# JetLabels = ["AK4CHS"]
+# systematics = []
+# main_program(option, internal_option, processes, JECVersions_Data, JECVersions_MC, JetLabels, systematics, original_dir, original_file, isMB, test_trigger, isThreshold)
 
 
 original_dir = original_dir_

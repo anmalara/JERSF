@@ -107,7 +107,8 @@ study = "Single/"
 studies = ["LowPtJets/"]
 systematics=[""]
 
-JECVersions=["Fall17_17Nov2017_V24"]
+# JECVersions=["Fall17_17Nov2017_V24","Fall17_17Nov2017_V27"]
+JECVersions=["Fall17_17Nov2017_V27"]
 studies = ["StandardPtBins/"]
 # systematics=["", "PU", "JEC", "alpha"]
 

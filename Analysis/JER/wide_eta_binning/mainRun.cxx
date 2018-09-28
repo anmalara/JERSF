@@ -21,6 +21,9 @@
 #include "functions.C"
 #include "tdrstyle_all.C"
 
+double min_fit = 100.;
+double max_fit = 1200.;
+
 
 void print1(std::vector< double > a) {
   std::cout << a.size() << '\n';
@@ -125,7 +128,7 @@ void asdfasdf2(std::vector< std::vector< double > > a, std::vector< std::vector<
 // Based on code by Marek Niedziela, Matthias Schröder, Kristin Goebel
 
 void MCFIT(TH1* hist, TH1F* mcERR, double &N, double &S, double &C, double &Nerr, double &Serr, double &Cerr, double &mcChi, int &mcNDF) {
-  TF1* mcFIT = new TF1( "mcFIT", "TMath::Sqrt( ([0]*[0]/(x*x))+[1]*[1]/x+[2]*[2] )", 100, 1000);
+  TF1* mcFIT = new TF1( "mcFIT", "TMath::Sqrt( ([0]*[0]/(x*x))+[1]*[1]/x+[2]*[2] )", min_fit, max_fit);
   mcFIT->SetParameters(0.00015, 0.8, 0.04);
   mcFIT->SetParLimits(0, 0., 10.);
   mcFIT->SetParLimits(1, 0., 2.);
@@ -142,20 +145,24 @@ void MCFIT(TH1* hist, TH1F* mcERR, double &N, double &S, double &C, double &Nerr
   mcFIT->SetLineColor(kBlue+2);
   (TVirtualFitter::GetFitter())->GetConfidenceIntervals(mcERR,0.68);
   mcERR->SetStats(kFALSE);
-  mcERR->GetXaxis()->SetRange(100,1000);
+  mcERR->GetXaxis()->SetRange(min_fit,max_fit);
 }
 
 
-void DTFIT(TH1* hist, TH1F* dtERR, double &N, double &S, double &C, double &kNS, double &kC, double &Nerr, double &Serr, double &Cerr, double &kNSerr, double &kCerr, double &dtChi, int &dtNDF) {
-  TF1 * dtFIT = new TF1( "dtFIT", "TMath::Sqrt( [3]*[3]*[0]*[0]/x*x+[3]*[1]*[1]/x+[4]*[4]*[2]*[2])", 100, 1000);
+void DTFIT(TH1* hist, TH1F* dtERR, double &N, double &S, double &C, double &kNS, double &kC, double &Nerr, double &Serr, double &Cerr, double &kNSerr, double &kCerr, double &dtChi, int &dtNDF, int m, bool isFE) {
+  TF1 * dtFIT = new TF1( "dtFIT", "TMath::Sqrt( ([3]*[3]*[0]*[0]/(x*x))+[3]*[3]*[1]*[1]/x+[4]*[4]*[2]*[2] )", min_fit, max_fit);
   dtFIT -> FixParameter(0, N);
   dtFIT -> FixParameter(1, S);
   dtFIT -> FixParameter(2, C);
-  dtFIT -> SetParameter(3, 1.);
-  dtFIT -> SetParameter(4, 1.);
-  dtFIT -> SetParLimits(3, 0.0, 3);
-  dtFIT -> SetParLimits(4, 0.0, 3);
+  dtFIT -> SetParameter(3, 1.2);
+  dtFIT -> SetParameter(4, 1.2);
+  dtFIT -> SetParLimits(3, 0.9, 3);
+  dtFIT -> SetParLimits(4, 0.9, 3);
+  // if (!isFE && m == 3) { dtFIT -> SetParLimits(3, 0.0, 15); dtFIT -> SetParLimits(4, 0.0, 15); }
+  // if (!isFE && m == 3) { dtFIT -> SetParameter(0, N); dtFIT -> SetParameter(1, S); dtFIT -> SetParameter(2, C); dtFIT -> FixParameter(3,1); dtFIT -> FixParameter(4, 1); }
+
   hist -> Fit("dtFIT", "RMQ+");
+
   kNS = dtFIT -> GetParameter( 3 );
   kC = dtFIT -> GetParameter( 4 );
   kNSerr = dtFIT -> GetParError( 3 );
@@ -164,210 +171,498 @@ void DTFIT(TH1* hist, TH1F* dtERR, double &N, double &S, double &C, double &kNS,
   dtNDF = dtFIT->GetNDF();
   (TVirtualFitter::GetFitter())->GetConfidenceIntervals(dtERR,0.68);
   dtERR->SetStats(kFALSE);
-  dtERR->GetXaxis()->SetRange(100,1000);
+  dtERR->GetXaxis()->SetRange(min_fit,max_fit);
+}
+
+void PLOT_3_2(std::vector< std::vector< TH1F* > > h_data, std::vector< std::vector< TH1F* > > h_MC, std::vector< std::vector< TH1F* > > h_gen, TString outdir) {
+  int color_data = kBlue;
+  int color_MC = kRed;
+  int color_gen = kGreen+2;
+  for( unsigned int m = 0; m < h_data.size(); m++ ){
+    for( unsigned int p = 0; p < h_data.at(m).size(); p++ ){
+      TString canvName  = h_data.at(m).at(p)->GetTitle();
+      TString nameXaxis = h_data.at(m).at(p)->GetXaxis()->GetTitle();
+      TString nameYaxis = h_data.at(m).at(p)->GetYaxis()->GetTitle();
+      std::vector<TH1*> vec;
+      vec.push_back(h_data.at(m).at(p));
+      vec.push_back(h_MC.at(m).at(p));
+      vec.push_back(h_gen.at(m).at(p));
+      double x_min, x_max, y_min, y_max;
+      findExtreme2(vec, &x_min, &x_max, &y_min, &y_max);
+      TCanvas* canv = tdrCanvas(canvName, 0, 0.35, 0, y_max*1.6, nameXaxis, nameYaxis);
+      canv->SetTickx(0);
+      canv->SetTicky(0);
+      tdrDraw(h_data.at(m).at(p), "", kFullCircle, color_data );
+      tdrDraw(h_MC.at(m).at(p),   "", kFullCircle, color_MC );
+      tdrDraw(h_gen.at(m).at(p),  "", kFullCircle, color_gen );
+      canv -> Update();
+      canv -> Print(outdir+canvName+".png","png");
+    }
+  }
+}
+
+void PLOT_MCT(std::vector< TH1F* > h_MCTruth, std::vector< TH1F* > h_uncor, std::vector< TH1F* > h_cor, std::vector< TH1F* > h_015 , TString outdir, std::vector<double> eta_bins, bool isFE) {
+  int MCTruth      = kMagenta;
+  int color_uncor  = kRed;
+  int color_cor    = kBlue;
+  int color_015    = kGreen+2;
+  for( unsigned int m = 0; m < h_cor.size(); m++ ){
+    TString canvName  = h_cor.at(m)->GetTitle();
+    TString nameXaxis = h_cor.at(m)->GetXaxis()->GetTitle();
+    TString nameYaxis = h_cor.at(m)->GetYaxis()->GetTitle();
+    nameXaxis = "p_{T} [GeV]";
+    std::vector<TH1*> vec;
+
+    if (isFE) vec.push_back(h_MCTruth.at(m+1));
+    else vec.push_back(h_MCTruth.at(m));
+    vec.push_back(h_MCTruth.at(m));
+    vec.push_back(h_uncor.at(m));
+    vec.push_back(h_cor.at(m));
+    vec.push_back(h_015.at(m));
+    double x_min, x_max, y_min, y_max;
+    findExtreme(vec, &x_min, &x_max, &y_min, &y_max);
+    TCanvas* canv = tdrCanvas(canvName, x_min, x_max, y_min, y_max, nameXaxis, nameYaxis);
+    canv->SetTickx(0);
+    canv->SetTicky(0);
+    tdrDraw(h_MCTruth.at(m),  "", kFullCircle, MCTruth );
+    tdrDraw(h_uncor.at(m),    "", kFullCircle, color_uncor );
+    tdrDraw(h_cor.at(m),      "", kFullCircle, color_cor );
+    tdrDraw(h_015.at(m),      "", kFullCircle, color_015 );
+
+    char legTitle[100];
+    TLegend *leg = tdrLeg(0.6,0.7,0.9,0.9);
+    sprintf(legTitle,     "#eta #in [%.3f,%.3f]", eta_bins[m], eta_bins[m+1]);
+    leg->AddEntry(h_MCTruth.at(m),  "MC Truth",         "lep");
+    leg->AddEntry(h_uncor.at(m),    "MC Uncorrelated",  "lep");
+    leg->AddEntry(h_cor.at(m),      "MC Correlated",    "lep");
+    leg->AddEntry(h_015.at(m),      "MC 015",           "lep");
+
+    if(isFE){
+      if (m<9) canvName = canvName(0, canvName.Length()-1);
+      else canvName = canvName(0, canvName.Length()-2);
+      canvName += (m+2);
+    }
+    canv->Print(outdir+canvName+".pdf","pdf");
+    canv->Print(outdir+canvName+".png","png");
+  }
+}
+
+void PLOT_ASY(std::vector< std::vector< std::vector< TH1F* > > > h_data, std::vector< std::vector< std::vector< TH1F* > > > h_MC, std::vector< std::vector< std::vector< TH1F* > > > h_gen, std::vector< std::vector< std::vector< double > > > h_data_width, std::vector< std::vector< std::vector< double > > > h_MC_width, std::vector< std::vector< std::vector< double > > > h_gen_width, std::vector< std::vector< std::vector< double > > > h_data_width_err, std::vector< std::vector< std::vector< double > > > h_MC_width_err, std::vector< std::vector< std::vector< double > > > h_gen_width_err, TString outdir, std::vector<double> eta_bins, std::vector<double> Pt_bins, std::vector<double> alpha) {
+  int color_data = kBlue;
+  int color_MC = kRed;
+  int color_gen = kGreen+2;
+  for( unsigned int m = 0; m < h_data.size(); m++ ){
+    for( unsigned int p = 0; p < h_data.at(m).size(); p++ ){
+      for( unsigned int r = 0; r < h_data.at(m).at(p).size(); r++ ){
+        h_data.at(m).at(p).at(r)-> Scale(1./h_data.at(m).at(p).at(r) -> Integral());
+        h_MC.at(m).at(p).at(r)  -> Scale(1./h_MC.at(m).at(p).at(r) -> Integral());
+        h_gen.at(m).at(p).at(r) -> Scale(1./h_gen.at(m).at(p).at(r) -> Integral());
+
+        TString canvName  = h_data.at(m).at(p).at(r)->GetTitle();
+        TString nameXaxis = h_data.at(m).at(p).at(r)->GetXaxis()->GetTitle();
+        TString nameYaxis = h_data.at(m).at(p).at(r)->GetYaxis()->GetTitle();
+        std::vector<TH1*> vec;
+        vec.push_back(h_data.at(m).at(p).at(r));
+        vec.push_back(h_MC.at(m).at(p).at(r));
+        vec.push_back(h_gen.at(m).at(p).at(r));
+        double x_min, x_max, y_min, y_max;
+        findExtreme(vec, &x_min, &x_max, &y_min, &y_max);
+        TCanvas* canv = tdrCanvas(canvName, x_min, x_max, y_min, y_max*1.5, nameXaxis, nameYaxis);
+        canv->SetTickx(0);
+        canv->SetTicky(0);
+        tdrDraw(h_data.at(m).at(p).at(r), "", kFullCircle, color_data );
+        tdrDraw(h_MC.at(m).at(p).at(r),   "", kFullCircle, color_MC );
+        tdrDraw(h_gen.at(m).at(p).at(r),  "", kFullCircle, color_gen );
+
+        TLegend *leg = tdrLeg(0.45,0.7,0.95,0.9);
+        tdrHeader(leg, Form("#eta #in [%.3f,%.3f], p_{T} #in [%.0f,%.0f] GeV", eta_bins[m], eta_bins[m+1], Pt_bins[p], Pt_bins[p+1]));
+
+        leg->AddEntry((TObject*)0, Form("#alpha < %.2f", alpha.at(r)), "");
+        leg->AddEntry(h_data.at(m).at(p).at(r), Form("data, %.4f +- %.4f", h_data_width.at(m).at(p).at(r), h_data_width_err.at(m).at(p).at(r)), "lep");
+        leg->AddEntry(h_MC.at(m).at(p).at(r),   Form("MC,  %.4f +- %.4f",  h_MC_width.at(m).at(p).at(r),   h_MC_width_err.at(m).at(p).at(r)),   "lep");
+        leg->AddEntry(h_gen.at(m).at(p).at(r),  Form("gen,  %.4f +- %.4f", h_gen_width.at(m).at(p).at(r),  h_gen_width_err.at(m).at(p).at(r)),  "lep");
+        leg->Draw("same");
+
+        canv->Update();
+        canv -> Print(outdir+canvName+".pdf","pdf");
+        canv -> Print(outdir+canvName+".png","png");
+      }
+    }
+  }
+}
+
+void PLOT_WIDTH(std::vector< std::vector< TH1F* > > h_data, std::vector< std::vector< TH1F* > > h_MC, std::vector< std::vector< TH1F* > > h_gen, TString outdir, std::vector<double> eta_bins, std::vector<double> Pt_bins) {
+  int color_data = kBlue;
+  int color_MC = kRed;
+  int color_gen = kGreen+2;
+  for( unsigned int m = 0; m < h_data.size(); m++ ){
+    for( unsigned int p = 0; p < h_data.at(m).size(); p++ ){
+      TString canvName  = h_data.at(m).at(p)->GetTitle();
+      TString nameXaxis = h_data.at(m).at(p)->GetXaxis()->GetTitle();
+      TString nameYaxis = h_data.at(m).at(p)->GetYaxis()->GetTitle();
+      std::vector<TH1*> vec;
+      vec.push_back(h_data.at(m).at(p));
+      vec.push_back(h_MC.at(m).at(p));
+      vec.push_back(h_gen.at(m).at(p));
+      double x_min, x_max, y_min, y_max;
+      findExtreme2(vec, &x_min, &x_max, &y_min, &y_max);
+      TCanvas* canv = tdrCanvas(canvName, 0, 0.35, 0, y_max*1.6, nameXaxis, nameYaxis);
+      canv->SetTickx(0);
+      canv->SetTicky(0);
+      tdrDraw(h_data.at(m).at(p), "", kFullCircle, color_data );
+      tdrDraw(h_MC.at(m).at(p),   "", kFullCircle, color_MC );
+      tdrDraw(h_gen.at(m).at(p),  "", kFullCircle, color_gen );
+
+      if( h_MC.at(m).at(p)  -> GetEntries() != 0 ) h_MC.at(m).at(p)   -> GetFunction("linfit")->SetLineColor(color_MC);
+      if( h_gen.at(m).at(p) -> GetEntries() != 0 ) h_gen.at(m).at(p)  -> GetFunction("linfit")->SetLineColor(color_gen);
+      if( h_data.at(m).at(p)-> GetEntries() != 0 ) h_data.at(m).at(p) -> GetFunction("linfit")->SetLineColor(color_data);
+
+      TF1* f;
+      char line[100];
+      TLegend *legend;
+
+      if (h_MC.at(m).at(p) -> GetFunction("linfit")) {
+        f = h_MC.at(m).at(p) -> GetFunction("linfit");
+        legend = tdrLeg(0.50,0.70,0.70,0.85, 0.025, 42, color_MC);
+        tdrHeader(legend,"MC", 22);
+        sprintf(line, "#chi^{2}/ndf = %.2f/%d", f->GetChisquare(),  f->GetNDF());       legend->AddEntry((TObject*)0, line, "");
+        sprintf(line, "p0 = %.5f #pm %.5f",     f->GetParameter(0), f->GetParError(0)); legend->AddEntry((TObject*)0, line, "");
+        sprintf(line, "p1 = %.5f #pm %.5f",     f->GetParameter(1), f->GetParError(1)); legend->AddEntry((TObject*)0, line, "");
+        legend->Draw("same");
+      }
+
+      if (h_gen.at(m).at(p) -> GetFunction("linfit")) {
+        f = h_gen.at(m).at(p) -> GetFunction("linfit");
+        legend = tdrLeg(0.70,0.70,0.90,0.85, 0.025, 42, color_gen);
+        tdrHeader(legend,"gen", 22);
+        sprintf(line, "#chi^{2}/ndf = %.2f/%d", f->GetChisquare(), f->GetNDF());      legend->AddEntry((TObject*)0, line, "");
+        sprintf(line, "p0 = %.5f #pm %.5f", f->GetParameter(0), f->GetParError(0));   legend->AddEntry((TObject*)0, line, "");
+        sprintf(line, "p1 = %.5f #pm %.5f", f->GetParameter(1), f->GetParError(1));    legend->AddEntry((TObject*)0, line, "");
+        legend->Draw("same");
+      }
+
+      if (h_data.at(m).at(p) -> GetFunction("linfit")) {
+        f = h_data.at(m).at(p) -> GetFunction("linfit");
+        legend = tdrLeg(0.30,0.70,0.50,0.85, 0.025, 42, color_data);
+        tdrHeader(legend,"Data", 22);
+        sprintf(line, "#chi^{2}/ndf = %.2f/%d", f->GetChisquare(), f->GetNDF());      legend->AddEntry((TObject*)0, line, "");
+        sprintf(line, "p0 = %.5f #pm %.5f", f->GetParameter(0), f->GetParError(0));   legend->AddEntry((TObject*)0, line, "");
+        sprintf(line, "p1 = %.5f #pm %.5f", f->GetParameter(1), f->GetParError(1));    legend->AddEntry((TObject*)0, line, "");
+        legend->Draw("same");
+      }
+
+      TLegend *leg = tdrLeg(0.35,0.85,0.9,0.89, 0.025, 42, kBlack);
+      tdrHeader(leg, Form("#eta #in [%.3f,%.3f], p_{T} #in [%.0f,%.0f] GeV", eta_bins[m], eta_bins[m+1], Pt_bins[p], Pt_bins[p+1]));
+      leg->Draw("same");
+
+      canv -> Update();
+      canv -> Print(outdir+canvName+".pdf","pdf");
+      canv -> Print(outdir+canvName+".png","png");
+    }
+  }
 }
 
 
-// ----------------------------------------------------------------------------------------------------
-#define PLOT_1(h1,c1,m)                                                                     \
-TString canvName = h1.at(m)->GetTitle();                                                    \
-TString nameXaxis = h1.at(m)->GetXaxis()->GetTitle();                                       \
-TString nameYaxis = h1.at(m)->GetYaxis()->GetTitle();                                       \
-std::vector<TH1*> vec;                                                                      \
-vec.push_back(h1.at(m));                                                                    \
-double x_min, x_max, y_min, y_max;                                                          \
-findExtreme(vec, &x_min, &x_max, &y_min, &y_max);                                           \
-TCanvas* canv = tdrCanvas(canvName, x_min, x_max, y_min, y_max, nameXaxis, nameYaxis);      \
-canv->SetTickx(0);                                                                          \
-canv->SetTicky(0);                                                                          \
-tdrDraw(h1.at(m), "", kFullCircle, c1 );                                                    \
-// ----------------------------------------------------------------------------------------------------
-// ----------------------------------------------------------------------------------------------------
-#define PLOT_2(h1,h2,h3,c1,c2,c3,c4,m,eta_bin,isFE)                                         \
-h1.at(m)->SetStats(kFALSE);                                                                 \
-h2.at(m)->SetStats(kFALSE);                                                                 \
-double N, S, C, kNS, kC, Nerr, Serr, Cerr, kNSerr, kCerr, mcChi, dtChi;                     \
-int mcNDF, dtNDF;                                                                           \
-TH1F* mcERR = (TH1F*)h1.at(m)->Clone();                                                     \
-TH1F* dtERR = (TH1F*)h1.at(m)->Clone();                                                     \
-MCFIT(h2.at(m), mcERR, N, S, C, Nerr, Serr, Cerr, mcChi, mcNDF);                            \
-DTFIT(h1.at(m), dtERR, N, S, C, kNS, kC, Nerr, Serr, Cerr, kNSerr, kCerr, dtChi, dtNDF);    \
-h1.at(m)-> GetFunction("dtFIT")->SetLineColor(c1+2);                                        \
-h2.at(m)-> GetFunction("mcFIT")->SetLineColor(c2+2);                                        \
-mcERR->SetFillColorAlpha(c2+2,0.35);                                                        \
-dtERR->SetFillColorAlpha(c1+2,0.35);                                                        \
-TString canvName  = h1.at(m)->GetTitle();                                                   \
-TString nameXaxis = h1.at(m)->GetXaxis()->GetTitle();                                       \
-TString nameYaxis = h1.at(m)->GetYaxis()->GetTitle();                                       \
-std::vector<TH1*> vec;                                                                      \
-vec.push_back(h1.at(m));                                                                    \
-vec.push_back(h2.at(m));                                                                    \
-double x_min, x_max, y_min, y_max;                                                          \
-findExtreme(vec, &x_min, &x_max, &y_min, &y_max);                                           \
-TCanvas* canv = tdrCanvas(canvName, x_min, x_max, y_min, y_max, nameXaxis, nameYaxis);      \
-canv->SetTickx(0);                                                                          \
-canv->SetTicky(0);                                                                          \
-mcERR->Draw("E4 SAME");                                                                     \
-dtERR->Draw("E4 SAME");                                                                     \
-tdrDraw(h1.at(m), "", kFullCircle, c1 );                                                    \
-tdrDraw(h2.at(m), "", kFullCircle, c2 );                                                    \
-TLegend *leg = tdrLeg(0.6,0.7,0.9,0.9);                                                     \
-char legTitle[100];                                                                         \
-sprintf(legTitle,     "#eta #in [%.3f,%.3f]", eta_bin[m], eta_bin[m+1]);                    \
-tdrHeader(leg,legTitle);                                                                    \
-leg->AddEntry(h1.at(m),"data","lep");                                                       \
-leg->AddEntry(h2.at(m),"MC","lep");                                                         \
-char line[100];                                                                             \
-TLegend *legend;                                                                            \
-legend = tdrLeg(0.50,0.55,0.70,0.7);                                                        \
-legend->SetTextFont(42);  legend->SetTextSize(0.025);  legend->SetTextColor(c2);            \
-legend->AddEntry((TObject*)0, "MC", "");                                                    \
-sprintf(line, "#chi^{2}/ndf = %.2f/%d", mcChi,mcNDF); legend->AddEntry((TObject*)0,line,"");\
-sprintf(line, "N = %.5f #pm %.5f", N, Nerr);  legend->AddEntry((TObject*)0, line, "");      \
-sprintf(line, "S = %.5f #pm %.5f", S, Serr);  legend->AddEntry((TObject*)0, line, "");      \
-sprintf(line, "C = %.5f #pm %.5f", C, Cerr);  legend->AddEntry((TObject*)0, line, "");      \
-legend->Draw("same");                                                                       \
-legend = tdrLeg(0.70,0.55,0.85,0.7);                                                        \
-legend->SetTextFont(42);  legend->SetTextSize(0.025);  legend->SetTextColor(c1);            \
-legend->AddEntry((TObject*)0, "data", "");                                                  \
-sprintf(line, "#chi^{2}/ndf = %.2f/%d", dtChi,dtNDF); legend->AddEntry((TObject*)0,line,"");\
-sprintf(line, "k_{NS} = %.5f #pm %.5f", kNS,kNSerr);legend->AddEntry((TObject*)0, line, "");\
-sprintf(line, "k_{C}  = %.5f #pm %.5f", kC, kCerr); legend->AddEntry((TObject*)0, line, "");\
-legend->AddEntry((TObject*)0, "", "");                                                      \
-legend->Draw("same");                                                                       \
-if(isFE){                                                                                   \
-  if (m<9) canvName = canvName(0, canvName.Length()-1);                                     \
-  else canvName = canvName(0, canvName.Length()-2);                                         \
-  canvName += (m+2);                                                                        \
-}                                                                                           \
-canv -> Print(outdir+"pdfy/JERs/"+canvName+".pdf","pdf");                                   \
-canv -> Print(outdir+"pdfy/JERs/"+canvName+".png","png");                                   \
-canvName  = h3.at(m)->GetTitle();                                                           \
-nameXaxis = h3.at(m)->GetXaxis()->GetTitle();                                               \
-nameYaxis = h3.at(m)->GetYaxis()->GetTitle();                                               \
-vec.clear();                                                                                \
-vec.push_back(h3.at(m));                                                                    \
-findExtreme(vec, &x_min, &x_max, &y_min, &y_max);                                           \
-canv = tdrCanvas(canvName, x_min, x_max, y_min, y_max, nameXaxis, nameYaxis);               \
-canv->SetTickx(0);                                                                          \
-canv->SetTicky(0);                                                                          \
-tdrDraw(h3.at(m), "", kFullCircle, c3 );                                                    \
-TF1 * constfit = new TF1( "constfit", "pol0", 100, 1100 );                                  \
-constfit->SetLineColor(c2);                                                                 \
-constfit->SetLineWidth(2);                                                                  \
-h3.at(m) -> Fit("constfit","RMQ+");                                                         \
-TF1 *NSC_ratio = new TF1("NSC_ratio","TMath::Sqrt( [3]*[3]*[0]*[0]/x*x+[3]*[1]*[1]/x+[4]*[4]*[2]*[2])/TMath::Sqrt( ([0]*[0]/(x*x))+[1]*[1]/x+[2]*[2] )",100,1000); \
-NSC_ratio -> SetParameters(N, S, C, kNS, kC);                                               \
-NSC_ratio->SetLineColor(c4);                                                                \
-NSC_ratio->SetLineWidth(2);                                                                 \
-NSC_ratio->Draw("same");                                                                    \
-h3.at(m)->GetListOfFunctions()->Add(NSC_ratio);                                             \
-leg = tdrLeg(0.55,0.7,0.9,0.9);                                                             \
-sprintf(legTitle,     "#eta #in [%.3f,%.3f]", eta_bin[m], eta_bin[m+1]);                    \
-tdrHeader(leg,legTitle);                                                                    \
-leg->AddEntry(h3.at(m),"#sigma_{JER}^{data}/#sigma_{JER}^{mc} correlated","lep");           \
-leg->AddEntry(constfit,"Constant Fit","l");                                                 \
-sprintf(legTitle,     "#eta #in [%.3f,%.3f]", eta_bin[m], eta_bin[m+1]);                    \
-leg->AddEntry(NSC_ratio,"Ratio of NSC-Fits","l");                                           \
-if(isFE){                                                                                   \
-  if (m<9) canvName = canvName(0, canvName.Length()-1);                                     \
-  else canvName = canvName(0, canvName.Length()-2);                                         \
-  canvName += (m+2);                                                                        \
-}                                                                                           \
-canv -> Print(outdir+"pdfy/NSC_SFs/NSC"+canvName+".pdf","pdf");                             \
-canv -> Print(outdir+"pdfy/NSC_SFs/NSC"+canvName+".png","png");                             \
-canv->Write();                                                                              \
-// ----------------------------------------------------------------------------------------------------
-#define PLOT_3(h1,h2,h3,c1,c2,c3,m)                                                         \
-TString canvName = h1.at(m)->GetTitle();                                                    \
-TString nameXaxis = h1.at(m)->GetXaxis()->GetTitle();                                       \
-TString nameYaxis = h1.at(m)->GetYaxis()->GetTitle();                                       \
-nameXaxis = "p_{T} [GeV]";                                                                  \
-std::vector<TH1*> vec;                                                                      \
-vec.push_back(h1.at(m));                                                                    \
-vec.push_back(h2.at(m));                                                                    \
-vec.push_back(h3.at(m));                                                                    \
-double x_min, x_max, y_min, y_max;                                                          \
-findExtreme(vec, &x_min, &x_max, &y_min, &y_max);                                           \
-TCanvas* canv = tdrCanvas(canvName, x_min, x_max, 0, 3, nameXaxis, nameYaxis);              \
-canv->SetTickx(0);                                                                          \
-canv->SetTicky(0);                                                                          \
-tdrDraw(h1.at(m), "", kFullCircle, c1 );                                                    \
-tdrDraw(h2.at(m), "", kFullCircle, c2 );                                                    \
-tdrDraw(h3.at(m), "", kFullCircle, c3 );                                                    \
-// ----------------------------------------------------------------------------------------------------
-#define PLOT_4_MCT(h1,h2,h3,h4,c1,c2,c3,c4,m)                                               \
-TString canvName = h1.at(m)->GetTitle();                                                    \
-TString nameXaxis = h1.at(m)->GetXaxis()->GetTitle();                                       \
-TString nameYaxis = h1.at(m)->GetYaxis()->GetTitle();                                       \
-nameXaxis = "p_{T} [GeV]";                                                                  \
-std::vector<TH1*> vec;                                                                      \
-vec.push_back(h1.at(m));                                                                    \
-vec.push_back(h2.at(m));                                                                    \
-vec.push_back(h3.at(m));                                                                    \
-vec.push_back(h4.at(m));                                                                    \
-double x_min, x_max, y_min, y_max;                                                          \
-findExtreme(vec, &x_min, &x_max, &y_min, &y_max);                                           \
-TCanvas* canv = tdrCanvas(canvName, x_min, x_max, y_min, y_max, nameXaxis, nameYaxis);      \
-canv->SetTickx(0);                                                                          \
-canv->SetTicky(0);                                                                          \
-tdrDraw(h1.at(m), "", kFullCircle, c1 );                                                    \
-tdrDraw(h2.at(m), "", kFullCircle, c2 );                                                    \
-tdrDraw(h3.at(m), "", kFullCircle, c3 );                                                    \
-tdrDraw(h4.at(m), "", kFullCircle, c4 );                                                    \
-// ----------------------------------------------------------------------------------------------------
-#define PLOT_3_2(h1,h2,h3,c1,c2,c3,m,p)                                                     \
-TString canvName = h1.at(m).at(p)->GetTitle();                                              \
-TString nameXaxis = h1.at(m).at(p)->GetXaxis()->GetTitle();                                 \
-TString nameYaxis = h1.at(m).at(p)->GetYaxis()->GetTitle();                                 \
-std::vector<TH1*> vec;                                                                      \
-vec.push_back(h1.at(m).at(p));                                                              \
-vec.push_back(h2.at(m).at(p));                                                              \
-vec.push_back(h3.at(m).at(p));                                                              \
-double x_min, x_max, y_min, y_max;                                                          \
-findExtreme2(vec, &x_min, &x_max, &y_min, &y_max);                                          \
-TCanvas* canv = tdrCanvas(canvName, 0, 0.35, 0, y_max*1.6, nameXaxis, nameYaxis);           \
-canv->SetTickx(0);                                                                          \
-canv->SetTicky(0);                                                                          \
-tdrDraw(h1.at(m).at(p), "", kFullCircle, c1 );                                              \
-tdrDraw(h2.at(m).at(p), "", kFullCircle, c2 );                                              \
-tdrDraw(h3.at(m).at(p), "", kFullCircle, c3 );                                              \
-// ----------------------------------------------------------------------------------------------------
-#define PLOT_3_2_gr(h1,h2,h3,c1,c2,c3,m,p)                                                  \
-TString canvName = h1.at(m).at(p)->GetTitle();                                              \
-TString nameXaxis = h1.at(m).at(p)->GetXaxis()->GetTitle();                                 \
-TString nameYaxis = h1.at(m).at(p)->GetYaxis()->GetTitle();                                 \
-std::vector<TGraphErrors*> vec;                                                             \
-vec.push_back(h1.at(m).at(p));                                                              \
-vec.push_back(h2.at(m).at(p));                                                              \
-vec.push_back(h3.at(m).at(p));                                                              \
-double x_min, x_max, y_min, y_max;                                                          \
-findExtreme_gr(vec, &x_min, &x_max, &y_min, &y_max);                                        \
-TCanvas* canv = tdrCanvas(canvName, 0, 0.35, 0, y_max*1.6, "#alpha_{max}", "#sigma_{A}");   \
-canv->SetTickx(0);                                                                          \
-canv->SetTicky(0);                                                                          \
-tdrDraw(h1.at(m).at(p), "P", kFullDotLarge, c1 );                                           \
-tdrDraw(h2.at(m).at(p), "P", kFullDotLarge, c2 );                                           \
-tdrDraw(h3.at(m).at(p), "P", kFullDotLarge, c3 );                                           \
-// ----------------------------------------------------------------------------------------------------
-#define PLOT_3_3(h1,h2,h3,c1,c2,c3,m,p,r)                                                   \
-TString canvName = h1.at(m).at(p).at(r)->GetTitle();                                        \
-TString nameXaxis = h1.at(m).at(p).at(r)->GetXaxis()->GetTitle();                           \
-TString nameYaxis = h1.at(m).at(p).at(r)->GetYaxis()->GetTitle();                           \
-std::vector<TH1*> vec;                                                                      \
-vec.push_back(h1.at(m).at(p).at(r));                                                        \
-vec.push_back(h2.at(m).at(p).at(r));                                                        \
-vec.push_back(h3.at(m).at(p).at(r));                                                        \
-double x_min, x_max, y_min, y_max;                                                          \
-findExtreme(vec, &x_min, &x_max, &y_min, &y_max);                                           \
-TCanvas* canv = tdrCanvas(canvName, x_min, x_max, y_min, y_max*1.5, nameXaxis, nameYaxis);  \
-canv->SetTickx(0);                                                                          \
-canv->SetTicky(0);                                                                          \
-tdrDraw(h1.at(m).at(p).at(r), "", kFullCircle, c1 );                                        \
-tdrDraw(h2.at(m).at(p).at(r), "", kFullCircle, c2 );                                        \
-tdrDraw(h3.at(m).at(p).at(r), "", kFullCircle, c3 );                                        \
-// ----------------------------------------------------------------------------------------------------
 
+void PLOT_WIDTH_gr(std::vector< std::vector< TGraphErrors* > > h_data, std::vector< std::vector< TGraphErrors* > > h_MC, std::vector< std::vector< TGraphErrors* > > h_gen, TString outdir, std::vector<double> eta_bins, std::vector<double> Pt_bins, bool isFE) {
+  int color_data = kBlue;
+  int color_MC = kRed;
+  int color_gen = kGreen+2;
+  for( unsigned int m = 0; m < h_data.size(); m++ ){
+    for( unsigned int p = 0; p < h_data.at(m).size(); p++ ){
+
+      double range = 0.05;
+      if ( p == 0) range = 0.25;
+      if ( p == 1) range = 0.2;
+      if ( p == 2) range = 0.15;
+      if ( p == 3) range = 0.1;
+      if ( p == 4) range = 0.1;
+      if ( p == 5) range = 0.1;
+      if ( !isFE && m == 6 && p == 2) range = 0.2;
+      if ( !isFE && m == 6 && p == 3) range = 0.2;
+      if ( !isFE && m == 5 && p == 6) range = 0.1;
+      if ( !isFE && m == 6 && p == 6) range = 0.15;
+      if ( !isFE && m == 6 && p == 9) range = 0.1;
+      if ( !isFE && m == 7 && p == 6) range = 0.1;
+      if ( !isFE && m == 7 && p == 7) range = 0.1;
+      if ( !isFE && m == 7 && p == 8) range = 0.1;
+      if ( !isFE && m == 8 && p == 2) range = 0.2;
+      if ( !isFE && m == 8 && p == 6) range = 0.2;
+      if ( !isFE && m == 9 && p == 3) range = 0.15;
+      if (  isFE && m == 9 && p >= 7) range = 0.1;
+      if (  isFE && m == 11&& p == 7) range = 0.15;
+
+      TString canvName  = h_data.at(m).at(p)->GetTitle();
+      TString nameXaxis = "#alpha_{max}";
+      TString nameYaxis = "#sigma_{A}";
+      std::vector<TGraphErrors*> vec;
+      double x_min, x_max, y_min, y_max;
+      vec.push_back(h_data.at(m).at(p));
+      vec.push_back(h_MC.at(m).at(p));
+      vec.push_back(h_gen.at(m).at(p));
+      findExtreme2(vec, &x_min, &x_max, &y_min, &y_max);
+
+      TCanvas* canv = tdrCanvas(canvName, 0, 0.35, 0, y_max*1.6, nameXaxis, nameYaxis);
+      canv->SetTickx(0);
+      canv->SetTicky(0);
+      tdrDraw(h_data.at(m).at(p), "p ", kFullCircle, color_data );
+      tdrDraw(h_MC.at(m).at(p),   "p ", kFullCircle, color_MC );
+      tdrDraw(h_gen.at(m).at(p),  "p ", kFullCircle, color_gen );
+
+      TF1* f;
+      TF1* Temp = new TF1();
+      char line[100];
+      TLegend *legend;
+
+      if (h_MC.at(m).at(p) -> GetFunction("lin_extrapol_mc")) {
+        f = h_MC.at(m).at(p) -> GetFunction("lin_extrapol_mc"); f->SetLineStyle(2); f->SetLineColor(color_MC);
+        Temp = (TF1*) h_MC.at(m).at(p)->GetFunction("lin_extrapol_mc")->Clone(); gStyle -> SetOptFit(0000);
+        Temp->SetRange(range,1); Temp->SetLineStyle(1); Temp->Draw("same");
+        legend = tdrLeg(0.50,0.70,0.70,0.85, 0.025, 42, color_MC);
+        tdrHeader(legend,"MC", 22);
+        sprintf(line, "#chi^{2}/ndf = %.2f/%d", f->GetChisquare(),  f->GetNDF());       legend->AddEntry((TObject*)0, line, "");
+        sprintf(line, "p0 = %.5f #pm %.5f",     f->GetParameter(0), f->GetParError(0)); legend->AddEntry((TObject*)0, line, "");
+        sprintf(line, "p1 = %.5f #pm %.5f",     f->GetParameter(1), f->GetParError(1)); legend->AddEntry((TObject*)0, line, "");
+        legend->Draw("same");
+      }
+
+      if (h_gen.at(m).at(p) -> GetFunction("lin_extrapol_mc")) {
+
+        f = h_gen.at(m).at(p) -> GetFunction("lin_extrapol_mc"); f->SetLineStyle(2); f->SetLineColor(color_gen);
+        Temp = (TF1*) h_gen.at(m).at(p)->GetFunction("lin_extrapol_mc")->Clone(); gStyle -> SetOptFit(0000);
+        Temp->SetRange(range,1); Temp->SetLineStyle(1); Temp->Draw("same");
+        legend = tdrLeg(0.70,0.70,0.90,0.85, 0.025, 42, color_gen);
+        tdrHeader(legend,"gen", 22);
+        sprintf(line, "#chi^{2}/ndf = %.2f/%d", f->GetChisquare(),  f->GetNDF());       legend->AddEntry((TObject*)0, line, "");
+        sprintf(line, "p0 = %.5f #pm %.5f",     f->GetParameter(0), f->GetParError(0)); legend->AddEntry((TObject*)0, line, "");
+        sprintf(line, "p1 = %.5f #pm %.5f",     f->GetParameter(1), f->GetParError(1)); legend->AddEntry((TObject*)0, line, "");
+        legend->Draw("same");
+      }
+
+      if (h_data.at(m).at(p) -> GetFunction("lin_extrapol_mc")) {
+
+        f = h_data.at(m).at(p) -> GetFunction("lin_extrapol_mc"); f->SetLineStyle(2); f->SetLineColor(color_data);
+        Temp = (TF1*) h_data.at(m).at(p)->GetFunction("lin_extrapol_mc")->Clone(); gStyle -> SetOptFit(0000);
+        Temp->SetRange(range,1); Temp->SetLineStyle(1); Temp->Draw("same");
+
+        legend = tdrLeg(0.30,0.70,0.50,0.85, 0.025, 42, color_data);
+        tdrHeader(legend,"Data", 22);
+        sprintf(line, "#chi^{2}/ndf = %.2f/%d", f->GetChisquare(),  f->GetNDF());       legend->AddEntry((TObject*)0, line, "");
+        sprintf(line, "p0 = %.5f #pm %.5f",     f->GetParameter(0), f->GetParError(0)); legend->AddEntry((TObject*)0, line, "");
+        sprintf(line, "p1 = %.5f #pm %.5f",     f->GetParameter(1), f->GetParError(1)); legend->AddEntry((TObject*)0, line, "");
+        legend->Draw("same");
+      }
+
+      TLegend *leg = tdrLeg(0.35,0.85,0.9,0.89, 0.025, 42, kBlack);
+      tdrHeader(leg, Form("#eta #in [%.3f,%.3f], p_{T} #in [%.0f,%.0f] GeV", eta_bins[m], eta_bins[m+1], Pt_bins[p], Pt_bins[p+1]));
+      leg->Draw("same");
+
+      TString add_name = "Extrapol_";
+      if (isFE) add_name = "Extrapol_FE_";
+
+      canv->Print(outdir+add_name+Form("Eta%i_pt%i.png", m+1, p+1));
+      canv->Print(outdir+add_name+Form("Eta%i_pt%i.pdf", m+1, p+1));
+
+      // if( h_MC.at(m).at(p)  -> GetEntries() != 0 ) h_MC.at(m).at(p)   -> GetFunction("linfit")->SetLineColor(color_MC);
+      // if( h_gen.at(m).at(p) -> GetEntries() != 0 ) h_gen.at(m).at(p)  -> GetFunction("linfit")->SetLineColor(color_gen);
+      // if( h_data.at(m).at(p)-> GetEntries() != 0 ) h_data.at(m).at(p) -> GetFunction("linfit")->SetLineColor(color_data);
+
+    }
+  }
+}
+
+void SFtoTXT(std::ofstream& texfile, std::vector< TH1F* > h_JER, std::vector< std::vector< std::vector< double > > > width_pt, std::vector<double> &SF, std::vector<double> &SF_err, std::vector<double> &SF_ptdep_min, std::vector<double> &SF_ptdep_max, std::vector<double> &eta_bin_center, std::vector<double> &eta_bin_err, std::vector<double> eta_bins, int shift, bool isFE, bool isCorr ) {
+  for( unsigned int m = 0; m < h_JER.size(); m++ ){
+    TF1 * constfit = h_JER.at(m) -> GetFunction("constfit");
+    TF1 * NSC_ratio = h_JER.at(m) -> GetFunction("NSC_ratio");
+    h_JER.at(m)->GetFunction("NSC_ratio")->SetBit(TF1::kNotDraw);
+    std::cout << findMinMax(h_JER.at(m), width_pt.at(m), NSC_ratio, constfit, 1) << " " <<  findMinMax(h_JER.at(m), width_pt.at(m), NSC_ratio, constfit, 0) << '\n';
+    SF_ptdep_min.push_back(findMinMax(h_JER.at(m), width_pt.at(m), NSC_ratio, constfit, 1));
+    SF_ptdep_max.push_back(findMinMax(h_JER.at(m), width_pt.at(m), NSC_ratio, constfit, 0));
+    h_JER.at(m) -> Write();
+    int diff = 0;
+    if (isFE) diff = shift - h_JER.size();
+    if (!isCorr) {
+      eta_bin_center.push_back((eta_bins[diff+m+1]+eta_bins[diff+m]) /2);
+      eta_bin_err.push_back((eta_bins[diff+m+1]-eta_bins[diff+m]) /2);
+    }
+    SF.push_back(constfit -> GetParameter( 0 ));
+    SF_err.push_back(constfit -> GetParError( 0 ));
+    texfile << constfit -> GetParameter( 0 ) << " \\pm " << constfit -> GetParError( 0 ) << " & ";
+    if(m == h_JER.size()-1 ) texfile << "\\\\";
+  }
+}
+
+void PLOT_SF(std::vector< TH1F* > h_uncor, std::vector< TH1F* > h_cor, std::vector< TH1F* > h_015, TString outdir, std::vector<double> eta_bins, bool isFE) {
+  int color_uncor = kBlue;
+  int color_cor   = kRed;
+  int color_015   = kGreen+2;
+  for( unsigned int m = 0; m < h_uncor.size(); m++ ){
+    TString canvName  = h_uncor.at(m)->GetTitle();
+    TString nameXaxis = "p_{T} [GeV]";
+    TString nameYaxis = h_uncor.at(m)->GetYaxis()->GetTitle();
+    std::vector<TH1*> vec;
+    vec.push_back(h_uncor.at(m));
+    vec.push_back(h_cor.at(m));
+    vec.push_back(h_015.at(m));
+    double x_min, x_max, y_min, y_max;
+    findExtreme(vec, &x_min, &x_max, &y_min, &y_max);
+    TCanvas* canv = tdrCanvas(canvName, x_min, x_max, 0, 3, nameXaxis, nameYaxis);
+    canv->SetTickx(0);
+    canv->SetTicky(0);
+    tdrDraw(h_uncor.at(m), "", kFullCircle, color_uncor );
+    tdrDraw(h_cor.at(m), "", kFullCircle, color_cor );
+    tdrDraw(h_015.at(m), "", kFullCircle, color_015 );
+
+    TF1* f;
+    char line[100];
+    TLegend *legend;
+
+    if(h_uncor.at(m)->GetFunction("constfit")){
+      f = h_uncor.at(m) -> GetFunction("constfit"); f->SetLineColor(color_uncor);
+      legend = tdrLeg(0.30,0.70,0.50,0.90, 0.025, 42, color_uncor);
+      tdrHeader(legend,"JER", 22);
+      sprintf(line, "#chi^{2}/ndf = %.2f/%d", f->GetChisquare(), f->GetNDF());        legend->AddEntry((TObject*)0, line, "");
+      sprintf(line, "p0 = %.5f #pm %.5f",     f->GetParameter(0), f->GetParError(0)); legend->AddEntry((TObject*)0, line, "");
+      legend->Draw("same");
+    } else { std::cout << "Fit function at bin " << m << " was not found" << std::endl; }
+
+    if(h_cor.at(m)->GetFunction("constfit")){
+      f = h_cor.at(m) -> GetFunction("constfit"); f->SetLineColor(color_cor);
+      legend = tdrLeg(0.50,0.70,0.70,0.90, 0.025, 42, color_cor);
+      tdrHeader(legend,"JER cor", 22);
+      sprintf(line, "#chi^{2}/ndf = %.2f/%d", f->GetChisquare(), f->GetNDF());        legend->AddEntry((TObject*)0, line, "");
+      sprintf(line, "p0 = %.5f #pm %.5f",     f->GetParameter(0), f->GetParError(0)); legend->AddEntry((TObject*)0, line, "");
+      legend->Draw("same");
+    } else { std::cout << "Fit function at bin " << m << " was not found" << std::endl; }
+
+    if(h_015.at(m)->GetFunction("constfit")){
+      f = h_015.at(m) -> GetFunction("constfit"); f->SetLineColor(color_015);
+      legend = tdrLeg(0.70,0.70,0.90,0.90, 0.025, 42, color_uncor);
+      tdrHeader(legend,"JER 0.15", 22);
+      sprintf(line, "#chi^{2}/ndf = %.2f/%d", f->GetChisquare(), f->GetNDF());        legend->AddEntry((TObject*)0, line, "");
+      sprintf(line, "p0 = %.5f #pm %.5f",     f->GetParameter(0), f->GetParError(0)); legend->AddEntry((TObject*)0, line, "");
+      legend->Draw("same");
+    } else { std::cout << "Fit function at bin " << m << " was not found" << std::endl; }
+
+
+    TLegend *leg = tdrLeg(0.6,0.15,0.9,0.35, 0.04, 42, kBlack);
+    tdrHeader(leg, Form("#eta #in [%.3f,%.3f]", eta_bins[m], eta_bins[m+1]));
+    leg->AddEntry(h_uncor.at(m),  "#sigma_{JER}^{data}/#sigma_{JER}^{MC}","lep");
+    leg->AddEntry(h_cor.at(m),    "#sigma_{JER}^{data}/#sigma_{JER}^{MC} correlated","lep");
+    leg->AddEntry(h_015.at(m),    "#sigma_{0.15}^{data}/#sigma_{0.15}^{MC}","lep");
+    leg->Draw("same");
+
+    if (isFE) {
+      if (m<9) canvName = canvName(0, canvName.Length()-1);
+      else canvName = canvName(0, canvName.Length()-2);
+      canvName += (m+2);
+    }
+    canv -> Print(outdir+canvName+".pdf","pdf");
+    canv -> Print(outdir+canvName+".png","png");
+  }
+}
+
+void PLOT_NCS(std::vector< TH1F* > h_data, std::vector< TH1F* > h_MC, std::vector< TH1F* > h_SF, TString outdir, std::vector<double> eta_bins, bool isFE) {
+  int color_data  = kBlue;
+  int color_MC    = kRed;
+  int color_NSC   = kGreen+2;
+  for( unsigned int m = 0; m < h_data.size(); m++ ){
+    h_data.at(m)->SetStats(kFALSE);
+    h_MC.at(m)->SetStats(kFALSE);
+    double N, S, C, kNS, kC, Nerr, Serr, Cerr, kNSerr, kCerr, mcChi, dtChi;
+    int mcNDF, dtNDF;
+    TH1F* mcERR = (TH1F*)h_data.at(m)->Clone();
+    TH1F* dtERR = (TH1F*)h_data.at(m)->Clone();
+    MCFIT(h_MC.at(m), mcERR, N, S, C, Nerr, Serr, Cerr, mcChi, mcNDF);
+    DTFIT(h_data.at(m), dtERR, N, S, C, kNS, kC, Nerr, Serr, Cerr, kNSerr, kCerr, dtChi, dtNDF, m, isFE);
+    h_data.at(m)-> GetFunction("dtFIT")->SetLineColor(color_data+2);
+    h_MC.at(m)-> GetFunction("mcFIT")->SetLineColor(color_MC+2);
+    mcERR->SetFillColorAlpha(color_MC+2,0.35);
+    dtERR->SetFillColorAlpha(color_data+2,0.35);
+    TString canvName  = h_data.at(m)->GetTitle();
+    TString nameXaxis = h_data.at(m)->GetXaxis()->GetTitle();
+    TString nameYaxis = h_data.at(m)->GetYaxis()->GetTitle();
+    std::vector<TH1*> vec;
+    vec.push_back(h_data.at(m));
+    vec.push_back(h_MC.at(m));
+    double x_min, x_max, y_min, y_max;
+    findExtreme(vec, &x_min, &x_max, &y_min, &y_max);
+    TCanvas* canv = tdrCanvas(canvName, x_min, x_max, y_min, y_max, nameXaxis, nameYaxis);
+    canv->SetTickx(0);
+    canv->SetTicky(0);
+    mcERR->Draw("E4 SAME");
+    dtERR->Draw("E4 SAME");
+    tdrDraw(h_data.at(m), "", kFullCircle, color_data );
+    tdrDraw(h_MC.at(m), "", kFullCircle, color_MC );
+    TLegend *leg = tdrLeg(0.6,0.7,0.9,0.9);
+    char legTitle[100];
+    sprintf(legTitle,     "#eta #in [%.3f,%.3f]", eta_bins[m], eta_bins[m+1]);
+    tdrHeader(leg,legTitle);
+    leg->AddEntry(h_data.at(m),"data","lep");
+    leg->AddEntry(h_MC.at(m),"MC","lep");
+    char line[100];
+    TLegend *legend;
+    legend = tdrLeg(0.50,0.55,0.70,0.7, 0.025, 42, color_MC);
+    legend->AddEntry((TObject*)0, "MC", "");
+    sprintf(line, "#chi^{2}/ndf = %.2f/%d", mcChi,mcNDF); legend->AddEntry((TObject*)0,line,"");
+    sprintf(line, "N = %.5f #pm %.5f", N, Nerr);  legend->AddEntry((TObject*)0, line, "");
+    sprintf(line, "S = %.5f #pm %.5f", S, Serr);  legend->AddEntry((TObject*)0, line, "");
+    sprintf(line, "C = %.5f #pm %.5f", C, Cerr);  legend->AddEntry((TObject*)0, line, "");
+    legend->Draw("same");
+    legend = tdrLeg(0.70,0.55,0.85,0.7, 0.025, 42, color_data);
+    legend->AddEntry((TObject*)0, "data", "");
+    sprintf(line, "#chi^{2}/ndf = %.2f/%d", dtChi,dtNDF); legend->AddEntry((TObject*)0,line,"");
+    sprintf(line, "k_{NS} = %.5f #pm %.5f", kNS,kNSerr);legend->AddEntry((TObject*)0, line, "");
+    sprintf(line, "k_{C}  = %.5f #pm %.5f", kC, kCerr); legend->AddEntry((TObject*)0, line, "");
+    legend->AddEntry((TObject*)0, "", "");
+    legend->Draw("same");
+    if(isFE){
+      if (m<9) canvName = canvName(0, canvName.Length()-1);
+      else canvName = canvName(0, canvName.Length()-2);
+      canvName += (m+2);
+    }
+    canv -> Print(outdir+"pdfy/JERs/"+canvName+".pdf","pdf");
+    canv -> Print(outdir+"pdfy/JERs/"+canvName+".png","png");
+    canv -> Print(outdir+"pdfy/JERs/"+canvName+".root","root");
+
+    canvName  = h_SF.at(m)->GetTitle();
+    nameXaxis = h_SF.at(m)->GetXaxis()->GetTitle();
+    nameYaxis = h_SF.at(m)->GetYaxis()->GetTitle();
+    vec.clear();
+    vec.push_back(h_SF.at(m));
+    findExtreme(vec, &x_min, &x_max, &y_min, &y_max);
+    canv = tdrCanvas(canvName, x_min, x_max, y_min, y_max, nameXaxis, nameYaxis);
+    canv->SetTickx(0);
+    canv->SetTicky(0);
+    tdrDraw(h_SF.at(m), "", kFullCircle, color_data );
+    TF1 * constfit = new TF1( "constfit", "pol0", min_fit, max_fit );
+    constfit->SetLineColor(color_MC);
+    constfit->SetLineWidth(2);
+    h_SF.at(m) -> Fit("constfit","RMQ+");
+    TF1 *NSC_ratio = new TF1("NSC_ratio", "TMath::Sqrt( ([3]*[3]*[0]*[0]/(x*x))+[3]*[3]*[1]*[1]/x+[4]*[4]*[2]*[2] )/TMath::Sqrt( ([0]*[0]/(x*x))+[1]*[1]/x+[2]*[2] )",min_fit,max_fit);
+    NSC_ratio -> SetParameters(N, S, C, kNS, kC);
+    NSC_ratio->SetLineColor(color_NSC);
+    NSC_ratio->SetLineWidth(2);
+    NSC_ratio->Draw("same");
+    h_SF.at(m)->GetListOfFunctions()->Add(NSC_ratio);
+    leg = tdrLeg(0.55,0.7,0.9,0.9);
+    sprintf(legTitle,     "#eta #in [%.3f,%.3f]", eta_bins[m], eta_bins[m+1]);
+    tdrHeader(leg,legTitle);
+    leg->AddEntry(h_SF.at(m),"#sigma_{JER}^{data}/#sigma_{JER}^{mc} correlated","lep");
+    leg->AddEntry(constfit,"Constant Fit","l");
+    sprintf(legTitle,     "#eta #in [%.3f,%.3f]", eta_bins[m], eta_bins[m+1]);
+    leg->AddEntry(NSC_ratio,"Ratio of NSC-Fits","l");
+    if(isFE){
+      if (m<9) canvName = canvName(0, canvName.Length()-1);
+      else canvName = canvName(0, canvName.Length()-2);
+      canvName += (m+2);
+    }
+    canv -> Print(outdir+"pdfy/NSC_SFs/NSC"+canvName+".pdf","pdf");
+    canv -> Print(outdir+"pdfy/NSC_SFs/NSC"+canvName+".png","png");
+    canv->Write();
+  }
+}
 
 // ------------------------------
 //          MAIN PROGRAM
@@ -412,23 +707,17 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
   // ------------------------------
 
   int EtaBins_SM            = 10; // st method bins
-  int EtaBins_SM_control     =  3; // st method bins control
+  int EtaBins_SM_control    =  3; // st method bins control
   int EtaBins_FE_reference  =  3; // fe method bins reference
   int EtaBins_FE_control    =  7; // fe method bins control
   int EtaBins_FE            =  3; // fe method bins
+  int shift_ = EtaBins_SM + EtaBins_FE;
 
   int etaShift_SM           = 0;
   int etaShift_SM_control   = EtaBins_SM;
   int etaShift_FE_reference = 0;
   int etaShift_FE_control   = EtaBins_FE_reference;
   int etaShift_FE           = EtaBins_FE_reference + EtaBins_FE_control;
-
-
-  std::vector<double> Eta_bins_SM(             eta_bins + etaShift_SM,            eta_bins + etaShift_SM + EtaBins_SM + 1);
-  std::vector<double> Eta_bins_SM_control(    eta_bins + etaShift_SM_control,    eta_bins + etaShift_SM_control + EtaBins_SM_control + 1);
-  std::vector<double> Eta_bins_FE_reference(  eta_bins + etaShift_FE_reference,  eta_bins + etaShift_FE_reference + EtaBins_FE_reference + 1);
-  std::vector<double> Eta_bins_FE_control(     eta_bins + etaShift_FE_control,    eta_bins + etaShift_FE_control + EtaBins_FE_control + 1);
-  std::vector<double> Eta_bins_FE(             eta_bins + etaShift_FE,            eta_bins + etaShift_FE + EtaBins_FE + 1);
 
   int PtBins_Central = 9, PtBins_HF = 6, AlphaBins = 6;
 
@@ -863,36 +1152,6 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
   correctForRef( "mc_cor_corrected", JER_correlated_corrected_MC_FE,   JER_correlated_corrected_MC_FE_error,   JER_correlated_corrected_MC_FE_ref,   JER_correlated_corrected_MC_FE_ref_error,   width_pt_FE, ref_shift, outdir);
   correctForRef( "data_cor_correct", JER_correlated_corrected_data_FE, JER_correlated_corrected_data_FE_error, JER_correlated_corrected_data_FE_ref, JER_correlated_corrected_data_FE_ref_error, width_pt_FE, ref_shift, outdir);
 
-  // std::vector<std::vector<double> > Output
-  // std::vector<std::vector<double> > OutputError
-  // TString name1 = "mc_cor_corrected"
-  // std::vector<std::vector<double> > Input = JER_correlated_corrected_MC_FE_ref
-  // std::vector<std::vector<double> > InputError = JER_correlated_corrected_MC_FE_ref_error
-  // std::vector<std::vector<std::vector<double> > > width_pt = width_pt_FE
-  //
-  // TMath::Sqrt(2)*TMath::Sqrt(0.056636 * 0.056636 - 0.018630*0.018630)
-  //
-  // for (size_t i = 0; i < extrapolated_widths_correlated_FE.size(); i++) {
-  //   for (size_t j = 0; j < extrapolated_widths_correlated_FE.at(0).size(); j++) {
-  //     std::cout << i+1 << " " << j+1 << " " << extrapolated_widths_correlated_FE.at(i).at(j) << '\n';
-  //   }
-  // }
-  //
-  // for (size_t i = 0; i < Output.size(); i++) {
-  //   for (size_t j = 0; j < Output.at(0).size(); j++) {
-  //     double pT = (double)(*std::max_element(width_pt.at(0).at(j).begin(),width_pt.at(0).at(j).end()));
-  //     std::cout << i+2 << " " << j+1 << " " << hist->GetBinContent(hist->FindBin(pT)) << " " << Input.at(i+1).at(j) <<  " " << JER_correlated_corrected_MC_FE_ref.at(i+1).at(j) <<  " " << Output.at(i).at(j) << '\n';
-  //   }
-  // }
-  //
-  // TMath::Sqrt( 2*0.0634263*0.0634263 - 0.0558558*0.0558558)
-  // Output.at(3).at(6)
-  //
-  //
-  //
-  // std::vector<std::vector<double> > Output2
-  // std::vector<std::vector<double> > OutputError2
-
   ////////////////////////////////////////////////////////////////////////////
   //    ref region corrected for correlated fit                             //
   ////////////////////////////////////////////////////////////////////////////
@@ -994,6 +1253,8 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
   fill_hist( "data_JER_correlated_FE_control", JER_correlated_data_hist_FE_control,  JER_correlated_corrected_data_FE_ref, JER_correlated_corrected_data_FE_ref_error, width_pt_FE, hist_max_value);
   fill_hist( "SF_correlated_FE_control",       JER_correlated_scale_hist_FE_control, scales_correlated_FE_control, scales_correlated_FE_control_error, width_pt_FE, hist_max_value_SF);
 
+
+  std::cout << "TROVATO" << '\n';
   print1H(JER_correlated_MC_hist_SM);
   print1H(JER_correlated_MC_hist_FE);
   print1H(JER_correlated_MC_hist_FE_control);
@@ -1010,121 +1271,19 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
   gStyle->SetOptStat(0);
 
   TFile fMCTruth("output/MCTruth.root","RECREATE");
-  for( unsigned int m = 0; m < JER_MC_Truth_SM.size(); m++ ){
-    PLOT_4_MCT(JER_MC_Truth_SM,JER_uncorrelated_MC_hist_SM,JER_correlated_MC_hist_SM,JER015_uncorrelated_MC_hist_SM,kMagenta,kRed,kBlue,kGreen+2,m)
-
-    char legTitle[100];
-    TLegend *leg = tdrLeg(0.6,0.7,0.9,0.9);
-    sprintf(legTitle,     "#eta #in [%.3f,%.3f]", eta_bins_edge_SM[m], eta_bins_edge_SM[m+1]);
-    leg->AddEntry(JER_MC_Truth_SM.at(m),                 "MC Truth",         "lep");
-    leg->AddEntry(JER_uncorrelated_MC_hist_SM.at(m),     "MC Uncorrelated",  "lep");
-    leg->AddEntry(JER_correlated_MC_hist_SM.at(m),       "MC Correlated",    "lep");
-    leg->AddEntry(JER015_uncorrelated_MC_hist_SM.at(m),  "MC 015",           "lep");
-
-    canv->Print(outdir+"pdfy/MCTruth/"+canvName+".pdf","pdf");
-    canv->Print(outdir+"pdfy/MCTruth/"+canvName+".png","png");
-  }
-
-  std::cout << "help" << '\n';
-  std::cout << JER_MC_Truth_FE.size() << '\n';
-  std::cout << JER_uncorrelated_MC_hist_FE.size() << '\n';
-  std::cout << JER_correlated_MC_hist_FE.size() << '\n';
-  std::cout << JER015_uncorrelated_MC_hist_FE.size() << '\n';
-
-
-  for( unsigned int m = 0; m < JER_MC_Truth_FE.size()-1; m++ ){
-
-    PLOT_4_MCT(JER_MC_Truth_FE,JER_uncorrelated_MC_hist_FE,JER_correlated_MC_hist_FE,JER015_uncorrelated_MC_hist_FE,kMagenta,kRed,kBlue,kGreen+2,m)
-
-    char legTitle[100];
-    TLegend *leg = tdrLeg(0.6,0.7,0.9,0.9);
-    sprintf(legTitle,     "#eta #in [%.3f,%.3f]", eta_bins_edge_FE[m], eta_bins_edge_FE[m+1]);
-    tdrHeader(leg,legTitle);
-    leg->AddEntry(JER_MC_Truth_FE.at(m),                "MC Truth",         "lep");
-    leg->AddEntry(JER_uncorrelated_MC_hist_FE.at(m),    "MC Uncorrelated",  "lep");
-    leg->AddEntry(JER_correlated_MC_hist_FE.at(m),      "MC Correlated",    "lep");
-    leg->AddEntry(JER015_uncorrelated_MC_hist_FE.at(m), "MC 015",           "lep");
-
-    canv->Print(outdir+"pdfy/MCTruth/"+canvName+".pdf","pdf");
-    canv->Print(outdir+"pdfy/MCTruth/"+canvName+".png","png");
-  }
-
+  PLOT_MCT(JER_MC_Truth_SM,JER_uncorrelated_MC_hist_SM,JER_correlated_MC_hist_SM,JER015_uncorrelated_MC_hist_SM,outdir+"pdfy/MCTruth/",eta_bins_edge_SM, false);
+  PLOT_MCT(JER_MC_Truth_FE,JER_uncorrelated_MC_hist_FE,JER_correlated_MC_hist_FE,JER015_uncorrelated_MC_hist_FE,outdir+"pdfy/MCTruth/",eta_bins_edge_FE, true);
   fMCTruth.Close();
 
 
+
+
   if (false) {
-    for( unsigned int m = 0; m < asymmetries_SM.size(); m++ ){
-      for( unsigned int p = 0; p < asymmetries_SM.at(m).size(); p++ ){
-        for( unsigned int r = 0; r < asymmetries_SM.at(m).at(p).size(); r++ ){
-          asymmetries_SM.at(m).at(p).at(r)      -> Scale(1./asymmetries_SM.at(m).at(p).at(r) -> Integral());
-          gen_asymmetries_SM.at(m).at(p).at(r)  -> Scale(1./gen_asymmetries_SM.at(m).at(p).at(r) -> Integral());
-          asymmetries_data_SM.at(m).at(p).at(r) -> Scale(1./asymmetries_data_SM.at(m).at(p).at(r) -> Integral());
-
-          PLOT_3_3(asymmetries_SM,gen_asymmetries_SM,asymmetries_data_SM,kRed,kGreen+2,kBlue,m,p,r)
-
-          char name_mcreco[100];
-          char name_mcgen[100];
-          char name_data[100];
-          char legTitle[100];
-
-          sprintf(name_mcreco,  "MC,   %.4f +- %.4f", asymmetries_width_SM.at(m).at(p).at(r), asymmetries_width_SM_error.at(m).at(p).at(r));
-          sprintf(name_mcgen,   "gen,  %.4f +- %.4f", gen_asymmetries_width_SM.at(m).at(p).at(r), gen_asymmetries_width_SM_error.at(m).at(p).at(r));
-          sprintf(name_data,    "data, %.4f +- %.4f", asymmetries_width_data_SM.at(m).at(p).at(r), asymmetries_width_data_SM_error.at(m).at(p).at(r));
-          sprintf(legTitle,     "#eta #in [%.3f,%.3f], p_{T} #in [%.0f,%.0f] GeV", eta_bins_edge_SM[m], eta_bins_edge_SM[m+1], Pt_bins_Central[p], Pt_bins_Central[p+1]);
-
-          TLegend *leg = tdrLeg(0.45,0.7,0.95,0.9);
-          tdrHeader(leg,legTitle);
-          sprintf(legTitle,     "#alpha < %.2f", alpha.at(r));
-          leg->AddEntry((TObject*)0, legTitle, "");
-          leg->AddEntry(asymmetries_data_SM.at(m).at(p).at(r),  name_data,"lep");
-          leg->AddEntry(asymmetries_SM.at(m).at(p).at(r),      name_mcreco,"lep");
-          leg->AddEntry(gen_asymmetries_SM.at(m).at(p).at(r), name_mcgen,"lep");
-          leg->Draw("same");
-
-          canv->Update();
-          canv -> Print(outdir+"output/asymmetries/"+canvName+".pdf","pdf");
-          canv -> Print(outdir+"output/asymmetries/"+canvName+".png","png");
-        }
-      }
-    }
-
-    for( unsigned int m = 0; m < asymmetries_FE.size(); m++ ){
-      for( unsigned int p = 0; p < asymmetries_FE.at(m).size(); p++ ){
-        for( unsigned int r = 0; r < asymmetries_FE.at(m).at(p).size(); r++ ){
-          asymmetries_FE.at(m).at(p).at(r)      -> Scale(1./asymmetries_FE.at(m).at(p).at(r) -> Integral());
-          gen_asymmetries_FE.at(m).at(p).at(r)  -> Scale(1./gen_asymmetries_FE.at(m).at(p).at(r) -> Integral());
-          asymmetries_data_FE.at(m).at(p).at(r) -> Scale(1./asymmetries_data_FE.at(m).at(p).at(r) -> Integral());
-
-          PLOT_3_3(asymmetries_FE,gen_asymmetries_FE,asymmetries_data_FE,kRed,kGreen+2,kBlue,m,p,r)
-
-          char name_mcreco[100];
-          char name_mcgen[100];
-          char name_data[100];
-          char legTitle[100];
-
-          sprintf(name_mcreco,  "MC,   %.4f+-%.4f", asymmetries_width_FE.at(m).at(p).at(r), asymmetries_width_FE_error.at(m).at(p).at(r));
-          sprintf(name_mcgen,   "gen,  %.4f+-%.4f", gen_asymmetries_width_FE.at(m).at(p).at(r), gen_asymmetries_width_FE_error.at(m).at(p).at(r));
-          sprintf(name_data,    "data, %.4f+-%.4f", asymmetries_width_data_FE.at(m).at(p).at(r), asymmetries_width_data_FE_error.at(m).at(p).at(r));
-          sprintf(legTitle,     "#eta #in [%.3f,%.3f], p_{T} #in [%.0f,%.0f] GeV",
-          eta_bins_edge_SM[EtaBins_SM + EtaBins_FE - asymmetries_FE.size() + m],
-          eta_bins_edge_SM[EtaBins_SM + EtaBins_FE - asymmetries_FE.size() + m+1],
-          Pt_bins_HF[p], Pt_bins_HF[p+1]);
-
-          TLegend *leg = tdrLeg(0.45,0.7,0.95,0.9);
-          tdrHeader(leg,legTitle);
-          sprintf(legTitle,     "#alpha < %.2f", alpha.at(r));
-          leg->AddEntry((TObject*)0, legTitle, "");
-          leg->AddEntry(asymmetries_data_FE.at(m).at(p).at(r), name_data,"lep");
-          leg->AddEntry(asymmetries_FE.at(m).at(p).at(r),      name_mcreco,"lep");
-          leg->AddEntry(gen_asymmetries_FE.at(m).at(p).at(r),  name_mcgen,"lep");
-
-          canv->Update();
-          canv -> Print(outdir+"output/asymmetries/"+canvName+".pdf","pdf");
-          canv -> Print(outdir+"output/asymmetries/"+canvName+".png","png");
-
-        }
-      }
-    }
+    ////////////////////////////////////////////////////////////////////////////
+    //  Plots Asymmetries                                                     //
+    ////////////////////////////////////////////////////////////////////////////
+    PLOT_ASY(asymmetries_data_SM,  asymmetries_SM, gen_asymmetries_SM,  asymmetries_width_data_SM, asymmetries_width_SM, gen_asymmetries_width_SM, asymmetries_width_data_SM_error, asymmetries_width_SM_error, gen_asymmetries_width_SM_error, outdir+"output/asymmetries/", eta_bins_edge_SM, Pt_bins_Central, alpha);
+    PLOT_ASY(asymmetries_data_FE,  asymmetries_FE, gen_asymmetries_FE,  asymmetries_width_data_FE, asymmetries_width_FE, gen_asymmetries_width_FE, asymmetries_width_data_FE_error, asymmetries_width_FE_error, gen_asymmetries_width_FE_error, outdir+"output/asymmetries/", eta_bins_edge_SM, Pt_bins_HF, alpha);
 
     TFile asyroot(outdir+"output/asymmetries.root","RECREATE");
     for( unsigned int m = 0; m < asymmetries_SM.size(); m++){
@@ -1136,7 +1295,6 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
         }
       }
     }
-
     for( unsigned int m = 0; m < asymmetries_FE.size(); m++){
       for( unsigned int p = 0; p < asymmetries_FE.at(m).size(); p++){
         for( unsigned int r = 0; r < asymmetries_FE.at(m).at(p).size(); r++){
@@ -1146,161 +1304,32 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
         }
       }
     }
-
     asyroot.Close();
 
+  }
+  if (true) {
+    ////////////////////////////////////////////////////////////////////////////
+    //  Plots with widths(alpha)                                              //
+    ////////////////////////////////////////////////////////////////////////////
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //  Plots with widths(alpha)                                                                                                             //
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // PLOT_WIDTH(widths_hist_data_SM, widths_hist_SM, gen_widths_hist_SM, outdir+"pdfy/widths/", eta_bins_edge_SM,Pt_bins_Central);
+    // PLOT_WIDTH(widths_hist_data_FE, widths_hist_FE, gen_widths_hist_FE, outdir+"pdfy/widths/", eta_bins_edge_SM,Pt_bins_HF);
 
-    for( unsigned int m = 0; m < widths_hist_SM.size(); m++ ){
-      for( unsigned int p = 0; p < widths_hist_SM.at(m).size(); p++ ){
-        PLOT_3_2(widths_hist_SM,gen_widths_hist_SM,widths_hist_data_SM,kRed,kGreen+2,kBlue,m,p)
+    PLOT_WIDTH_gr(data_correlated_graphs_SM, MC_correlated_graphs_SM, gen_correlated_graphs_SM, outdir+"ClosureTest/", eta_bins_edge_SM, Pt_bins_Central, false);
+    // PLOT_WIDTH_gr(data_correlated_graphs_FE, MC_correlated_graphs_FE, gen_correlated_graphs_FE, outdir+"ClosureTest/", eta_bins_edge_SM, Pt_bins_HF, true);
 
-        if( widths_hist_SM.at(m).at(p) -> GetEntries() != 0 )     widths_hist_SM.at(m).at(p) -> GetFunction("linfit")->SetLineColor(kRed);
-        if( gen_widths_hist_SM.at(m).at(p) -> GetEntries() != 0 ) gen_widths_hist_SM.at(m).at(p) -> GetFunction("linfit")->SetLineColor(kGreen+2);
-        if( widths_hist_data_SM.at(m).at(p) -> GetEntries() != 0 )widths_hist_data_SM.at(m).at(p) -> GetFunction("linfit")->SetLineColor(kBlue);
-
-        TF1* f;
-        char line[100];
-        TLegend *legend;
-
-        if (widths_hist_SM.at(m).at(p) -> GetFunction("linfit")) {
-          f = widths_hist_SM.at(m).at(p) -> GetFunction("linfit");
-          legend = tdrLeg(0.50,0.70,0.70,0.85);
-          legend->SetTextFont(42);  legend->SetTextSize(0.025);  legend->SetTextColor(kRed);
-          tdrHeader(legend,"MC", 22);
-          sprintf(line, "#chi^{2}/ndf = %.2f/%d", f->GetChisquare(), f->GetNDF());      legend->AddEntry((TObject*)0, line, "");
-          sprintf(line, "p0 = %.5f #pm %.5f", f->GetParameter(0), f->GetParError(0));   legend->AddEntry((TObject*)0, line, "");
-          sprintf(line, "p1 = %.5f #pm %.5f", f->GetParameter(1), f->GetParError(1));    legend->AddEntry((TObject*)0, line, "");
-          legend->Draw("same");
-        }
-
-        if (gen_widths_hist_SM.at(m).at(p) -> GetFunction("linfit")) {
-          f = gen_widths_hist_SM.at(m).at(p) -> GetFunction("linfit");
-          legend = tdrLeg(0.70,0.70,0.90,0.85);
-          legend->SetTextFont(42);  legend->SetTextSize(0.025);  legend->SetTextColor(kGreen+2);
-          tdrHeader(legend,"gen", 22);
-          sprintf(line, "#chi^{2}/ndf = %.2f/%d", f->GetChisquare(), f->GetNDF());      legend->AddEntry((TObject*)0, line, "");
-          sprintf(line, "p0 = %.5f #pm %.5f", f->GetParameter(0), f->GetParError(0));   legend->AddEntry((TObject*)0, line, "");
-          sprintf(line, "p1 = %.5f #pm %.5f", f->GetParameter(1), f->GetParError(1));    legend->AddEntry((TObject*)0, line, "");
-          legend->Draw("same");
-        }
-
-        if (widths_hist_data_SM.at(m).at(p) -> GetFunction("linfit")) {
-          f = widths_hist_data_SM.at(m).at(p) -> GetFunction("linfit");
-          legend = tdrLeg(0.30,0.70,0.50,0.85);
-          legend->SetTextFont(42);  legend->SetTextSize(0.025);  legend->SetTextColor(kBlue);
-          tdrHeader(legend,"Data", 22);
-          sprintf(line, "#chi^{2}/ndf = %.2f/%d", f->GetChisquare(), f->GetNDF());      legend->AddEntry((TObject*)0, line, "");
-          sprintf(line, "p0 = %.5f #pm %.5f", f->GetParameter(0), f->GetParError(0));   legend->AddEntry((TObject*)0, line, "");
-          sprintf(line, "p1 = %.5f #pm %.5f", f->GetParameter(1), f->GetParError(1));    legend->AddEntry((TObject*)0, line, "");
-          legend->Draw("same");
-        }
-
-        TLegend *leg = tdrLeg(0.35,0.85,0.9,0.89);
-        char legTitle[100];
-        sprintf(legTitle, "#eta#in [%.3f,%.3f], p_{T}#in [%.0f,%.0f] GeV", eta_bins_edge_SM[m], eta_bins_edge_SM[m+1], Pt_bins_Central[p], Pt_bins_Central[p+1]);
-        tdrHeader(leg,legTitle);
-        leg->SetTextFont(42);  leg->SetTextSize(0.035);  leg->SetTextColor(kBlack);
-        leg->Draw("same");
-
-        canv -> Update();
-        canv -> Print(outdir+"pdfy/widths/"+canvName+".pdf","pdf");
-        canv -> Print(outdir+"pdfy/widths/"+canvName+".png","png");
-      }
-    }
-
-    for( unsigned int m = 0; m < widths_hist_FE.size(); m++ ){
-      for( unsigned int p = 0; p < widths_hist_FE.at(m).size(); p++ ){
-        PLOT_3_2(widths_hist_FE,gen_widths_hist_FE,widths_hist_data_FE,kRed,kGreen+2,kBlue,m,p)
-
-        if( widths_hist_FE.at(m).at(p)->GetEntries() != 0 ){
-          widths_hist_FE.at(m).at(p) -> GetFunction("linfit")->SetLineColor(kRed);
-        }
-        if( gen_widths_hist_FE.at(m).at(p)->GetEntries() != 0 ){
-          gen_widths_hist_FE.at(m).at(p) -> GetFunction("linfit")->SetLineColor(kGreen+2);
-        }
-        if( widths_hist_data_FE.at(m).at(p)->GetEntries() != 0 ){
-          widths_hist_data_FE.at(m).at(p) -> GetFunction("linfit")->SetLineColor(kBlue);
-        }
-
-        TF1* f;
-        char line[100];
-        TLegend *legend;
-
-        if( widths_hist_FE.at(m).at(p)->GetEntries() != 0 ){
-          f = widths_hist_FE.at(m).at(p) -> GetFunction("linfit");
-        }
-        legend = tdrLeg(0.50,0.70,0.70,0.85);
-        legend->SetTextFont(42);  legend->SetTextSize(0.025);  legend->SetTextColor(kRed);
-        tdrHeader(legend,"MC", 22);
-        sprintf(line, "#chi^{2}/ndf = %.2f/%d", f->GetChisquare(), f->GetNDF());      legend->AddEntry((TObject*)0, line, "");
-        sprintf(line, "p0 = %.5f #pm %.5f", f->GetParameter(0), f->GetParError(0));   legend->AddEntry((TObject*)0, line, "");
-        sprintf(line, "p1 = %.5f #pm %.5f", f->GetParameter(1), f->GetParError(1));    legend->AddEntry((TObject*)0, line, "");
-        legend->Draw("same");
-
-        if( gen_widths_hist_FE.at(m).at(p)->GetEntries() != 0 ){
-          f = gen_widths_hist_FE.at(m).at(p) -> GetFunction("linfit");
-        }
-        legend = tdrLeg(0.70,0.70,0.90,0.85);
-        legend->SetTextFont(42);  legend->SetTextSize(0.025);  legend->SetTextColor(kGreen+2);
-        tdrHeader(legend,"gen", 22);
-        sprintf(line, "#chi^{2}/ndf = %.2f/%d", f->GetChisquare(), f->GetNDF());      legend->AddEntry((TObject*)0, line, "");
-        sprintf(line, "p0 = %.5f #pm %.5f", f->GetParameter(0), f->GetParError(0));   legend->AddEntry((TObject*)0, line, "");
-        sprintf(line, "p1 = %.5f #pm %.5f", f->GetParameter(1), f->GetParError(1));    legend->AddEntry((TObject*)0, line, "");
-        legend->Draw("same");
-
-        if( widths_hist_data_FE.at(m).at(p)->GetEntries() != 0 ){
-          f = widths_hist_data_FE.at(m).at(p) -> GetFunction("linfit");
-        }
-        legend = tdrLeg(0.30,0.70,0.50,0.85);
-        legend->SetTextFont(42);  legend->SetTextSize(0.025);  legend->SetTextColor(kBlue);
-        tdrHeader(legend,"Data", 22);
-        sprintf(line, "#chi^{2}/ndf = %.2f/%d", f->GetChisquare(), f->GetNDF());      legend->AddEntry((TObject*)0, line, "");
-        sprintf(line, "p0 = %.5f #pm %.5f", f->GetParameter(0), f->GetParError(0));   legend->AddEntry((TObject*)0, line, "");
-        sprintf(line, "p1 = %.5f #pm %.5f", f->GetParameter(1), f->GetParError(1));    legend->AddEntry((TObject*)0, line, "");
-        legend->Draw("same");
-
-        TLegend *leg = tdrLeg(0.35,0.85,0.9,0.89);
-        char legTitle[100];
-        sprintf(legTitle, "#eta #in [%.3f,%.3f], p_{T} #in [%.0f,%.0f] GeV",
-        eta_bins_edge_SM[EtaBins_SM + EtaBins_FE - widths_hist_FE.size() + m],
-        eta_bins_edge_SM[EtaBins_SM + EtaBins_FE - widths_hist_FE.size() + m+1],
-        Pt_bins_HF[p], Pt_bins_HF[p+1]);
-        tdrHeader(leg,legTitle);
-        leg->SetTextFont(42);  leg->SetTextSize(0.035);  leg->SetTextColor(kBlack);
-        leg->Draw("same");
-
-        canv -> Update();
-        canv -> Print(outdir+"pdfy/widths/"+canvName+".pdf","pdf");
-        canv -> Print(outdir+"pdfy/widths/"+canvName+".png","png");
-      }
-    }
+    // sprintf(legTitle, "#eta #in [%.3f,%.3f], p_{T} #in [%.0f,%.0f] GeV",
+    // eta_bins_edge_SM[shift_ - widths_hist_FE.size() + m],
+    // eta_bins_edge_SM[shift_ - widths_hist_FE.size() + m+1],
+    // Pt_bins_HF[p], Pt_bins_HF[p+1]);
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //  Plots with all points of widths(alpha)                                                                                               //
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    for( unsigned int m = 0; m < soft_widths_hist_SM.size(); m++ ){
-      for( unsigned int p = 0; p < soft_widths_hist_SM.at(m).size(); p++ ){
-        PLOT_3_2(soft_widths_hist_SM,soft_gen_widths_hist_SM,soft_widths_hist_data_SM,kRed,kGreen+2,kBlue,m,p)
-        canv -> Update();
-        canv -> Print(outdir+"pdfy/widths/allPoints_"+canvName+".png","png");
-      }
-    }
-
-    for( unsigned int m = 0; m < soft_widths_hist_FE.size(); m++ ){
-      for( unsigned int p = 0; p < soft_widths_hist_FE.at(m).size(); p++ ){
-        PLOT_3_2(soft_widths_hist_FE,soft_gen_widths_hist_FE,soft_widths_hist_data_FE,kRed,kGreen+2,kBlue,m,p)
-        canv -> Update();
-        canv -> Print(outdir+"pdfy/widths/allPoints_"+canvName+".png","png");
-      }
-    }
+    // PLOT_3_2(soft_widths_hist_data_SM, soft_widths_hist_SM, soft_gen_widths_hist_SM,outdir+"pdfy/widths/allPoints_");
+    // PLOT_3_2(soft_widths_hist_data_FE, soft_widths_hist_FE, soft_gen_widths_hist_FE,outdir+"pdfy/widths/allPoints_");
 
     TFile widthroot(outdir+"output/widths.root","RECREATE");
-
     for( unsigned int m = 0; m < widths_hist_SM.size(); m++ ){
       for( unsigned int p = 0; p < widths_hist_SM.at(m).size(); p++ ){
         widths_hist_SM.at(m).at(p) -> Write();
@@ -1317,163 +1346,6 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
     }
     widthroot.Close();
 
-    // ------------------------------
-    //       correlation plots
-    // ------------------------------
-
-    for( unsigned int m = 0; m < MC_correlated_graphs_SM.size(); m++ ){
-      for( unsigned int p = 0; p < MC_correlated_graphs_SM.at(m).size(); p++ ){
-        // draw extrapolations data + mc
-        TF1* f;
-        TF1* Temp = new TF1();
-        double range = 0.05;
-        if ( p == 0) range = 0.25;
-        if ( p == 1) range = 0.2;
-        if ( p == 2) range = 0.15;
-        if ( p == 3) range = 0.1;
-        if ( p == 4) range = 0.1;
-        if ( p == 5) range = 0.1;
-        if ( m == 6 && p == 2) range = 0.2;
-        if ( m == 6 && p == 3) range = 0.2;
-        if ( m == 5 && p == 6) range = 0.1;
-        if ( m == 6 && p == 6) range = 0.15;
-        if ( m == 6 && p == 9) range = 0.1;
-        if ( m == 7 && p == 6) range = 0.1;
-        if ( m == 7 && p == 7) range = 0.1;
-        if ( m == 7 && p == 8) range = 0.1;
-        if ( m == 8 && p == 2) range = 0.2;
-        if ( m == 8 && p == 6) range = 0.2;
-        if ( m == 9 && p == 3) range = 0.15;
-
-
-        char line[100];
-        TLegend *legend;
-        // gStyle -> SetOptFit(0000);
-        // gStyle -> SetOptStat(0000);
-        PLOT_3_2_gr(MC_correlated_graphs_SM,gen_correlated_graphs_SM,data_correlated_graphs_SM,kRed,kGreen+2,kBlue,m,p)
-
-        f = MC_correlated_graphs_SM.at(m).at(p) -> GetFunction("lin_extrapol_mc"); f->SetLineColor(kRed); f->SetLineStyle(2);
-        Temp = (TF1*) MC_correlated_graphs_SM.at(m).at(p)->GetFunction("lin_extrapol_mc")->Clone(); gStyle -> SetOptFit(0000);
-        Temp->SetRange(range,1); Temp->SetLineStyle(1); Temp->Draw("same");
-        legend = tdrLeg(0.50,0.70,0.70,0.85);
-        legend->SetTextFont(42);  legend->SetTextSize(0.025);  legend->SetTextColor(kRed);
-        tdrHeader(legend,"MC", 22);
-        sprintf(line, "#chi^{2}/ndf = %.2f/%d", f->GetChisquare(), f->GetNDF());      legend->AddEntry((TObject*)0, line, "");
-        sprintf(line, "p0 = %.5f #pm %.5f", f->GetParameter(0), f->GetParError(0));   legend->AddEntry((TObject*)0, line, "");
-        sprintf(line, "p1 = %.5f #pm %.5f", f->GetParameter(1), f->GetParError(1));    legend->AddEntry((TObject*)0, line, "");
-        legend->Draw("same");
-
-        f = gen_correlated_graphs_SM.at(m).at(p) -> GetFunction("lin_extrapol_mc"); f->SetLineColor(kGreen+2); f->SetLineStyle(2);
-        Temp = (TF1*) gen_correlated_graphs_SM.at(m).at(p)->GetFunction("lin_extrapol_mc")->Clone();
-        Temp->SetRange(range,1); Temp->SetLineStyle(1); Temp->Draw("same");
-        legend = tdrLeg(0.70,0.70,0.90,0.85);
-        legend->SetTextFont(42);  legend->SetTextSize(0.025);  legend->SetTextColor(kGreen+2);
-        tdrHeader(legend,"gen", 22);
-        sprintf(line, "#chi^{2}/ndf = %.2f/%d", f->GetChisquare(), f->GetNDF());      legend->AddEntry((TObject*)0, line, "");
-        sprintf(line, "p0 = %.5f #pm %.5f", f->GetParameter(0), f->GetParError(0));   legend->AddEntry((TObject*)0, line, "");
-        sprintf(line, "p1 = %.5f #pm %.5f", f->GetParameter(1), f->GetParError(1));    legend->AddEntry((TObject*)0, line, "");
-        legend->Draw("same");
-
-        f = data_correlated_graphs_SM.at(m).at(p) -> GetFunction("lin_extrapol_mc"); f->SetLineColor(kBlue); f->SetLineStyle(2);
-        Temp = (TF1*) data_correlated_graphs_SM.at(m).at(p)->GetFunction("lin_extrapol_mc")->Clone(); gStyle -> SetOptFit(0000);
-        Temp->SetRange(range,1); Temp->SetLineStyle(1); Temp->Draw("same");
-        legend = tdrLeg(0.30,0.70,0.50,0.85);
-        legend->SetTextFont(42);  legend->SetTextSize(0.025);  legend->SetTextColor(kBlue);
-        tdrHeader(legend,"Data", 22);
-        sprintf(line, "#chi^{2}/ndf = %.2f/%d", f->GetChisquare(), f->GetNDF());      legend->AddEntry((TObject*)0, line, "");
-        sprintf(line, "p0 = %.5f #pm %.5f", f->GetParameter(0), f->GetParError(0));   legend->AddEntry((TObject*)0, line, "");
-        sprintf(line, "p1 = %.5f #pm %.5f", f->GetParameter(1), f->GetParError(1));    legend->AddEntry((TObject*)0, line, "");
-        legend->Draw("same");
-
-        TLegend *leg = tdrLeg(0.35,0.85,0.9,0.89);
-        char legTitle[100];
-        sprintf(legTitle, "#eta #in [%.3f,%.3f], p_{T} #in [%.0f,%.0f] GeV", eta_bins_edge_SM[m], eta_bins_edge_SM[m+1], Pt_bins_Central[p], Pt_bins_Central[p+1]);
-        tdrHeader(leg,legTitle);
-        leg->SetTextFont(42);  leg->SetTextSize(0.035);  leg->SetTextColor(kBlack);
-        leg->Draw("same");
-
-        TString name;
-        name = Form("ClosureTest/Extrapol_Eta%i_pt%i.png", m+1, p+1);
-        canv->Print(outdir+name);
-        name = Form("ClosureTest/Extrapol_Eta%i_pt%i.pdf", m+1, p+1);
-        canv->Print(outdir+name);
-      }
-    }
-
-    for( unsigned int m = 0; m < MC_correlated_graphs_FE.size(); m++ ){
-      for( unsigned int p = 0; p < MC_correlated_graphs_FE.at(m).size(); p++ ){
-        // draw extrapolations data + mc
-        TF1* f;
-        TF1* Temp = new TF1();
-        double range = 0.05;
-        if ( p == 0) range = 0.25;
-        if ( p == 1) range = 0.2;
-        if ( p == 2) range = 0.15;
-        if ( p == 3) range = 0.1;
-        if ( p == 4) range = 0.1;
-        if ( p == 5) range = 0.1;
-        if ( m == 9 && p >= 7) range = 0.1;
-        if ( m == 11&& p == 7) range = 0.15;
-
-        char line[100];
-        TLegend *legend;
-
-        PLOT_3_2_gr(MC_correlated_graphs_FE,gen_correlated_graphs_FE,data_correlated_graphs_FE,kRed,kGreen+2,kBlue,m,p)
-
-        f = MC_correlated_graphs_FE.at(m).at(p) -> GetFunction("lin_extrapol_mc"); f->SetLineColor(kRed); f->SetLineStyle(2);
-        Temp = (TF1*) MC_correlated_graphs_FE.at(m).at(p)->GetFunction("lin_extrapol_mc")->Clone(); gStyle -> SetOptFit(0000);
-        Temp->SetRange(range,1); Temp->SetLineStyle(1); Temp->Draw("same");
-        legend = tdrLeg(0.50,0.70,0.70,0.85);
-        legend->SetTextFont(42);  legend->SetTextSize(0.025);  legend->SetTextColor(kRed);
-        tdrHeader(legend,"MC", 22);
-        sprintf(line, "#chi^{2}/ndf = %.2f/%d", f->GetChisquare(), f->GetNDF());      legend->AddEntry((TObject*)0, line, "");
-        sprintf(line, "p0 = %.5f #pm %.5f", f->GetParameter(0), f->GetParError(0));   legend->AddEntry((TObject*)0, line, "");
-        sprintf(line, "p1 = %.5f #pm %.5f", f->GetParameter(1), f->GetParError(1));    legend->AddEntry((TObject*)0, line, "");
-        legend->Draw("same");
-
-        f = gen_correlated_graphs_FE.at(m).at(p) -> GetFunction("lin_extrapol_mc"); f->SetLineColor(kGreen+2); f->SetLineStyle(2);
-        Temp = (TF1*) gen_correlated_graphs_FE.at(m).at(p)->GetFunction("lin_extrapol_mc")->Clone();
-        Temp->SetRange(range,1); Temp->SetLineStyle(1); Temp->Draw("same");
-        legend = tdrLeg(0.70,0.70,0.90,0.85);
-        legend->SetTextFont(42);  legend->SetTextSize(0.025);  legend->SetTextColor(kGreen+2);
-        tdrHeader(legend,"gen", 22);
-        sprintf(line, "#chi^{2}/ndf = %.2f/%d", f->GetChisquare(), f->GetNDF());      legend->AddEntry((TObject*)0, line, "");
-        sprintf(line, "p0 = %.5f #pm %.5f", f->GetParameter(0), f->GetParError(0));   legend->AddEntry((TObject*)0, line, "");
-        sprintf(line, "p1 = %.5f #pm %.5f", f->GetParameter(1), f->GetParError(1));    legend->AddEntry((TObject*)0, line, "");
-        legend->Draw("same");
-
-        f = data_correlated_graphs_FE.at(m).at(p) -> GetFunction("lin_extrapol_mc"); f->SetLineColor(kBlue); f->SetLineStyle(2);
-        Temp = (TF1*) data_correlated_graphs_FE.at(m).at(p)->GetFunction("lin_extrapol_mc")->Clone();
-        Temp->SetRange(range,1); Temp->SetLineStyle(1); Temp->Draw("same");
-        legend = tdrLeg(0.30,0.70,0.50,0.85);
-        legend->SetTextFont(42);  legend->SetTextSize(0.025);  legend->SetTextColor(kBlue);
-        tdrHeader(legend,"Data", 22);
-        sprintf(line, "#chi^{2}/ndf = %.2f/%d", f->GetChisquare(), f->GetNDF());      legend->AddEntry((TObject*)0, line, "");
-        sprintf(line, "p0 = %.5f #pm %.5f", f->GetParameter(0), f->GetParError(0));   legend->AddEntry((TObject*)0, line, "");
-        sprintf(line, "p1 = %.5f #pm %.5f", f->GetParameter(1), f->GetParError(1));    legend->AddEntry((TObject*)0, line, "");
-        legend->Draw("same");
-
-        TLegend *leg = tdrLeg(0.35,0.85,0.9,0.89);
-        char legTitle[100];
-        sprintf(legTitle, "#eta #in [%.3f,%.3f], p_{T} #in [%.0f,%.0f] GeV",
-        eta_bins_edge_SM[EtaBins_SM + EtaBins_FE - MC_correlated_graphs_FE.size() + m],
-        eta_bins_edge_SM[EtaBins_SM + EtaBins_FE - MC_correlated_graphs_FE.size() + m+1],
-        Pt_bins_HF[p], Pt_bins_HF[p+1]);
-        tdrHeader(leg,legTitle);
-        leg->SetTextFont(42);  leg->SetTextSize(0.035);  leg->SetTextColor(kBlack);
-        leg->Draw("same");
-
-        TString name;
-        name = Form("ClosureTest/ExtrapolFw_Eta%i_pt%i.png", m+1, p+1);
-        canv->Print(outdir+name);
-        name = Form("ClosureTest/ExtrapolFw_Eta%i_pt%i.pdf", m+1, p+1);
-        canv->Print(outdir+name);
-      }
-    }
-
-    // ------------------------------
-    //    end of correlation plots
-    // ------------------------------
   }
   /////////////////////////////////////////////////////////////////////////////////////////
   // plot with JERs with NSC fit
@@ -1481,21 +1353,11 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
 
   TFile NSCroot(outdir+"output/NSC.root","RECREATE");
 
-  for( unsigned int m = 0; m < JER_uncorrelated_data_hist_SM.size(); m++ ){
-    PLOT_2(JER_uncorrelated_data_hist_SM,JER_uncorrelated_MC_hist_SM,JER_uncorrelated_scale_hist_SM,kBlue,kRed,kBlue-4, kGreen+2,m,eta_bins_edge_SM,false)
-  }
+  // PLOT_NCS(JER_uncorrelated_data_hist_SM,JER_uncorrelated_MC_hist_SM,JER_uncorrelated_scale_hist_SM,outdir,eta_bins_edge_SM,false);
+  // PLOT_NCS(JER_correlated_data_hist_SM,JER_correlated_MC_hist_SM,JER_correlated_scale_hist_SM,outdir,eta_bins_edge_SM,false);
+  // PLOT_NCS(JER_uncorrelated_data_hist_FE,JER_uncorrelated_MC_hist_FE,JER_uncorrelated_scale_hist_FE,outdir,eta_bins_edge_FE, true);
+  // PLOT_NCS(JER_correlated_data_hist_FE,JER_correlated_MC_hist_FE,JER_correlated_scale_hist_FE,outdir,eta_bins_edge_FE, true);
 
-  for( unsigned int m = 0; m < JER_correlated_data_hist_SM.size(); m++ ){ // plot with JERs with NSC fit
-    PLOT_2(JER_correlated_data_hist_SM,JER_correlated_MC_hist_SM,JER_correlated_scale_hist_SM,kBlue,kRed,kBlue-4, kGreen+2,m,eta_bins_edge_SM,false)
-  }
-
-  for( unsigned int m = 0; m < JER_uncorrelated_data_hist_FE.size(); m++ ){
-    PLOT_2(JER_uncorrelated_data_hist_FE,JER_uncorrelated_MC_hist_FE,JER_uncorrelated_scale_hist_FE,kBlue,kRed,kBlue-4, kGreen+2,m,eta_bins_edge_FE, true)
-  }
-
-  for( unsigned int m = 0; m < JER_correlated_data_hist_FE.size(); m++ ){ // plot with JERs with NSC fit
-    PLOT_2(JER_correlated_data_hist_FE,JER_correlated_MC_hist_FE,JER_correlated_scale_hist_FE,kBlue,kRed,kBlue-4, kGreen+2,m,eta_bins_edge_FE, true)
-  }
   NSCroot.Close();
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1539,6 +1401,7 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
   //   JER015_scale_hist_FE.at(m) -> Write();
   // }
 
+  return true;
   std::vector<double> SF_uncorrelated_SM, SF_uncorrelated_SM_error, SF_correlated_SM, SF_correlated_SM_error, SF_uncorrelated_FE, SF_uncorrelated_FE_error, SF_correlated_FE, SF_correlated_FE_error, eta_bin_SM_center, eta_bin_SM_error, eta_bin_FE_center, eta_bin_FE_error;
   std::vector<double> SF_uncorrelated_SM_ptdep_min, SF_correlated_SM_ptdep_min, SF_uncorrelated_FE_ptdep_min, SF_correlated_FE_ptdep_min;
   std::vector<double> SF_uncorrelated_SM_ptdep_max, SF_correlated_SM_ptdep_max, SF_uncorrelated_FE_ptdep_max, SF_correlated_FE_ptdep_max;
@@ -1546,65 +1409,17 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
   texfile.open ("output/scalefactors_tex.txt");
 
   texfile << "standard method\n";
-  for( unsigned int m = 0; m < JER_uncorrelated_scale_hist_SM.size(); m++ ){
-    TF1 * constfit = JER_uncorrelated_scale_hist_SM.at(m) -> GetFunction("constfit");
-    TF1 * NSC_ratio = JER_uncorrelated_scale_hist_SM.at(m) -> GetFunction("NSC_ratio");
-    JER_uncorrelated_scale_hist_SM.at(m)->GetFunction("NSC_ratio")->SetBit(TF1::kNotDraw);
-    SF_uncorrelated_SM_ptdep_min.push_back(findMinMax(JER_uncorrelated_scale_hist_SM.at(m), width_pt_SM.at(m), NSC_ratio, constfit, 1));
-    SF_uncorrelated_SM_ptdep_max.push_back(findMinMax(JER_uncorrelated_scale_hist_SM.at(m), width_pt_SM.at(m), NSC_ratio, constfit, 0));
-    JER_uncorrelated_scale_hist_SM.at(m) -> Write();
-    eta_bin_SM_center.push_back((eta_bins_edge_SM[m+1]+eta_bins_edge_SM[m]) /2);
-    eta_bin_SM_error.push_back((eta_bins_edge_SM[m+1]-eta_bins_edge_SM[m]) /2);
-    SF_uncorrelated_SM.push_back(constfit -> GetParameter( 0 ));
-    SF_uncorrelated_SM_error.push_back(constfit -> GetParError( 0 ));
-    texfile << constfit -> GetParameter( 0 ) << " \\pm " << constfit -> GetParError( 0 ) << " & ";
-    if(m == JER_uncorrelated_scale_hist_SM.size()-1 ) texfile << "\\\\";
-  }
+  SFtoTXT(texfile, JER_uncorrelated_scale_hist_SM, width_pt_SM, SF_uncorrelated_SM, SF_uncorrelated_SM_error, SF_uncorrelated_SM_ptdep_min, SF_uncorrelated_SM_ptdep_max, eta_bin_SM_center, eta_bin_SM_error, eta_bins_edge_SM, shift_, false, false);
 
   texfile << "\n forward extension \n";
-  for( unsigned int m = 0; m < JER_uncorrelated_scale_hist_FE.size(); m++ ){
-    TF1 * constfit = JER_uncorrelated_scale_hist_FE.at(m) -> GetFunction("constfit");
-    TF1 * NSC_ratio = JER_uncorrelated_scale_hist_FE.at(m) -> GetFunction("NSC_ratio");
-    JER_uncorrelated_scale_hist_FE.at(m)->GetFunction("NSC_ratio")->SetBit(TF1::kNotDraw);
-    SF_uncorrelated_FE_ptdep_min.push_back(findMinMax(JER_uncorrelated_scale_hist_FE.at(m), width_pt_FE.at(m), NSC_ratio, constfit, 1));
-    SF_uncorrelated_FE_ptdep_max.push_back(findMinMax(JER_uncorrelated_scale_hist_FE.at(m), width_pt_FE.at(m), NSC_ratio, constfit, 0));
-    JER_uncorrelated_scale_hist_FE.at(m) -> Write();
-    int diff = EtaBins_SM + EtaBins_FE - JER_uncorrelated_scale_hist_FE.size();
-    eta_bin_FE_center.push_back((eta_bins_edge_SM[diff+m+1]+eta_bins_edge_SM[diff+m]) /2);
-    eta_bin_FE_error.push_back((eta_bins_edge_SM[diff+m+1]-eta_bins_edge_SM[diff+m]) /2);
-    SF_uncorrelated_FE.push_back(constfit -> GetParameter( 0 ));
-    SF_uncorrelated_FE_error.push_back(constfit -> GetParError( 0 ));
-    texfile << constfit -> GetParameter( 0 ) << " \\pm " << constfit -> GetParError( 0 ) << " & ";
-    if(m == JER_uncorrelated_scale_hist_FE.size()-1 ) texfile << "\\\\";
-  }
+  SFtoTXT(texfile, JER_uncorrelated_scale_hist_FE, width_pt_FE, SF_uncorrelated_FE, SF_uncorrelated_FE_error, SF_uncorrelated_FE_ptdep_min, SF_uncorrelated_FE_ptdep_max, eta_bin_FE_center, eta_bin_FE_error, eta_bins_edge_SM, shift_, true, false);
 
   texfile << "\n standard method, correlated fit\n";
-  for( unsigned int m = 0; m < JER_correlated_scale_hist_SM.size(); m++ ){
-    TF1 * constfit = JER_correlated_scale_hist_SM.at(m) -> GetFunction("constfit");
-    TF1 * NSC_ratio = JER_correlated_scale_hist_SM.at(m) -> GetFunction("NSC_ratio");
-    JER_correlated_scale_hist_SM.at(m)->GetFunction("NSC_ratio")->SetBit(TF1::kNotDraw);
-    SF_correlated_SM_ptdep_min.push_back(findMinMax(JER_correlated_scale_hist_SM.at(m), width_pt_SM.at(m), NSC_ratio, constfit, 1));
-    SF_correlated_SM_ptdep_max.push_back(findMinMax(JER_correlated_scale_hist_SM.at(m), width_pt_SM.at(m), NSC_ratio, constfit, 0));
-    JER_correlated_scale_hist_SM.at(m) -> Write();
-    SF_correlated_SM.push_back(constfit -> GetParameter( 0 ));
-    SF_correlated_SM_error.push_back(constfit -> GetParError( 0 ));
-    texfile << constfit -> GetParameter( 0 ) << " \\pm " << constfit -> GetParError( 0 ) << " & ";
-    if(m == JER_correlated_scale_hist_SM.size()-1 ) texfile << "\\\\";
-  }
+  SFtoTXT(texfile, JER_correlated_scale_hist_SM, width_pt_SM, SF_correlated_SM, SF_correlated_SM_error, SF_correlated_SM_ptdep_min, SF_correlated_SM_ptdep_max, eta_bin_SM_center, eta_bin_SM_error, eta_bins_edge_SM, shift_, false, true);
 
   texfile << "\n forward extension, correlated fit \n";
-  for( unsigned int m = 0; m < JER_correlated_scale_hist_FE.size(); m++ ){
-    TF1 * constfit = JER_correlated_scale_hist_FE.at(m) -> GetFunction("constfit");
-    TF1 * NSC_ratio = JER_correlated_scale_hist_FE.at(m) -> GetFunction("NSC_ratio");
-    JER_correlated_scale_hist_FE.at(m)->GetFunction("NSC_ratio")->SetBit(TF1::kNotDraw);
-    SF_correlated_FE_ptdep_min.push_back(findMinMax(JER_correlated_scale_hist_FE.at(m), width_pt_FE.at(m), NSC_ratio, constfit, 1));
-    SF_correlated_FE_ptdep_max.push_back(findMinMax(JER_correlated_scale_hist_FE.at(m), width_pt_FE.at(m), NSC_ratio, constfit, 0));
-    JER_correlated_scale_hist_FE.at(m) -> Write();
-    SF_correlated_FE.push_back(constfit -> GetParameter( 0 ));
-    SF_correlated_FE_error.push_back(constfit -> GetParError( 0 ));
-    texfile << constfit -> GetParameter( 0 ) << " \\pm " << constfit -> GetParError( 0 ) << " & ";
-    if(m == JER_correlated_scale_hist_FE.size()-1 ) texfile << "\\\\";
-  }
+  SFtoTXT(texfile, JER_correlated_scale_hist_FE, width_pt_FE, SF_correlated_FE, SF_correlated_FE_error, SF_correlated_FE_ptdep_min, SF_correlated_FE_ptdep_max, eta_bin_FE_center, eta_bin_FE_error, eta_bins_edge_SM, shift_, true, true);
+
   texfile << "\n";
   texfile.close();
 
@@ -1615,13 +1430,13 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
   std::cout << "#eta_bin_SM_center" << " " << "eta_bin_SM_error" << " " << "SF_uncorrelated_SM" << " " << "SF_uncorrelated_SM_error" << " " << "SF_correlated_SM" << " " << "SF_correlated_SM_error" << "\n";
   txt_ST << "#eta_bin_SM_center" << " " << "eta_bin_SM_error" << " " << "SF_uncorrelated_SM" << " " << "SF_uncorrelated_SM_error" << " " << "SF_correlated_SM" << " " << "SF_correlated_SM_error" << "\n";
   txt_FE << "#eta_bin_FE_center" << " " << "eta_bin_FE_error" << " " << "SF_uncorrelated_FE" << " " << "SF_uncorrelated_FE_error" << " " << "SF_correlated_FE" << " " << "SF_correlated_FE_error" << "\n";
+
+  std::cout << eta_bin_SM_center.size() << " " << eta_bin_SM_error.size() << " " << SF_uncorrelated_SM.size() << " " << SF_uncorrelated_SM_error.size() << " " << SF_correlated_SM.size() << " " << SF_correlated_SM_error.size() << " " << SF_uncorrelated_SM_ptdep_min.size() << " " << SF_uncorrelated_SM_ptdep_max.size() << " " << SF_correlated_SM_ptdep_min.size() << " " << SF_correlated_SM_ptdep_max.size() << "\n";
   for (unsigned int i = 0; i < JER_uncorrelated_scale_hist_SM.size(); i++) {
     txt_ST << eta_bin_SM_center[i] << " " << eta_bin_SM_error[i] << " " << SF_uncorrelated_SM[i] << " " << SF_uncorrelated_SM_error[i] << " " << SF_correlated_SM[i] << " " << SF_correlated_SM_error[i] << " " << SF_uncorrelated_SM_ptdep_min[i] << " " << SF_uncorrelated_SM_ptdep_max[i] << " " << SF_correlated_SM_ptdep_min[i] << " " << SF_correlated_SM_ptdep_max[i] << "\n";
-    // std::cout << eta_bin_SM_center[i] << " " << eta_bin_SM_error[i] << " " << SF_uncorrelated_SM[i] << " " << SF_uncorrelated_SM_error[i] << " " << SF_correlated_SM[i] << " " << SF_correlated_SM_error[i] << "\n";
   }
   for (unsigned int i = 0; i < JER_uncorrelated_scale_hist_FE.size(); i++) {
     txt_FE << eta_bin_FE_center[i] << " " << eta_bin_FE_error[i] << " " << SF_uncorrelated_FE[i] << " " << SF_uncorrelated_FE_error[i] << " " << SF_correlated_FE[i] << " " << SF_correlated_FE_error[i] << " " << SF_uncorrelated_FE_ptdep_min[i] << " " << SF_uncorrelated_FE_ptdep_max[i] << " " << SF_correlated_FE_ptdep_min[i] << " " << SF_correlated_FE_ptdep_max[i] << "\n";
-    // std::cout << eta_bin_FE_center[i] << " " << eta_bin_FE_error[i] << " " << SF_uncorrelated_FE[i] << " " << SF_uncorrelated_FE_error[i] << " " << SF_correlated_FE[i] << " " << SF_correlated_FE_error[i] << "\n";
   }
   txt_ST.close();
   txt_FE.close();
@@ -1648,119 +1463,11 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
   //////////////////////////////////////////////////////////////////////////////////////////
   TFile SFsoverlayed(outdir+"output/SFsoverlayed.root","RECREATE");
 
-  for( unsigned int m = 0; m < JER_uncorrelated_scale_hist_SM.size(); m++ ){
-    TF1* f;
-    char line[100];
-    TLegend *legend;
+  // PLOT_SF(JER_uncorrelated_scale_hist_SM, JER_correlated_scale_hist_SM, JER015_scale_hist_SM, outdir+"pdfy/SFs/", eta_bins_edge_SM, false);
+  // PLOT_SF(JER_uncorrelated_scale_hist_FE, JER_correlated_scale_hist_FE, JER015_scale_hist_FE, outdir+"pdfy/SFs/", eta_bins_edge_FE, true);
 
-    PLOT_3(JER_uncorrelated_scale_hist_SM,JER_correlated_scale_hist_SM,JER015_scale_hist_SM,kBlue,kRed, kGreen+2,m)
+  SFsoverlayed.Close();
 
-    if(JER_uncorrelated_scale_hist_SM.at(m)->GetFunction("constfit")){
-      f = JER_uncorrelated_scale_hist_SM.at(m) -> GetFunction("constfit");
-      f->SetLineColor(kBlue);
-      legend = tdrLeg(0.30,0.70,0.50,0.90);
-      legend->SetTextFont(42);  legend->SetTextSize(0.025);  legend->SetTextColor(kBlue);
-      tdrHeader(legend,"JER", 22);
-      sprintf(line, "#chi^{2}/ndf = %.2f/%d", f->GetChisquare(), f->GetNDF());      legend->AddEntry((TObject*)0, line, "");
-      sprintf(line, "p0 = %.5f #pm %.5f", f->GetParameter(0), f->GetParError(0));   legend->AddEntry((TObject*)0, line, "");
-      legend->Draw("same");
-    } else { std::cout << "Fit function at bin " << m << " was not found" << std::endl; }
-
-    if(JER_correlated_scale_hist_SM.at(m)->GetFunction("constfit")){
-      f = JER_correlated_scale_hist_SM.at(m) -> GetFunction("constfit");
-      f->SetLineColor(kRed);
-      legend = tdrLeg(0.50,0.70,0.70,0.90);
-      legend->SetTextFont(42);  legend->SetTextSize(0.025);  legend->SetTextColor(kRed);
-      tdrHeader(legend,"JER cor", 22);
-      sprintf(line, "#chi^{2}/ndf = %.2f/%d", f->GetChisquare(), f->GetNDF());      legend->AddEntry((TObject*)0, line, "");
-      sprintf(line, "p0 = %.5f #pm %.5f", f->GetParameter(0), f->GetParError(0));   legend->AddEntry((TObject*)0, line, "");
-      legend->Draw("same");
-    } else { std::cout << "Fit function at bin " << m << " was not found" << std::endl; }
-
-    if(JER015_scale_hist_SM.at(m)->GetFunction("constfit")){
-      f = JER015_scale_hist_SM.at(m) -> GetFunction("constfit");
-      f->SetLineColor(kGreen+2);
-      legend = tdrLeg(0.70,0.70,0.90,0.90);
-      legend->SetTextFont(42);  legend->SetTextSize(0.025);  legend->SetTextColor(kGreen+2);
-      tdrHeader(legend,"JER 0.15", 22);
-      sprintf(line, "#chi^{2}/ndf = %.2f/%d", f->GetChisquare(), f->GetNDF());      legend->AddEntry((TObject*)0, line, "");
-      sprintf(line, "p0 = %.5f #pm %.5f", f->GetParameter(0), f->GetParError(0));   legend->AddEntry((TObject*)0, line, "");
-      legend->Draw("same");
-    } else { std::cout << "Fit function at bin " << m << " was not found" << std::endl; }
-
-    char legTitle[100];
-    TLegend *leg = tdrLeg(0.6,0.15,0.9,0.35);
-    sprintf(legTitle, "#eta #in [%.3f,%.3f]",eta_bins_edge_SM[m], eta_bins_edge_SM[m+1]);
-
-    tdrHeader(leg,legTitle);
-    leg->SetTextFont(42);  leg->SetTextSize(0.04);
-    leg->AddEntry(JER_uncorrelated_scale_hist_SM.at(m),"#sigma_{JER}^{data}/#sigma_{JER}^{MC}","lep");
-    leg->AddEntry(JER_correlated_scale_hist_SM.at(m),"#sigma_{JER}^{data}/#sigma_{JER}^{MC} correlated","lep");
-    leg->AddEntry(JER015_scale_hist_SM.at(m),"#sigma_{0.15}^{data}/#sigma_{0.15}^{MC}","lep");
-    leg->Draw("same");
-
-    canv -> Print(outdir+"pdfy/SFs/"+canvName+".pdf","pdf");
-    canv -> Print(outdir+"pdfy/SFs/"+canvName+".png","png");
-  }
-
-  for( unsigned int m = 0; m < JER_uncorrelated_scale_hist_FE.size(); m++){
-    TF1* f;
-    char line[100];
-    TLegend *legend;
-
-    PLOT_3(JER_uncorrelated_scale_hist_FE,JER_correlated_scale_hist_FE,JER015_scale_hist_FE,kBlue,kRed,kGreen+2,m)
-
-    if(JER_uncorrelated_scale_hist_FE.at(m)->GetFunction("constfit")){
-      f = JER_uncorrelated_scale_hist_FE.at(m) -> GetFunction("constfit");   f->SetLineColor(kBlue);
-      legend = tdrLeg(0.30,0.70,0.50,0.90);
-      legend->SetTextFont(42);  legend->SetTextSize(0.025);     legend->SetTextColor(kBlue);
-      tdrHeader(legend,"JER", 22);
-      sprintf(line, "#chi^{2}/ndf = %.2f/%d", f->GetChisquare(), f->GetNDF());      legend->AddEntry((TObject*)0, line, "");
-      sprintf(line, "p0 = %.5f #pm %.5f", f->GetParameter(0), f->GetParError(0));   legend->AddEntry((TObject*)0, line, "");
-      legend->Draw("same");
-    } else { std::cout << "Fit function at bin " << m << " was not found" << std::endl;
-  }
-
-  if(JER_correlated_scale_hist_FE.at(m)->GetFunction("constfit")){
-    f = JER_correlated_scale_hist_FE.at(m) -> GetFunction("constfit");   f->SetLineColor(kRed);
-    legend = tdrLeg(0.50,0.70,0.70,0.90);
-    legend->SetTextFont(42);  legend->SetTextSize(0.025);         legend->SetTextColor(kRed);
-    tdrHeader(legend,"JER cor", 22);
-    sprintf(line, "#chi^{2}/ndf = %.2f/%d", f->GetChisquare(), f->GetNDF());      legend->AddEntry((TObject*)0, line, "");
-    sprintf(line, "p0 = %.5f #pm %.5f", f->GetParameter(0), f->GetParError(0));   legend->AddEntry((TObject*)0, line, "");
-    legend->Draw("same");
-  } else { std::cout << "Fit function at bin " << m << " was not found" << std::endl; }
-
-  if(JER015_scale_hist_FE.at(m)->GetFunction("constfit")){
-    f = JER015_scale_hist_FE.at(m) -> GetFunction("constfit");    f->SetLineColor(kGreen+2);
-    legend = tdrLeg(0.70,0.70,0.90,0.90);
-    legend->SetTextFont(42);  legend->SetTextSize(0.025);         legend->SetTextColor(kGreen+2);
-    tdrHeader(legend,"JER 0.15", 22);
-    sprintf(line, "#chi^{2}/ndf = %.2f/%d", f->GetChisquare(), f->GetNDF());      legend->AddEntry((TObject*)0, line, "");
-    sprintf(line, "p0 = %.5f #pm %.5f", f->GetParameter(0), f->GetParError(0));   legend->AddEntry((TObject*)0, line, "");
-    legend->Draw("same");
-  } else { std::cout << "Fit function at bin " << m << " was not found " << std::endl;}
-
-  char legTitle[100];
-  TLegend *leg = tdrLeg(0.6,0.15,0.9,0.35);
-  sprintf(legTitle, "#eta #in [%.3f,%.3f]", eta_bins_edge_FE[m], eta_bins_edge_FE[m+1]);
-
-  tdrHeader(leg,legTitle);
-  leg->SetTextFont(42);  leg->SetTextSize(0.04);
-  leg->AddEntry(JER_uncorrelated_scale_hist_FE.at(m),"#sigma_{JER}^{data}/#sigma_{JER}^{MC}","lep");
-  leg->AddEntry(JER_correlated_scale_hist_FE.at(m),"#sigma_{JER}^{data}/#sigma_{JER}^{MC} correlated","lep");
-  leg->AddEntry(JER015_scale_hist_FE.at(m),"#sigma_{0.15}^{data}/#sigma_{0.15}^{MC}","lep");
-  leg->Draw("same");
-
-  if (m<9) canvName = canvName(0, canvName.Length()-1);
-  else canvName = canvName(0, canvName.Length()-2);
-  canvName += (m+2);
-  canv -> Print(outdir+"pdfy/SFs/"+canvName+".pdf","pdf");
-  canv -> Print(outdir+"pdfy/SFs/"+canvName+".png","png");
-}
-
-SFsoverlayed.Close();
-
-return true;
+  return true;
 
 }

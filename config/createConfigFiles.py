@@ -1,7 +1,7 @@
 from utils import *
 
 @timeit
-def createConfigFiles(processes=["QCDPt15to30", "QCDPt15to30_MB", "DATA_RunF"], JECVersions_Data=["Fall17_17Nov2017_V6"], JECVersions_MC=["Fall17_17Nov2017_V6"], JetLabels=["AK4CHS"], systematics=["PU", "JEC", "JER"], original_dir = "./submittedJobs/", original_file = "JER2017.xml", outdir="JER2017", isMB = False, test_trigger=False, isThreshold=False):
+def createConfigFiles(processes=["QCDPt15to30", "QCDPt15to30_MB", "DATA_RunF"], JECVersions_Data=["Fall17_17Nov2017_V6"], JECVersions_MC=["Fall17_17Nov2017_V6"], JetLabels=["AK4CHS"], systematics=["PU", "JEC", "JER"], original_dir = "./submittedJobs/", original_file = "JER2017.xml", outdir="JER2017", isMB = False, test_trigger=False, isThreshold=False, isLowPt=False):
     add_name = original_dir[original_dir.find("SubmittedJobs")+len("SubmittedJobs"):-1]
     print add_name
     for index_JEC, newJECVersion in enumerate(JECVersions_Data):
@@ -46,7 +46,7 @@ def createConfigFiles(processes=["QCDPt15to30", "QCDPt15to30_MB", "DATA_RunF"], 
                 elif "DATA" in process:
                     sample = "DATA"
                 controls = []
-                if isMB or test_trigger or isThreshold:
+                if isMB or test_trigger or isThreshold or isLowPt:
                     controls.append(["<ConfigSGE", "Workdir", "workdir_"+outdir, "workdir_"+outdir+add_name+"_"+process])
                     controls.append(["<!ENTITY", "OUTDIR", outdir , outdir+add_name+"_"+sample+"/"+add_path])
                 else:
@@ -62,6 +62,13 @@ def createConfigFiles(processes=["QCDPt15to30", "QCDPt15to30_MB", "DATA_RunF"], 
                 if "AK8" in newJetLabel:
                     controls.append(["<Item", "JetCollection", '"slimmedJets"', '"updatedPatJetsPatJetsAK8PFPUPPI"'])
                     controls.append(["<Item", "GenJetCollection", '"slimmedGenJets"', '"slimmedGenJetsAK8"'])
+                    if isLowPt:
+                        controls.append(["<Item", "JetCollection", '"slimmedJets"', '"patJetsAK8PFPUPPI"'])
+                        controls.append(["<Item", "GenJetCollection", '"slimmedGenJets"', '"ak8GenJets"'])
+                else:
+                    if isLowPt:
+                        controls.append(["<Item", "JetCollection", '"slimmedJets"', '"patJetsAK4PFCHS"'])
+                        controls.append(["<Item", "GenJetCollection", '"slimmedGenJets"', '"ak4GenJets"'])
                 if "QCD" in process:
                     controls.append(["<!ENTITY", "PILEUP_DIRECTORY ", "MyMCPileupHistogram" , "MyMCPileupHistogram_"+process])
                 change_lines(path, filename, [el[0:2] for el in controls ], [el[2:3] for el in controls ], [el[3:4] for el in controls ])
@@ -77,7 +84,7 @@ def createConfigFiles(processes=["QCDPt15to30", "QCDPt15to30_MB", "DATA_RunF"], 
                         cmd = "cp %s %s" % ("JobConfig.dtd", path+add_path_sys)
                         a = os.system(cmd)
                         controls = []
-                        if isMB or test_trigger or isThreshold:
+                        if isMB or test_trigger or isThreshold or isLowPt:
                             controls.append(["<ConfigSGE", "Workdir", "workdir_"+outdir+add_name+"_"+process, "workdir_"+outdir+add_name+"_"+process+"_"+sys+dir])
                             controls.append(["<!ENTITY", "OUTDIR", outdir+add_name+"_"+sample+"/"+add_path , outdir+add_name+"_"+sample+"/"+add_path+add_path_sys])
                         else:

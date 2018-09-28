@@ -108,17 +108,17 @@ sframe_ = "/nfs/dust/cms/user/amalara/sframe_all/"
 list_processes = []
 list_logfiles = []
 # for el in ["JER2017_DATA", "JER2017_MB_DATA", "JER2017_MB_test_DATA", "JER2017_Threshold_DATA"]:
-for el in ["", "_MB"]:
+for el in ["", "_LowPt"]:
   path = sframe_+inputdir+el+"_DATA/"
   samples = ["BCDEF"]
-  JECVersions = ["Fall17_17Nov2017_V10", "Fall17_17Nov2017_V24"]
+  JECVersions = ["Fall17_17Nov2017_V27"]
   JetLabels = ["AK4CHS"]
   systematics = ["PU", "JEC"]
   # systematics = []
   main_program(path, list_path, out_path, JECVersions, JetLabels, systematics, samples)
-  # if el == "":
-  #   main_program(path, list_path, out_path, JECVersions, JetLabels, [], samples, barrel_check = 1)
-  #   main_program(path, list_path, out_path, JECVersions, JetLabels, [], samples, barrel_check = 2)
-  #   main_program(path, list_path, out_path, JECVersions, JetLabels, [], samples, barrel_check = 3)
+  if el == "":
+    main_program(path, list_path, out_path, JECVersions, JetLabels, [], samples, barrel_check = 1)
+    main_program(path, list_path, out_path, JECVersions, JetLabels, [], samples, barrel_check = 2)
+    main_program(path, list_path, out_path, JECVersions, JetLabels, [], samples, barrel_check = 3)
 
 parallelise(list_processes, 10, list_logfiles)

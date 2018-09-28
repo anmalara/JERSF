@@ -363,6 +363,7 @@ void plot_SF_systematics() {
   std::vector<TString> JECs;
   JECs.push_back("Fall17_17Nov2017_V10");
   JECs.push_back("Fall17_17Nov2017_V24");
+  JECs.push_back("Fall17_17Nov2017_V27");
 
   std::vector<TString> JETs;
   JETs.push_back("AK4CHS");
