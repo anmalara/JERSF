@@ -171,7 +171,7 @@ protected:
   uhh2bacon::Selection sel;
 
   bool debug, no_genp;
-  bool isMC, ClosureTest, apply_weights, apply_lumiweights, apply_unflattening, apply_METoverPt_cut, apply_EtaPhi_cut, apply_EtaPhi_HCAL, do_only_centraltriggers, do_only_forwardtriggers, do_fulltriggers, trigger_central, trigger_fwd, DO_Pu_ReWeighting;
+  bool isMC, ClosureTest, apply_weights, apply_lumiweights, apply_unflattening, apply_METoverPt_cut, apply_EtaPhi_cut, apply_EtaPhi_HCAL, do_only_centraltriggers, do_only_forwardtriggers, do_fulltriggers, trigger_central, trigger_fwd, DO_Pu_ReWeighting, apply_L1seed_from_bx1_filter;
   double lumiweight;
   string PtBinsTrigger, SysType_PU;
   TString dataset_version, JEC_Version, jetLabel;
@@ -189,6 +189,8 @@ protected:
   vector<run_lumi> upper_binborders_runnrs;
   vector<double> lumi_in_bins;
 
+
+  GenericEvent::Handle<std::vector<L1Jet>> handle_l1jet_seeds;
 
 };
 
@@ -314,7 +316,8 @@ JER2017Module::JER2017Module(uhh2::Context & ctx) : sel(ctx) {
   apply_EtaPhi_cut = (ctx.get("EtaPhi_cut") == "true");
   apply_EtaPhi_HCAL = (ctx.get("EtaPhi_HCAL") == "true");
   JEC_Version = ctx.get("JEC_Version");
-  //cout << "JEC version specified: " << JEC_Version << endl;
+  apply_L1seed_from_bx1_filter =  (ctx.get("Apply_L1Seed_From_BX1_Filter") == "true" && !isMC);
+
   do_only_forwardtriggers = (ctx.get("Triggers") == "forward" || ctx.get("Triggers") == "Forward");
   do_only_centraltriggers = (ctx.get("Triggers") == "central" || ctx.get("Triggers") == "Central");
   do_fulltriggers = (ctx.get("Triggers") == "full" || ctx.get("Triggers") == "Full");
@@ -551,6 +554,11 @@ JER2017Module::JER2017Module(uhh2::Context & ctx) : sel(ctx) {
   tt_genjet_n= ctx.declare_event_output<int>("Ngenjet");
   tt_no_mc_spikes= ctx.declare_event_output<int>("no_mc_spikes");
   tt_pthat= ctx.declare_event_output<float>("pthat");
+
+  tt_jet1_l1bx = ctx.declare_event_output<int>("jet1_l1bx");
+  tt_jet2_l1bx = ctx.declare_event_output<int>("jet1_l2bx");
+  tt_jet3_l1bx = ctx.declare_event_output<int>("jet1_l3bx");
+  handle_l1jet_seeds = ctx.declare_event_input< vector< L1Jet>>("L1Jet_seeds");
 
 
 
@@ -1488,6 +1496,91 @@ bool JER2017Module::process(Event & event) {
     //cout << "after Pt selection (MC only) : ";
     //cout << " Evt# "<<event.event<<" Run: "<<event.run<<" " << endl;
   }
+
+
+
+  //######################################################################################################################################
+
+  // L1 jet seed cleaning
+  if(apply_L1seed_from_bx1_filter){
+    if(debug) cout << "before the L1 seed filter" << endl;
+    if(!sel.L1JetBXcleanSmart()){
+      if(debug) cout << "L1 seed filtered" << endl;
+      return false;
+    }
+    if(debug) cout << "after the first L1 seed filter" << endl;
+  }
+
+  //get the corresponding L1 Jet and save the bx
+  std::vector< L1Jet>* l1jets = &event.get(handle_l1jet_seeds);
+
+  if(debug) cout << "declared L1Jet seeds" << endl;
+
+  int jet1_l1bx, jet2_l1bx, jet3_l1bx;
+
+  unsigned int n_l1jets =l1jets->size();
+  if(debug) cout << "l1jets size is "<<n_l1jets<<endl;
+  if(n_l1jets>0){
+    double dRmin = 100.;
+    int dRmin_seed_idx = -1;
+    float dR;
+    if(debug) cout << "before first L1Jet seeds dR loop" << endl;
+    for(unsigned int i = 0; i<n_l1jets; i++){
+      dR=uhh2::deltaR(l1jets->at(i),event.jets->at(0));
+
+      if(dR < dRmin){
+        dRmin=dR;
+        dRmin_seed_idx = i;
+      }
+    }
+    if( ( l1jets->at(dRmin_seed_idx).pt() / event.jets->at(0).pt() ) < 0.2 ) jet1_l1bx = -10;
+    else jet1_l1bx = l1jets->at(dRmin_seed_idx).bx();
+  }
+  else jet1_l1bx = 10;
+
+  if(n_l1jets>1){
+    double dRmin = 100.;
+    int dRmin_seed_idx = -1;
+    float dR;
+    for(unsigned int i = 0; i<n_l1jets; i++){
+      dR=uhh2::deltaR(l1jets->at(i),event.jets->at(1));
+
+      if(dR < dRmin){
+        dRmin=dR;
+        dRmin_seed_idx = i;
+      }
+    }
+    if( ( l1jets->at(dRmin_seed_idx).pt() / event.jets->at(0).pt() ) < 0.2 ) jet2_l1bx = -10;
+    else jet2_l1bx = l1jets->at(dRmin_seed_idx).bx();
+  }
+  else jet2_l1bx = 10;
+
+  if(event.jets->size()>2){
+    if(n_l1jets>2){
+      double dRmin = 100.;
+      int dRmin_seed_idx = -1;
+      float dR;
+      for(unsigned int i = 0; i<n_l1jets; i++){
+        dR=uhh2::deltaR(l1jets->at(i),event.jets->at(2));
+
+        if(dR < dRmin){
+          dRmin=dR;
+          dRmin_seed_idx = i;
+        }
+      }
+      if( ( l1jets->at(dRmin_seed_idx).pt() / event.jets->at(0).pt() ) < 0.2 ) jet3_l1bx = -10;
+      else jet3_l1bx = l1jets->at(dRmin_seed_idx).bx();
+    }
+    else jet3_l1bx = 10;
+  }
+  else jet3_l1bx = 10;
+
+  event.set(tt_jet1_l1bx,jet1_l1bx);
+  event.set(tt_jet2_l1bx,jet2_l1bx);
+  event.set(tt_jet3_l1bx,jet3_l1bx);
+
+  //###############################################################################################
+
   if (event.get(tt_alpha) < 0.3) {
     h_sel->fill(event);
     h_lumi_sel->fill(event);

@@ -20,13 +20,6 @@ namespace uhh2bacon {
   context(ctx),
   event(0)
   {
-    // auto jetCollection = ctx.get("jetCollection");
-    // h_jets = ctx.declare_event_input<TClonesArray>(jetCollection);
-    // //    h_jets = context.declare_event_input<TClonesArray>("AK4PFCHS");
-    // // h_jets = context.declare_event_input<TClonesArray>("AK4PFPUPPI");
-    // h_eventInfo = context.declare_event_input<baconhep::TEventInfo>("Info");
-    // h_pv = context.declare_event_input<TClonesArray>("PV");
-
     tt_gen_pthat = ctx.declare_event_output<float>("gen_pthat");
     tt_gen_weight = ctx.declare_event_output<float>("gen_weight");
     tt_jet1_pt = ctx.declare_event_output<float>("jet1_pt");
@@ -50,6 +43,7 @@ namespace uhh2bacon {
     tt_mpf_r = ctx.declare_event_output<float>("mpf_r");
     tt_asymmetry = ctx.declare_event_output<float>("asymmetry");
     tt_nPU = ctx.declare_event_output<int>("nPU");
+    handle_l1jet_seeds = ctx.declare_event_input< vector< L1Jet>>("L1Jet_seeds");
 
     Cut_Dir = ctx.get("Cut_dir");
     dataset_version = ctx.get("dataset_version");
@@ -279,69 +273,129 @@ namespace uhh2bacon {
       {-2.964, -2.853, 2.2, 2.6},
       {-2.964, -2.853, 2.9, 3.1},
       {-2.964, -2.853, -2.6, -2.2},
-      };
+    };
 
-      double probejet_eta = evt.get(tt_probejet_eta);
-      double probejet_phi = event->get(tt_probejet_phi);
+    double probejet_eta = evt.get(tt_probejet_eta);
+    double probejet_phi = event->get(tt_probejet_phi);
 
-      for(int i=0; i<9; i++){
-        //      cout<<"EtaPi Region: "<<EtaPhi_regions[i][0]<<"  "<<EtaPhi_regions[i][1]<<"  "<<EtaPhi_regions[i][2]<<"  "<<EtaPhi_regions[i][3]<<endl;
-        //      cout<<"probejet_eta: "<<probejet_eta<<endl;
-        //      cout<<"probejet_phi: "<<probejet_phi<<endl;
+    for(int i=0; i<9; i++){
+      //      cout<<"EtaPi Region: "<<EtaPhi_regions[i][0]<<"  "<<EtaPhi_regions[i][1]<<"  "<<EtaPhi_regions[i][2]<<"  "<<EtaPhi_regions[i][3]<<endl;
+      //      cout<<"probejet_eta: "<<probejet_eta<<endl;
+      //      cout<<"probejet_phi: "<<probejet_phi<<endl;
 
-        if(probejet_eta > EtaPhi_regions[i][0] && probejet_eta < EtaPhi_regions[i][1] && probejet_phi > EtaPhi_regions[i][2] && probejet_phi < EtaPhi_regions[i][3]){
-          //	cout<<"Event rejected!"<<endl<<endl;
-          return false;
+      if(probejet_eta > EtaPhi_regions[i][0] && probejet_eta < EtaPhi_regions[i][1] && probejet_phi > EtaPhi_regions[i][2] && probejet_phi < EtaPhi_regions[i][3]){
+        //	cout<<"Event rejected!"<<endl<<endl;
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+
+
+  bool Selection::EtaPhiCleaning(uhh2::Event& evt)
+  {
+    assert(event);
+
+    // int n_bins_x = h_map->GetNbinsX();
+    // int n_bins_y = h_map->GetNbinsY();
+
+
+    double xMin = h_map->GetXaxis()->GetXmin();
+    double xWidth = h_map->GetXaxis()->GetBinWidth(1);
+
+
+    double yMin = h_map->GetYaxis()->GetXmin();
+    double yWidth = h_map->GetYaxis()->GetBinWidth(1);
+    double cutValue=0;
+
+    const int njets = evt.jets->size();
+
+    for(int i=0; i < njets; i++){
+      int idx_x = 0;
+      int idx_y = 0;
+      Jet* jet = &event->jets->at(i);// loop over all jets in event
+
+      while(jet->eta() > xMin+xWidth + idx_x * xWidth) idx_x++;
+      while(jet->phi() > yMin+yWidth + idx_y * yWidth) idx_y++;
+
+      cutValue = h_map->GetBinContent(idx_x+1, idx_y+1);
+
+      if(cutValue > 0) break;
+    }
+
+    if(cutValue > 0) return false;
+    return true;
+  }
+
+
+  bool Selection::L1JetBXclean(Jet& jet, bool usePtRatioFilter){
+    assert(event);
+
+    std::vector< L1Jet>* l1jets = &event->get(handle_l1jet_seeds);
+    bool _return = true;
+
+    unsigned int n_l1jets = l1jets->size();
+
+    if(n_l1jets<2) _return = false;
+
+    if(_return){
+      double dRmin = 100.;
+      int dRmin_seed_idx = -1;
+      float dR;
+
+      for(unsigned int i = 0; i<n_l1jets; i++){
+        dR=uhh2::deltaR(l1jets->at(i),jet);
+
+        if(dR < dRmin){
+          dRmin=dR;
+          dRmin_seed_idx = i;
         }
       }
-
-      return true;
-    }
-
-
-
-    bool Selection::EtaPhiCleaning(uhh2::Event& evt)
-    {
-      assert(event);
-
-      // int n_bins_x = h_map->GetNbinsX();
-      // int n_bins_y = h_map->GetNbinsY();
-
-
-      double xMin = h_map->GetXaxis()->GetXmin();
-      double xWidth = h_map->GetXaxis()->GetBinWidth(1);
-
-
-      double yMin = h_map->GetYaxis()->GetXmin();
-      double yWidth = h_map->GetYaxis()->GetBinWidth(1);
-      double cutValue=0;
-
-      const int njets = evt.jets->size();
-
-      for(int i=0; i < njets; i++){
-        int idx_x = 0;
-        int idx_y = 0;
-        Jet* jet = &event->jets->at(i);// loop over all jets in event
-
-        while(jet->eta() > xMin+xWidth + idx_x * xWidth) idx_x++;
-        while(jet->phi() > yMin+yWidth + idx_y * yWidth) idx_y++;
-
-        cutValue = h_map->GetBinContent(idx_x+1, idx_y+1);
-
-        if(cutValue > 0) break;
-
-
+      if(l1jets->at(dRmin_seed_idx).bx() == -1){
+        if(usePtRatioFilter){
+          _return = ( l1jets->at(dRmin_seed_idx).pt() / jet.pt() ) < 0.2;
+        }
+        else _return = false;
       }
-
-      if(cutValue > 0) return false;
-
-      return true;
     }
 
-
-
-    Selection::~Selection()
-    {
-    }
-
+    return _return;
   }
+
+  bool Selection::L1JetBXcleanSmart(){
+    assert(event);
+    bool _return = true;
+
+    std::vector< Jet>* jets = event->jets;
+    unsigned int n_jets = jets->size();
+
+    n_jets = std::min(int(n_jets),3);
+
+    for(unsigned int j = 0; j<n_jets && _return ; j++){
+      _return *=L1JetBXclean(jets->at(j), true);
+    }
+
+    return _return;
+  }
+
+  bool Selection::L1JetBXcleanFull(){
+    assert(event);
+    bool _return = true;
+
+    std::vector< Jet>* jets = event->jets;
+    unsigned int n_jets = jets->size();
+
+    for(unsigned int j = 0; j<n_jets && _return ; j++){
+      _return *=L1JetBXclean(jets->at(j));
+    }
+
+    return _return;
+  }
+
+  Selection::~Selection()
+  {
+  }
+
+}
