@@ -353,7 +353,7 @@ namespace uhh2bacon {
           dRmin_seed_idx = i;
         }
       }
-      if(l1jets->at(dRmin_seed_idx).bx() == -1){
+      if(l1jets->at(dRmin_seed_idx).bx() == -1 && uhh2::deltaR(l1jets->at(dRmin_seed_idx),jet)<0.4 ){
         if(usePtRatioFilter){
           _return = ( l1jets->at(dRmin_seed_idx).pt() / jet.pt() ) < 0.2;
         }
