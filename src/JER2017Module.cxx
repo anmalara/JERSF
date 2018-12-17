@@ -48,11 +48,12 @@ protected:
 
   // correctors
   std::unique_ptr<JetCorrector> jet_corrector, jet_corrector_B, jet_corrector_C, jet_corrector_D, jet_corrector_E, jet_corrector_F;
-  std::unique_ptr<GenericJetResolutionSmearer> jetER_smearer;
+  // std::unique_ptr<GenericJetResolutionSmearer> jetER_smearer;
 
   // cleaners
   std::unique_ptr<JetLeptonCleaner> jetleptoncleaner, JLC_B, JLC_C, JLC_D, JLC_E, JLC_F;
   std::unique_ptr<JetCleaner> jetcleaner;
+  std::unique_ptr<JetResolutionSmearer> jet_resolution_smearer;
   std::unique_ptr<MuonCleaner>     muoSR_cleaner;
   std::unique_ptr<ElectronCleaner> eleSR_cleaner;
 
@@ -88,7 +89,7 @@ protected:
   std::unique_ptr<uhh2::Selection> triggerMB_part9_sel;
 
   //// Data/MC scale factors
-  std::unique_ptr<uhh2::AnalysisModule> pileupSF;
+  std::unique_ptr<uhh2::AnalysisModule> pileupSF, LumiSF;
   unique_ptr<AnalysisModule>  Jet_printer, GenParticles_printer;
 
 
@@ -160,6 +161,10 @@ protected:
   Event::Handle<float> tt_pthat;//number of jets
   Event::Handle<int> tt_no_mc_spikes;//number of jets
 
+  Event::Handle<int> tt_jet1_l1bx;
+  Event::Handle<int> tt_jet2_l1bx;
+  Event::Handle<int> tt_jet3_l1bx;
+
 
   std::unique_ptr<JECAnalysisHists> h_nocuts, h_sel, h_dijet, h_match, h_final;
   std::unique_ptr<JECAnalysisHists> h_trg40, h_trg60, h_trg80, h_trg140, h_trg200,h_trg260,h_trg320,h_trg400, h_trg450,h_trg500;
@@ -171,7 +176,7 @@ protected:
   uhh2bacon::Selection sel;
 
   bool debug, no_genp;
-  bool isMC, ClosureTest, apply_weights, apply_lumiweights, apply_unflattening, apply_METoverPt_cut, apply_EtaPhi_cut, apply_EtaPhi_HCAL, do_only_centraltriggers, do_only_forwardtriggers, do_fulltriggers, trigger_central, trigger_fwd, DO_Pu_ReWeighting, apply_L1seed_from_bx1_filter;
+  bool isMC, closure, ClosureTest, apply_weights, apply_lumiweights, apply_unflattening, apply_METoverPt_cut, apply_EtaPhi_cut, apply_EtaPhi_HCAL, do_only_centraltriggers, do_only_forwardtriggers, do_fulltriggers, trigger_central, trigger_fwd, DO_Pu_ReWeighting, DO_Lumi_ReWeighting, apply_L1seed_from_bx1_filter;
   double lumiweight;
   string PtBinsTrigger, SysType_PU;
   TString dataset_version, JEC_Version, jetLabel;
@@ -316,7 +321,8 @@ JER2017Module::JER2017Module(uhh2::Context & ctx) : sel(ctx) {
   apply_EtaPhi_cut = (ctx.get("EtaPhi_cut") == "true");
   apply_EtaPhi_HCAL = (ctx.get("EtaPhi_HCAL") == "true");
   JEC_Version = ctx.get("JEC_Version");
-  apply_L1seed_from_bx1_filter =  (ctx.get("Apply_L1Seed_From_BX1_Filter") == "true" && !isMC);
+  closure = (ctx.get("DO_JERSMEAR") == "true");
+  apply_L1seed_from_bx1_filter =  (ctx.get("apply_L1seed_from_bx1_filter") == "true" && !isMC);
 
   do_only_forwardtriggers = (ctx.get("Triggers") == "forward" || ctx.get("Triggers") == "Forward");
   do_only_centraltriggers = (ctx.get("Triggers") == "central" || ctx.get("Triggers") == "Central");
@@ -341,6 +347,21 @@ JER2017Module::JER2017Module(uhh2::Context & ctx) : sel(ctx) {
     JEC_corr_F_L1RC = JERFiles::jecv##_F_L1RC_##jetLabel##_DATA;        \
   }                                                                     \
 
+  #define MAKE_JEC2(jecv,jetLabel)         					                    \
+  if(JEC_Version == #jecv){                                             \
+    JEC_corr_B      = JERFiles::jecv##_F_L123_##jetLabel##_DATA;        \
+    JEC_corr_C      = JERFiles::jecv##_F_L123_##jetLabel##_DATA;        \
+    JEC_corr_D      = JERFiles::jecv##_F_L123_##jetLabel##_DATA;        \
+    JEC_corr_E      = JERFiles::jecv##_F_L123_##jetLabel##_DATA;        \
+    JEC_corr_F      = JERFiles::jecv##_F_L123_##jetLabel##_DATA;        \
+    JEC_corr_B_L1RC = JERFiles::jecv##_F_L1RC_##jetLabel##_DATA;        \
+    JEC_corr_C_L1RC = JERFiles::jecv##_F_L1RC_##jetLabel##_DATA;        \
+    JEC_corr_D_L1RC = JERFiles::jecv##_F_L1RC_##jetLabel##_DATA;        \
+    JEC_corr_E_L1RC = JERFiles::jecv##_F_L1RC_##jetLabel##_DATA;        \
+    JEC_corr_F_L1RC = JERFiles::jecv##_F_L1RC_##jetLabel##_DATA;        \
+  }                                                                     \
+
+
   #define MAKE_JEC_MC(jecv,jetLabel)					                          \
   if(JEC_Version == #jecv){                                             \
     JEC_corr      = JERFiles::jecv##_L123_##jetLabel##_MC;              \
@@ -356,15 +377,14 @@ JER2017Module::JER2017Module(uhh2::Context & ctx) : sel(ctx) {
   if(isMC){ //L123 for MC
     if (jetLabel == "AK4CHS") {
       MAKE_JEC_MC(Fall17_17Nov2017_V6, AK4PFchs)
-      else MAKE_JEC_MC(Fall17_17Nov2017_V10, AK4PFchs)
-      else MAKE_JEC_MC(Fall17_17Nov2017_V11, AK4PFchs)
+      // else MAKE_JEC_MC(Fall17_17Nov2017_V10, AK4PFchs)
+      // else MAKE_JEC_MC(Fall17_17Nov2017_V11, AK4PFchs)
       else MAKE_JEC_MC(Fall17_17Nov2017_V23, AK4PFchs)
+      else MAKE_JEC_MC(Fall17_17Nov2017_V24, AK4PFchs)
       else throw runtime_error("In JER2017Module.cxx: Invalid JEC_Version for deriving residuals on AK4CHS, MC specified ("+JEC_Version+") ");
     }
     else if (jetLabel == "AK8PUPPI") {
       MAKE_JEC_MC_AK8(Fall17_17Nov2017_V6, AK8PFPuppi)
-      else MAKE_JEC_MC_AK8(Fall17_17Nov2017_V10, AK8PFPuppi)
-      else MAKE_JEC_MC_AK8(Fall17_17Nov2017_V11, AK8PFPuppi)
       // else MAKE_JEC_MC(Fall17_17Nov2017_V23, AK8PFPuppi)
       // else MAKE_JEC_MC(Fall17_17Nov2017_V24, AK8PFPuppi)
       else throw runtime_error("In JER2017Module.cxx: Invalid JEC_Version for deriving residuals on AK8PUPPI, MC specified ("+JEC_Version+") ");
@@ -374,21 +394,15 @@ JER2017Module::JER2017Module(uhh2::Context & ctx) : sel(ctx) {
   else { //L123 + L2L3Res for Data
     if (jetLabel == "AK4CHS") {
       MAKE_JEC(Fall17_17Nov2017_V6, AK4PFchs)
-      else MAKE_JEC(Fall17_17Nov2017_V10, AK4PFchs)
-      else MAKE_JEC(Fall17_17Nov2017_V11, AK4PFchs)
-      else MAKE_JEC(Fall17_17Nov2017_V12, AK4PFchs)
-      else MAKE_JEC(Fall17_17Nov2017_V13, AK4PFchs)
-      else MAKE_JEC(Fall17_17Nov2017_V23, AK4PFchs)
-      else MAKE_JEC(Fall17_17Nov2017_V24, AK4PFchs)
+      else MAKE_JEC2(Fall17_09May2018_V1, AK4PFchs)
+      // else MAKE_JEC(Fall17_17Nov2017_V23, AK4PFchs)
+      // else MAKE_JEC(Fall17_17Nov2017_V24, AK4PFchs)
       else MAKE_JEC(Fall17_17Nov2017_V27, AK4PFchs)
+      else MAKE_JEC(Fall17_17Nov2017_V31, AK4PFchs)
       else throw runtime_error("In JER2017Module.cxx: Invalid JEC_Version for deriving residuals on AK4CHS "+JEC_Version+", DATA specified.");
     }
     else if (jetLabel == "AK8PUPPI") {
       MAKE_JEC(Fall17_17Nov2017_V6, AK8PFPuppi)
-      else MAKE_JEC(Fall17_17Nov2017_V10, AK8PFPuppi)
-      else MAKE_JEC(Fall17_17Nov2017_V11, AK8PFPuppi)
-      else MAKE_JEC(Fall17_17Nov2017_V12, AK8PFPuppi)
-      else MAKE_JEC(Fall17_17Nov2017_V13, AK8PFPuppi)
       // else MAKE_JEC(Fall17_17Nov2017_V23, AK8PFPuppi)
       // else MAKE_JEC(Fall17_17Nov2017_V24, AK8PFPuppi)
       else throw runtime_error("In JER2017Module.cxx: Invalid JEC_Version for deriving residuals on AK8PUPPI "+JEC_Version+", DATA specified.");
@@ -418,8 +432,10 @@ JER2017Module::JER2017Module(uhh2::Context & ctx) : sel(ctx) {
     }
   }
 
-
   // JER Smearing for corresponding JEC-Version
+  if(closure && isMC) {
+    jet_resolution_smearer.reset(new JetResolutionSmearer(ctx,JERSmearing::SF_13TeV_Fall17_V2_RunBCDEF));
+  }
   // if(isMC){
   //   if(JEC_Version == "Fall17_17Nov2017_V4") jetER_smearer.reset(new GenericJetResolutionSmearer(ctx, "jets", "genjets", true, JERSmearing::SF_13TeV_2016_03Feb2017));
   //   else if(JEC_Version == "Fall17_17Nov2017_V5") jetER_smearer.reset(new GenericJetResolutionSmearer(ctx, "jets", "genjets", true, JERSmearing::SF_13TeV_2016_03Feb2017));
@@ -433,6 +449,10 @@ JER2017Module::JER2017Module(uhh2::Context & ctx) : sel(ctx) {
   ctx.undeclare_all_event_output();
 
   // Do pileup reweighting (define it after undeclaring all other variables to keep the weights in the output)
+  DO_Lumi_ReWeighting = string2bool(ctx.get("DO_Lumi_ReWeighting"));
+  DO_Lumi_ReWeighting = DO_Lumi_ReWeighting && isMC;
+  if (DO_Lumi_ReWeighting) LumiSF.reset(new MCLumiWeight(ctx));
+
   DO_Pu_ReWeighting = string2bool(ctx.get("DO_Pu_ReWeighting"));
   DO_Pu_ReWeighting = DO_Pu_ReWeighting && isMC;
   SysType_PU = ctx.get("SysType_PU");
@@ -689,6 +709,12 @@ bool JER2017Module::process(Event & event) {
   // h_input->fill(event);
 
   // Do pileup reweighting
+  if (DO_Lumi_ReWeighting){
+    bool pass_Lumi_reweighting = LumiSF->process(event);
+    if(!pass_Lumi_reweighting) return false;
+  }
+
+  // Do pileup reweighting
   if (DO_Pu_ReWeighting){
     bool pass_reweighting = pileupSF->process(event);
     if(!pass_reweighting) return false;
@@ -795,10 +821,12 @@ bool JER2017Module::process(Event & event) {
     jet_corrector->process(event);
   }
   //Apply JER to all jet collections
-  if(jetER_smearer.get()) {
-    jetER_smearer->process(event);
-    std::cout << "ERROR JER" << '\n';
-  }
+  // if(jetER_smearer.get()) {
+  //   jetER_smearer->process(event);
+  //   std::cout << "ERROR JER" << '\n';
+  // }
+
+  if(closure && isMC) jet_resolution_smearer->process(event);
 
   //correct MET only AFTER smearing the jets
   // if(apply_B){
@@ -862,11 +890,11 @@ bool JER2017Module::process(Event & event) {
     bool eta_cut_bool = std::max(abs(jet1->eta()),abs(jet2->eta())) <  eta_cut;
     if(!trigger_fwd && trigger_central) {
       eta_cut_bool = true;
-      pass_trigger_hf = true;
+      // pass_trigger_hf = false;
     }
     if(!trigger_central && trigger_fwd){
       eta_cut_bool = false;
-      pass_trigger_bl = true;
+      // pass_trigger_bl = false;
     }
 
     if (eta_cut_bool && trigger_central) {

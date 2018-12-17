@@ -260,7 +260,7 @@ Bool_t MySelector::Process(Long64_t entry) {
       }
     }
   }
-  if (pass_trigger_hf) { // FIXME this is only a temporal solution
+  if (pass_trigger_bl) { // FIXME this is only a temporal solution
     for( int i = 0; i < PtBins_HF; i++ ) {
       if (Pt_bins_HF[i] <= pt_ave && Pt_bins_HF[i + 1] >= pt_ave) {
         ftrigger[i] = true;
@@ -420,29 +420,4 @@ void MySelector::Terminate() {
   // a query. It always runs on the client, it can be used to present
   // the results graphically or save the results to file.
 
-}
-
-double Weight( TString filename ) {
-  if ( filename.Contains("QCDPt15to30")     )  return 1837410000.0000  /19792825;
-  if ( filename.Contains("QCDPt30to50")     )  return 140932000.0000   /19731520;
-  if ( filename.Contains("QCDPt50to80")     )  return 19204300.0000    /19220211;
-  if ( filename.Contains("QCDPt80to120")    )  return 2762530.0000     /28787800;
-  if ( filename.Contains("QCDPt120to170")   )  return 471100.0000      /26886608;
-  if ( filename.Contains("QCDPt170to300")   )  return 117276.0000      /29791322;
-  if ( filename.Contains("QCDPt300to470")   )  return 7823.0000        /53526516;
-  if ( filename.Contains("QCDPt470to600")   )  return 648.2000         /26470502;
-  if ( filename.Contains("QCDPt600to800")   )  return 186.9000         /66369216;
-  if ( filename.Contains("QCDPt800to1000")  )  return 32.2930          /37537040;
-  if ( filename.Contains("QCDPt1000to1400") )  return 9.4183           /19571272;
-  if ( filename.Contains("QCDPt1400to1800") )  return 0.8427           /5657036;
-  if ( filename.Contains("QCDPt1800to2400") )  return 0.1149           /2923941;
-  if ( filename.Contains("QCDPt2400to3200") )  return 0.0068           /1910526;
-  if ( filename.Contains("QCDPt3200toInf")  )  return 0.0002           /770558;
-  else {
-    //std::cout << "failed to get pt_hat weight" << std::endl;
-    std::cout << "failed to get QCD HT sample weight" << std::endl;
-    std::cout << "This is for filename " << filename << std::endl;
-    return 0;
-    //return 1e+12;
-  }
 }

@@ -35,6 +35,8 @@ namespace uhh2bacon {
     uhh2::Event::Handle<float> tt_alpha;
     uhh2::Event::Handle<float> tt_rel_r; uhh2::Event::Handle<float> tt_mpf_r; uhh2::Event::Handle<float> tt_asymmetry; uhh2::Event::Handle<int> tt_nPU;
 
+    uhh2::GenericEvent::Handle<std::vector<L1Jet>> handle_l1jet_seeds;
+
     TString Cut_Dir;
     TString dataset_version;
 
@@ -82,6 +84,10 @@ namespace uhh2bacon {
     bool PUpthat(uhh2::Event& evt);
     bool EtaPhi(uhh2::Event& evt);
     bool EtaPhiCleaning(uhh2::Event& evt);
+
+    bool L1JetBXclean(Jet& jet, bool usePtRatioFilter = false);
+    bool L1JetBXcleanFull();
+    bool L1JetBXcleanSmart();
 
     //jetmatching, find the jet in the event that corresponds to the jetid-th jet in the trigger object of the trigger with threshold trigger_th
     //returns -1 if the triggerobject does not contain less than jetid jets

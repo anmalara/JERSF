@@ -104,7 +104,6 @@ namespace uhh2bacon {
   {
     assert(event);
 
-
     //   const TClonesArray & js = event->get(h_jets);
     //     const baconhep::TEventInfo & info = event->get(h_eventInfo);
     // //   const baconhep::TJet * jet = dynamic_cast<const baconhep::TJet*>(js[0]);
@@ -124,7 +123,7 @@ namespace uhh2bacon {
 
     // at least one barrel jet
     // if((fabs(jet1->eta()) >= s_eta_barr) && (fabs(jet2->eta()) >= s_eta_barr)) return false;
-    if((fabs(jet1->eta()) >= 4) && (fabs(jet2->eta()) >= 4)) return false;
+    // if((fabs(jet1->eta()) >= 4) && (fabs(jet2->eta()) >= 4)) return false;
 
     // delta phi > 2.7
     double deltaPhi = std::abs(TVector2::Phi_mpi_pi(jet1->phi() - jet2->phi()));
@@ -136,6 +135,10 @@ namespace uhh2bacon {
     //(pTgen1 < 1.5*pThat || pTreco1 < 1.5* pTgen1)
     if(!event->isRealData){
       if(event->genjets->size() < 1) return false;
+      if (evt.genInfo->binningValues().size()<1) {
+        if (! (event->jets->at(0).pt() < 2.5*event->genjets->at(0).pt())) return false;
+        else return true;
+      }
       if(!(event->genjets->at(0).pt() < 1.5*event->genInfo->binningValues()[0] || event->jets->at(0).pt() < 1.5*event->genjets->at(0).pt())) return false;
     }
     return true;
@@ -207,6 +210,8 @@ namespace uhh2bacon {
   bool Selection::PUpthat(uhh2::Event& evt)
   {
     assert(event);
+
+    if (evt.genInfo->binningValues().size()<1) return true;
 
     double  pt_hat = evt.genInfo->binningValues()[0];
     double  PU_pt_hat = event->genInfo->PU_pT_hat_max();

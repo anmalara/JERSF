@@ -71,68 +71,21 @@ def delete_workdir(original_dir ="./SubmittedJobs/" , JECVersions_Data=["Fall17_
 
 
 
+def main_program(option="", internal_option="", processes=[], JECVersions_Data=[], JECVersions_MC=[], JetLabels=[], systematics=[], original_dir="./SubmittedJobs/", original_file="JER2017.xml", isMB=False, test_trigger=False, isThreshold=False, isLowPt=False, isL1Seed=False, isECAL=False):
+    if option == "new":
+        createConfigFiles(processes, JECVersions_Data, JECVersions_MC, JetLabels, systematics, original_dir, original_file, outdir, isMB, test_trigger, isThreshold,isLowPt,isL1Seed,isECAL)
+    elif option == "remove" or option == "delete":
+        delete_workdir(original_dir, JECVersions_Data, JetLabels, systematics)
+    else:
+        condor_control(original_dir, JECVersions_Data, JetLabels, systematics, internal_option)
+
+
+
 ##################################################
 #                                                #
 #                   MAIN Program                 #
 #                                                #
 ##################################################
-
-QCD_process= []
-QCD_process.append("QCDPt15to30")
-QCD_process.append("QCDPt30to50")
-QCD_process.append("QCDPt50to80")
-QCD_process.append("QCDPt80to120")
-QCD_process.append("QCDPt120to170")
-QCD_process.append("QCDPt170to300")
-QCD_process.append("QCDPt300to470")
-QCD_process.append("QCDPt470to600")
-QCD_process.append("QCDPt600to800")
-QCD_process.append("QCDPt800to1000")
-QCD_process.append("QCDPt1000to1400")
-QCD_process.append("QCDPt1400to1800")
-QCD_process.append("QCDPt1800to2400")
-QCD_process.append("QCDPt2400to3200")
-QCD_process.append("QCDPt3200toInf")
-
-QCD_process.append("QCDPt15to7000_MB")
-QCD_process.append("QCDPt15to30_MB")
-QCD_process.append("QCDPt30to50_MB")
-QCD_process.append("QCDPt50to80_MB")
-QCD_process.append("QCDPt80to120_MB")
-QCD_process.append("QCDPt120to170_MB")
-QCD_process.append("QCDPt170to300_MB")
-QCD_process.append("QCDPt300to470_MB")
-QCD_process.append("QCDPt470to600_MB")
-QCD_process.append("QCDPt600to800_MB")
-QCD_process.append("QCDPt800to1000_MB")
-QCD_process.append("QCDPt1000to1400_MB")
-QCD_process.append("QCDPt1400to1800_MB")
-QCD_process.append("QCDPt1800to2400_MB")
-QCD_process.append("QCDPt2400to3200_MB")
-QCD_process.append("QCDPt3200toInf_MB")
-
-Data_process= []
-Data_process.append("DATA_RunB")
-Data_process.append("DATA_RunC")
-Data_process.append("DATA_RunD")
-Data_process.append("DATA_RunE")
-Data_process.append("DATA_RunF")
-
-Data_process.append("DATA_RunB_MB")
-Data_process.append("DATA_RunC_MB")
-Data_process.append("DATA_RunD_MB")
-Data_process.append("DATA_RunE_MB")
-Data_process.append("DATA_RunF_MB")
-
-processes = QCD_process+Data_process
-
-JECVersions_Data = ["Fall17_17Nov2017_V6", "Fall17_17Nov2017_V10", "Fall17_17Nov2017_V11"]
-JetLabels = ["AK4CHS", "AK8PUPPI"]
-systematics = ["PU", "JEC", "JER"]
-
-original_file = "JER2017.xml"
-outdir = "JER2017_v2"
-original_dir_ = os.getcwd()
 
 try:
     option = sys.argv[1]
@@ -155,66 +108,69 @@ else:
     internal_option = ""
 
 
+QCD_process= []
+QCD_process.append("QCDPt15to30")
+QCD_process.append("QCDPt30to50")
+QCD_process.append("QCDPt50to80")
+QCD_process.append("QCDPt80to120")
+QCD_process.append("QCDPt120to170")
+QCD_process.append("QCDPt170to300")
+QCD_process.append("QCDPt300to470")
+QCD_process.append("QCDPt470to600")
+QCD_process.append("QCDPt600to800")
+QCD_process.append("QCDPt800to1000")
+QCD_process.append("QCDPt1000to1400")
+QCD_process.append("QCDPt1400to1800")
+QCD_process.append("QCDPt1800to2400")
+QCD_process.append("QCDPt2400to3200")
+QCD_process.append("QCDPt3200toInf")
 
-def main_program(option="", internal_option="", processes=[], JECVersions_Data=[], JECVersions_MC=[], JetLabels=[], systematics=[], original_dir="./SubmittedJobs/", original_file="JER2017.xml", isMB=False, test_trigger=False, isThreshold=False, isLowPt=False):
-    if option == "new":
-        createConfigFiles(processes, JECVersions_Data, JECVersions_MC, JetLabels, systematics, original_dir, original_file, outdir, isMB, test_trigger, isThreshold,isLowPt)
-    elif option == "remove" or option == "delete":
-        delete_workdir(original_dir, JECVersions_Data, JetLabels, systematics)
-    else:
-        condor_control(original_dir, JECVersions_Data, JetLabels, systematics, internal_option)
+QCD_process.append("QCDHT100to200")
+QCD_process.append("QCDHT200to300")
+QCD_process.append("QCDHT300to500")
+QCD_process.append("QCDHT500to700")
+QCD_process.append("QCDHT700to1000")
+QCD_process.append("QCDHT1000to1500")
+QCD_process.append("QCDHT1500to2000")
+QCD_process.append("QCDHT2000toInf")
 
 
-original_dir = original_dir_
-original_dir += "/SubmittedJobs/"
+Data_process= []
+Data_process.append("DATA_RunB")
+Data_process.append("DATA_RunC")
+Data_process.append("DATA_RunD")
+Data_process.append("DATA_RunE")
+Data_process.append("DATA_RunF")
+#
+Data_process.append("DATA_RunB_MB")
+Data_process.append("DATA_RunC_MB")
+Data_process.append("DATA_RunD_MB")
+Data_process.append("DATA_RunE_MB")
+Data_process.append("DATA_RunF_MB")
+
+Data_process.append("DATA_RunF_ECAL")
+
+processes = QCD_process+Data_process
+
+# JECVersions_Data = ["Fall17_17Nov2017_V6", "Fall17_17Nov2017_V10", "Fall17_17Nov2017_V11"]
+# JetLabels = ["AK4CHS", "AK8PUPPI"]
+# systematics = ["PU", "JEC", "JER"]
+
+original_file = "JER2017.xml"
+outdir = "JER2017"
+original_dir_ = os.getcwd()
+
+JECVersions_Data = ["Fall17_17Nov2017_V31"]
+JECVersions_MC = ["Fall17_17Nov2017_V24"]
+JetLabels = ["AK4CHS"]
+systematics = ["PU", "JEC"]
+
 isLowPt = False
 isMB = False
 test_trigger = False
 isThreshold = False
-JECVersions_Data = ["Fall17_17Nov2017_V27"]
-JECVersions_MC = ["Fall17_17Nov2017_V23"]
-# JECVersions_Data = ["Fall17_17Nov2017_V10"]
-# JECVersions_MC = ["Fall17_17Nov2017_V10"]
-JetLabels = ["AK4CHS"]
-systematics = ["PU", "JEC"]
-# main_program(option, internal_option, processes, JECVersions_Data, JECVersions_MC, JetLabels, systematics, original_dir, original_file, isMB, test_trigger, isThreshold, isLowPt)
+isL1Seed = False
+isECAL = False
 original_dir = original_dir_
-original_dir += "/SubmittedJobs_LowPt/"
-isLowPt = True
-main_program(option, internal_option, processes, JECVersions_Data, JECVersions_MC, JetLabels, systematics, original_dir, original_file, isMB, test_trigger, isThreshold, isLowPt)
-
-
-# original_dir = original_dir_
-# original_dir += "/SubmittedJobs_MB/"
-# isMB = True
-# test_trigger = False
-# isThreshold = False
-# JECVersions_Data = ["Fall17_17Nov2017_V24"]
-# JECVersions_MC = ["Fall17_17Nov2017_V23"]
-# JetLabels = ["AK4CHS"]
-# systematics = []
-# main_program(option, internal_option, processes, JECVersions_Data, JECVersions_MC, JetLabels, systematics, original_dir, original_file, isMB, test_trigger, isThreshold)
-
-
-original_dir = original_dir_
-original_dir += "/SubmittedJobs_MB_test/"
-isMB = True
-test_trigger = True
-isThreshold = False
-JECVersions_Data = ["Fall17_17Nov2017_V24"]
-JECVersions_MC = ["Fall17_17Nov2017_V23"]
-JetLabels = ["AK4CHS"]
-systematics = []
-# main_program(option, internal_option, processes, JECVersions_Data, JECVersions_MC, JetLabels, systematics, original_dir, original_file, isMB, test_trigger, isThreshold)
-
-
-original_dir = original_dir_
-original_dir += "/SubmittedJobs_Threshold/"
-isMB = False
-test_trigger = False
-isThreshold = True
-JECVersions_Data = ["Fall17_17Nov2017_V24"]
-JECVersions_MC = ["Fall17_17Nov2017_V23"]
-JetLabels = ["AK4CHS"]
-systematics = []
-# main_program(option, internal_option, processes, JECVersions_Data, JECVersions_MC, JetLabels, systematics, original_dir, original_file, isMB, test_trigger, isThreshold)
+original_dir += "/SubmittedJobs/"
+main_program(option, internal_option, processes, JECVersions_Data, JECVersions_MC, JetLabels, systematics, original_dir, original_file, isMB, test_trigger, isThreshold, isLowPt, isL1Seed)

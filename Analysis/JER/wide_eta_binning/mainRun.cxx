@@ -54,15 +54,25 @@ void print3H(std::vector< std::vector< std::vector< TH1F* > > > a) {
 }
 
 void asdf(std::vector< std::vector< std::vector< double > > > a) {
+  std::cout << "start" << '\n';
   for (size_t i = 0; i < a.size(); i++) {
-    std::cout << i << '\n';
+    std::cout << "m " << i << '\n';
     for (size_t j = 0; j < a.at(i).size(); j++) {
-      std::cout << j << '\n';
+      std::cout << "p " << j << '\n';
       for (size_t k = 0; k < a.at(i).at(j).size(); k++) {
-        // std::cout << a.at(i).at(j).at(k) << "";
-        std::cout << *std::max_element(a.at(i).at(j).begin(),a.at(i).at(j).end()) << " ";
+        std::cout << a.at(i).at(j).at(k) << " ";
+        // std::cout << *std::max_element(a.at(i).at(j).begin(),a.at(i).at(j).end()) << " ";
       }
       std::cout << '\n';
+    }
+  }
+}
+
+void asdff(std::vector< std::vector< std::vector< double > > > a) {
+  std::cout << "start" << '\n';
+  for (size_t i = 0; i < a.size(); i++) {
+    for (size_t j = 0; j < a.at(i).size(); j++) {
+      std::cout << a.size() << " " << a.at(i).size() << " " << a.at(i).at(j).size() << '\n';
     }
   }
 }
@@ -124,6 +134,21 @@ void asdfasdf2(std::vector< std::vector< double > > a, std::vector< std::vector<
   }
 }
 
+
+void asdf_2(std::vector< std::vector< std::vector< TH1F* > > > a) {
+  for (size_t i = 0; i < a.size(); i++) {
+    std::cout << i << '\n';
+    for (size_t j = 0; j < a.at(i).size(); j++) {
+      std::cout << j << '\n';
+      for (size_t k = 0; k < a.at(i).at(j).size(); k++) {
+        std::cout << a.at(i).at(j).at(k) << "";
+        // std::cout << *std::max_element(a.at(i).at(j).begin(),a.at(i).at(j).end()) << " ";
+      }
+      std::cout << '\n';
+    }
+  }
+}
+
 // Code by Andrea Malara
 // Based on code by Marek Niedziela, Matthias Schröder, Kristin Goebel
 
@@ -161,7 +186,8 @@ void DTFIT(TH1* hist, TH1F* dtERR, double &N, double &S, double &C, double &kNS,
   // if (!isFE && m == 3) { dtFIT -> SetParLimits(3, 0.0, 15); dtFIT -> SetParLimits(4, 0.0, 15); }
   // if (!isFE && m == 3) { dtFIT -> SetParameter(0, N); dtFIT -> SetParameter(1, S); dtFIT -> SetParameter(2, C); dtFIT -> FixParameter(3,1); dtFIT -> FixParameter(4, 1); }
 
-  hist -> Fit("dtFIT", "RMQ+");
+  if (hist->GetEntries() != 0) hist -> Fit("dtFIT", "RMQ+");
+  else hist->GetListOfFunctions()->Add(dtFIT);
 
   kNS = dtFIT -> GetParameter( 3 );
   kC = dtFIT -> GetParameter( 4 );
@@ -174,7 +200,7 @@ void DTFIT(TH1* hist, TH1F* dtERR, double &N, double &S, double &C, double &kNS,
   dtERR->GetXaxis()->SetRange(min_fit,max_fit);
 }
 
-void PLOT_3_2(std::vector< std::vector< TH1F* > > h_data, std::vector< std::vector< TH1F* > > h_MC, std::vector< std::vector< TH1F* > > h_gen, TString outdir) {
+void PLOT_ALLWIDTHS(std::vector< std::vector< TH1F* > > h_data, std::vector< std::vector< TH1F* > > h_MC, std::vector< std::vector< TH1F* > > h_gen, TString outdir) {
   int color_data = kBlue;
   int color_MC = kRed;
   int color_gen = kGreen+2;
@@ -196,7 +222,8 @@ void PLOT_3_2(std::vector< std::vector< TH1F* > > h_data, std::vector< std::vect
       tdrDraw(h_MC.at(m).at(p),   "", kFullCircle, color_MC );
       tdrDraw(h_gen.at(m).at(p),  "", kFullCircle, color_gen );
       canv -> Update();
-      canv -> Print(outdir+canvName+".png","png");
+      canv -> Print(outdir+canvName+".pdf","pdf");
+      // canv -> Print(outdir+canvName+".png","png");
     }
   }
 }
@@ -243,11 +270,11 @@ void PLOT_MCT(std::vector< TH1F* > h_MCTruth, std::vector< TH1F* > h_uncor, std:
       canvName += (m+2);
     }
     canv->Print(outdir+canvName+".pdf","pdf");
-    canv->Print(outdir+canvName+".png","png");
+    // canv->Print(outdir+canvName+".png","png");
   }
 }
 
-void PLOT_ASY(std::vector< std::vector< std::vector< TH1F* > > > h_data, std::vector< std::vector< std::vector< TH1F* > > > h_MC, std::vector< std::vector< std::vector< TH1F* > > > h_gen, std::vector< std::vector< std::vector< double > > > h_data_width, std::vector< std::vector< std::vector< double > > > h_MC_width, std::vector< std::vector< std::vector< double > > > h_gen_width, std::vector< std::vector< std::vector< double > > > h_data_width_err, std::vector< std::vector< std::vector< double > > > h_MC_width_err, std::vector< std::vector< std::vector< double > > > h_gen_width_err, TString outdir, std::vector<double> eta_bins, std::vector<double> Pt_bins, std::vector<double> alpha) {
+void PLOT_ASY(std::vector< std::vector< std::vector< TH1F* > > > h_data, std::vector< std::vector< std::vector< TH1F* > > > h_MC, std::vector< std::vector< std::vector< TH1F* > > > h_gen, std::vector< std::vector< std::vector< double > > > h_data_width, std::vector< std::vector< std::vector< double > > > h_MC_width, std::vector< std::vector< std::vector< double > > > h_gen_width, std::vector< std::vector< std::vector< double > > > h_data_width_err, std::vector< std::vector< std::vector< double > > > h_MC_width_err, std::vector< std::vector< std::vector< double > > > h_gen_width_err, TString outdir, std::vector<double> eta_bins, std::vector<double> Pt_bins, std::vector<double> alpha, std::vector< std::vector< std::vector< double > > > lower_x_data, std::vector< std::vector< std::vector< double > > > upper_x_data, std::vector< std::vector< std::vector< double > > > lower_x, std::vector< std::vector< std::vector< double > > > upper_x, std::vector< std::vector< std::vector< double > > > gen_lower_x, std::vector< std::vector< std::vector< double > > > gen_upper_x) {
   int color_data = kBlue;
   int color_MC = kRed;
   int color_gen = kGreen+2;
@@ -267,12 +294,27 @@ void PLOT_ASY(std::vector< std::vector< std::vector< TH1F* > > > h_data, std::ve
         vec.push_back(h_gen.at(m).at(p).at(r));
         double x_min, x_max, y_min, y_max;
         findExtreme(vec, &x_min, &x_max, &y_min, &y_max);
-        TCanvas* canv = tdrCanvas(canvName, x_min, x_max, y_min, y_max*1.5, nameXaxis, nameYaxis);
+        // TCanvas* canv = tdrCanvas(canvName, x_min, x_max, y_min, y_max*1.5, nameXaxis, nameYaxis);
+        TCanvas* canv = tdrCanvas(canvName, x_min, x_max, 0.00001, 100, nameXaxis, nameYaxis);
+        canv->SetLogy();
         canv->SetTickx(0);
         canv->SetTicky(0);
         tdrDraw(h_data.at(m).at(p).at(r), "", kFullCircle, color_data );
         tdrDraw(h_MC.at(m).at(p).at(r),   "", kFullCircle, color_MC );
         tdrDraw(h_gen.at(m).at(p).at(r),  "", kFullCircle, color_gen );
+        TLine* line_lower_data = new TLine(lower_x_data.at(m).at(p).at(r), 0.00001, lower_x_data.at(m).at(p).at(r), 1);
+        TLine* line_upper_data = new TLine(upper_x_data.at(m).at(p).at(r), 0.00001, upper_x_data.at(m).at(p).at(r), 1);
+        TLine* line_lower_MC = new TLine(lower_x.at(m).at(p).at(r), 0.00001, lower_x.at(m).at(p).at(r), 1);
+        TLine* line_upper_MC = new TLine(upper_x.at(m).at(p).at(r), 0.00001, upper_x.at(m).at(p).at(r), 1);
+        TLine* line_lower_gen = new TLine(gen_lower_x.at(m).at(p).at(r), 0.00001, gen_lower_x.at(m).at(p).at(r), 1);
+        TLine* line_upper_gen = new TLine(gen_upper_x.at(m).at(p).at(r), 0.00001, gen_upper_x.at(m).at(p).at(r), 1);
+
+        line_lower_data->SetLineWidth(1); line_lower_data->SetLineColor(color_data); line_lower_data->Draw("same");
+        line_upper_data->SetLineWidth(1); line_upper_data->SetLineColor(color_data); line_upper_data->Draw("same");
+        line_lower_MC->SetLineWidth(1); line_lower_MC->SetLineColor(color_MC); line_lower_MC->Draw("same");
+        line_upper_MC->SetLineWidth(1); line_upper_MC->SetLineColor(color_MC); line_upper_MC->Draw("same");
+        line_lower_gen->SetLineWidth(1); line_lower_gen->SetLineColor(color_gen); line_lower_gen->Draw("same");
+        line_upper_gen->SetLineWidth(1); line_upper_gen->SetLineColor(color_gen); line_upper_gen->Draw("same");
 
         TLegend *leg = tdrLeg(0.45,0.7,0.95,0.9);
         tdrHeader(leg, Form("#eta #in [%.3f,%.3f], p_{T} #in [%.0f,%.0f] GeV", eta_bins[m], eta_bins[m+1], Pt_bins[p], Pt_bins[p+1]));
@@ -285,7 +327,7 @@ void PLOT_ASY(std::vector< std::vector< std::vector< TH1F* > > > h_data, std::ve
 
         canv->Update();
         canv -> Print(outdir+canvName+".pdf","pdf");
-        canv -> Print(outdir+canvName+".png","png");
+        // canv -> Print(outdir+canvName+".png","png");
       }
     }
   }
@@ -357,7 +399,7 @@ void PLOT_WIDTH(std::vector< std::vector< TH1F* > > h_data, std::vector< std::ve
 
       canv -> Update();
       canv -> Print(outdir+canvName+".pdf","pdf");
-      canv -> Print(outdir+canvName+".png","png");
+      // canv -> Print(outdir+canvName+".png","png");
     }
   }
 }
@@ -460,8 +502,8 @@ void PLOT_WIDTH_gr(std::vector< std::vector< TGraphErrors* > > h_data, std::vect
       TString add_name = "Extrapol_";
       if (isFE) add_name = "Extrapol_FE_";
 
-      canv->Print(outdir+add_name+Form("Eta%i_pt%i.png", m+1, p+1));
       canv->Print(outdir+add_name+Form("Eta%i_pt%i.pdf", m+1, p+1));
+      // canv->Print(outdir+add_name+Form("Eta%i_pt%i.png", m+1, p+1));
 
       // if( h_MC.at(m).at(p)  -> GetEntries() != 0 ) h_MC.at(m).at(p)   -> GetFunction("linfit")->SetLineColor(color_MC);
       // if( h_gen.at(m).at(p) -> GetEntries() != 0 ) h_gen.at(m).at(p)  -> GetFunction("linfit")->SetLineColor(color_gen);
@@ -559,7 +601,7 @@ void PLOT_SF(std::vector< TH1F* > h_uncor, std::vector< TH1F* > h_cor, std::vect
       canvName += (m+2);
     }
     canv -> Print(outdir+canvName+".pdf","pdf");
-    canv -> Print(outdir+canvName+".png","png");
+    // canv -> Print(outdir+canvName+".png","png");
   }
 }
 
@@ -623,8 +665,8 @@ void PLOT_NCS(std::vector< TH1F* > h_data, std::vector< TH1F* > h_MC, std::vecto
       canvName += (m+2);
     }
     canv -> Print(outdir+"pdfy/JERs/"+canvName+".pdf","pdf");
-    canv -> Print(outdir+"pdfy/JERs/"+canvName+".png","png");
-    canv -> Print(outdir+"pdfy/JERs/"+canvName+".root","root");
+    // canv -> Print(outdir+"pdfy/JERs/"+canvName+".png","png");
+    // canv -> Print(outdir+"pdfy/JERs/"+canvName+".root","root");
 
     canvName  = h_SF.at(m)->GetTitle();
     nameXaxis = h_SF.at(m)->GetXaxis()->GetTitle();
@@ -639,7 +681,8 @@ void PLOT_NCS(std::vector< TH1F* > h_data, std::vector< TH1F* > h_MC, std::vecto
     TF1 * constfit = new TF1( "constfit", "pol0", min_fit, max_fit );
     constfit->SetLineColor(color_MC);
     constfit->SetLineWidth(2);
-    h_SF.at(m) -> Fit("constfit","RMQ+");
+    if (h_SF.at(m)->GetEntries() != 0) h_SF.at(m) -> Fit("constfit","RMQ+");
+    else h_SF.at(m)->GetListOfFunctions()->Add(constfit);
     TF1 *NSC_ratio = new TF1("NSC_ratio", "TMath::Sqrt( ([3]*[3]*[0]*[0]/(x*x))+[3]*[3]*[1]*[1]/x+[4]*[4]*[2]*[2] )/TMath::Sqrt( ([0]*[0]/(x*x))+[1]*[1]/x+[2]*[2] )",min_fit,max_fit);
     NSC_ratio -> SetParameters(N, S, C, kNS, kC);
     NSC_ratio->SetLineColor(color_NSC);
@@ -659,7 +702,7 @@ void PLOT_NCS(std::vector< TH1F* > h_data, std::vector< TH1F* > h_MC, std::vecto
       canvName += (m+2);
     }
     canv -> Print(outdir+"pdfy/NSC_SFs/NSC"+canvName+".pdf","pdf");
-    canv -> Print(outdir+"pdfy/NSC_SFs/NSC"+canvName+".png","png");
+    // canv -> Print(outdir+"pdfy/NSC_SFs/NSC"+canvName+".png","png");
     canv->Write();
   }
 }
@@ -682,6 +725,8 @@ void PLOT_NCS(std::vector< TH1F* > h_data, std::vector< TH1F* > h_MC, std::vecto
 
 int mainRun( bool data_, const char* filename, const char* filename_data, TString lumi, TString label_mc, TString label_data, TString Trigger, TString outdir, double gaustails = 0.985, float shiftForPLI = 0.0, int ref_shift = 3){
 
+  gPrintViaErrorHandler = kTRUE;
+  gErrorIgnoreLevel = kFatal;
   double hist_max_value = 0.3;
   double hist_max_value_SF = 3.0;
   std::cout << "Start" << '\n';
@@ -723,32 +768,12 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
 
   std::vector<double> Pt_bins_Central, Pt_bins_HF;
 
-  if (Trigger == "Single") {
-    PtBins_Central  = n_pt_bins_Si;
-    PtBins_HF       = n_pt_bins_Si_HF;
-    for (int i = 0; i < n_pt_bins_Si; i++) Pt_bins_Central.push_back(pt_bins_Si[i]);
-    for (int i = 0; i < n_pt_bins_Si_HF; i++) Pt_bins_HF.push_back(pt_bins_Si_HF[i]);
-  } else if (Trigger == "DiJet") {
-    PtBins_Central  = n_pt_bins_Di;
-    PtBins_HF       = n_pt_bins_Di_HF;
-    for (int i = 0; i < n_pt_bins_Di; i++) Pt_bins_Central.push_back(pt_bins_Di[i]);
-    for (int i = 0; i < n_pt_bins_Di_HF; i++) Pt_bins_HF.push_back(pt_bins_Di_HF[i]);
-  } else if (Trigger == "Single_MB") {
+  if (Trigger.Contains("LowPt", TString::ECaseCompare::kIgnoreCase)) {
     PtBins_Central  = n_pt_bins_MB;
     PtBins_HF       = n_pt_bins_MB_HF;
     for (int i = 0; i < n_pt_bins_MB; i++) Pt_bins_Central.push_back(pt_bins_MB[i]);
     for (int i = 0; i < n_pt_bins_MB_HF; i++) Pt_bins_HF.push_back(pt_bins_MB_HF[i]);
-  } else if (Trigger == "LowPtJets") {
-    PtBins_Central  = n_pt_bins_MB;
-    PtBins_HF       = n_pt_bins_MB_HF;
-    for (int i = 0; i < n_pt_bins_MB; i++) Pt_bins_Central.push_back(pt_bins_MB[i]);
-    for (int i = 0; i < n_pt_bins_MB_HF; i++) Pt_bins_HF.push_back(pt_bins_MB_HF[i]);
-  } else if (Trigger == "LowPtJets_MB") {
-    PtBins_Central  = n_pt_bins_MB;
-    PtBins_HF       = n_pt_bins_MB_HF;
-    for (int i = 0; i < n_pt_bins_MB; i++) Pt_bins_Central.push_back(pt_bins_MB[i]);
-    for (int i = 0; i < n_pt_bins_MB_HF; i++) Pt_bins_HF.push_back(pt_bins_MB_HF[i]);
-  } else if (Trigger == "StandardPtBins") {
+  } else {
     PtBins_Central  = n_pt_bins_Si;
     PtBins_HF       = n_pt_bins_Si_HF;
     for (int i = 0; i < n_pt_bins_Si; i++) Pt_bins_Central.push_back(pt_bins_Si[i]);
@@ -873,20 +898,25 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
   //    e.g. for bin p_T_ave (55-75) alpha 0.1 corresponds to 57 GeV jets   //
   ////////////////////////////////////////////////////////////////////////////
 
-  std::vector< std::vector< std::vector< double > > > asymmetries_width_SM, gen_asymmetries_width_SM, asymmetries_width_data_SM, gen_asymmetries_width_data_SM;
+  std::vector< std::vector< std::vector< double > > > asymmetries_width_SM, gen_asymmetries_width_SM, asymmetries_width_data_SM, gen_asymmetries_width_data_SM, lower_x_SM, upper_x_SM, gen_lower_x_SM, gen_upper_x_SM, lower_x_data_SM, upper_x_data_SM, gen_lower_x_data_SM, gen_upper_x_data_SM;
   std::vector< std::vector< std::vector< double > > > asymmetries_width_SM_error, gen_asymmetries_width_SM_error, asymmetries_width_data_SM_error, gen_asymmetries_width_data_SM_error;
-  std::vector< std::vector< std::vector< double > > > asymmetries_width_FE, gen_asymmetries_width_FE, asymmetries_width_data_FE, gen_asymmetries_width_data_FE;
+  std::vector< std::vector< std::vector< double > > > asymmetries_width_FE, gen_asymmetries_width_FE, asymmetries_width_data_FE, gen_asymmetries_width_data_FE, lower_x_FE, upper_x_FE, gen_lower_x_FE, gen_upper_x_FE, lower_x_data_FE, upper_x_data_FE, gen_lower_x_data_FE, gen_upper_x_data_FE;
   std::vector< std::vector< std::vector< double > > > asymmetries_width_FE_error, gen_asymmetries_width_FE_error, asymmetries_width_data_FE_error, gen_asymmetries_width_data_FE_error;
 
-  histWidthAsym( asymmetries_SM , asymmetries_width_SM, asymmetries_width_SM_error, false, gaustails, 0);
-  histWidthAsym( gen_asymmetries_SM , gen_asymmetries_width_SM, gen_asymmetries_width_SM_error, false, gaustails, 0);
-  histWidthAsym( asymmetries_data_SM , asymmetries_width_data_SM, asymmetries_width_data_SM_error, false, gaustails, 0);
-  histWidthAsym( gen_asymmetries_data_SM , gen_asymmetries_width_data_SM, gen_asymmetries_width_data_SM_error, false, gaustails, 0);
+  histWidthAsym( asymmetries_SM , asymmetries_width_SM, asymmetries_width_SM_error, false, gaustails, 0, lower_x_SM, upper_x_SM);
+  histWidthAsym( gen_asymmetries_SM , gen_asymmetries_width_SM, gen_asymmetries_width_SM_error, false, gaustails, 0, gen_lower_x_SM, gen_upper_x_SM);
+  histWidthAsym( asymmetries_data_SM , asymmetries_width_data_SM, asymmetries_width_data_SM_error, false, gaustails, 0, lower_x_data_SM, upper_x_data_SM);
+  histWidthAsym( gen_asymmetries_data_SM , gen_asymmetries_width_data_SM, gen_asymmetries_width_data_SM_error, false, gaustails, 0, gen_lower_x_data_SM, gen_upper_x_data_SM);
 
-  histWidthAsym( asymmetries_FE , asymmetries_width_FE, asymmetries_width_FE_error, false, gaustails, 1);
-  histWidthAsym( gen_asymmetries_FE , gen_asymmetries_width_FE, gen_asymmetries_width_FE_error, false, gaustails, 1);
-  histWidthAsym( asymmetries_data_FE , asymmetries_width_data_FE, asymmetries_width_data_FE_error, false, gaustails, 1);
-  histWidthAsym( gen_asymmetries_data_FE , gen_asymmetries_width_data_FE, gen_asymmetries_width_data_FE_error, false, gaustails, 1);
+  histWidthAsym( asymmetries_FE , asymmetries_width_FE, asymmetries_width_FE_error, false, gaustails, 1, lower_x_FE, upper_x_FE);
+  histWidthAsym( gen_asymmetries_FE , gen_asymmetries_width_FE, gen_asymmetries_width_FE_error, false, gaustails, 1, gen_lower_x_FE, gen_upper_x_FE);
+  histWidthAsym( asymmetries_data_FE , asymmetries_width_data_FE, asymmetries_width_data_FE_error, false, gaustails, 1, lower_x_data_FE, upper_x_data_FE);
+  histWidthAsym( gen_asymmetries_data_FE , gen_asymmetries_width_data_FE, gen_asymmetries_width_data_FE_error, false, gaustails, 1, gen_lower_x_data_FE, gen_upper_x_data_FE);
+
+  // asdf_2(asymmetries_SM);
+  // asdf(asymmetries_width_SM);
+  asdff(lower_x_SM);
+
 
   ////////////////////////////////////////////////////////////////////////////
   //    I calculate widths, this time also including                        //
@@ -898,16 +928,17 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
 
   std::vector< std::vector< std::vector< double > > > soft_asymmetries_width_FE, gen_soft_asymmetries_width_FE, soft_asymmetries_width_data_FE, gen_soft_asymmetries_width_data_FE;
   std::vector< std::vector< std::vector< double > > > soft_asymmetries_width_FE_error, gen_soft_asymmetries_width_FE_error, soft_asymmetries_width_data_FE_error, gen_soft_asymmetries_width_data_FE_error;
+  std::vector< std::vector< std::vector< double > > > dummy_vec_x, dummy_vec_y;
 
-  histWidthAsym( asymmetries_SM , soft_asymmetries_width_SM, soft_asymmetries_width_SM_error, true, gaustails, 0);
-  histWidthAsym( gen_asymmetries_SM , soft_gen_asymmetries_width_SM, soft_gen_asymmetries_width_SM_error, true, gaustails, 0);
-  histWidthAsym( asymmetries_data_SM , soft_asymmetries_width_data_SM, soft_asymmetries_width_data_SM_error, true, gaustails, 0);
-  histWidthAsym( gen_asymmetries_data_SM , soft_gen_asymmetries_width_data_SM, soft_gen_asymmetries_width_data_SM_error, true, gaustails, 0);
+  histWidthAsym( asymmetries_SM , soft_asymmetries_width_SM, soft_asymmetries_width_SM_error, true, gaustails, 0, dummy_vec_x, dummy_vec_y);
+  histWidthAsym( gen_asymmetries_SM , soft_gen_asymmetries_width_SM, soft_gen_asymmetries_width_SM_error, true, gaustails, 0, dummy_vec_x, dummy_vec_y);
+  histWidthAsym( asymmetries_data_SM , soft_asymmetries_width_data_SM, soft_asymmetries_width_data_SM_error, true, gaustails, 0, dummy_vec_x, dummy_vec_y);
+  histWidthAsym( gen_asymmetries_data_SM , soft_gen_asymmetries_width_data_SM, soft_gen_asymmetries_width_data_SM_error, true, gaustails, 0, dummy_vec_x, dummy_vec_y);
 
-  histWidthAsym( asymmetries_FE , soft_asymmetries_width_FE, soft_asymmetries_width_FE_error, true, gaustails, 1);
-  histWidthAsym( gen_asymmetries_FE , gen_soft_asymmetries_width_FE, gen_soft_asymmetries_width_FE_error, true, gaustails, 1);
-  histWidthAsym( asymmetries_data_FE , soft_asymmetries_width_data_FE, soft_asymmetries_width_data_FE_error, true, gaustails, 1);
-  histWidthAsym( gen_asymmetries_data_FE , gen_soft_asymmetries_width_data_FE, gen_soft_asymmetries_width_data_FE_error, true, gaustails, 1);
+  histWidthAsym( asymmetries_FE , soft_asymmetries_width_FE, soft_asymmetries_width_FE_error, true, gaustails, 1, dummy_vec_x, dummy_vec_y);
+  histWidthAsym( gen_asymmetries_FE , gen_soft_asymmetries_width_FE, gen_soft_asymmetries_width_FE_error, true, gaustails, 1, dummy_vec_x, dummy_vec_y);
+  histWidthAsym( asymmetries_data_FE , soft_asymmetries_width_data_FE, soft_asymmetries_width_data_FE_error, true, gaustails, 1, dummy_vec_x, dummy_vec_y);
+  histWidthAsym( gen_asymmetries_data_FE , gen_soft_asymmetries_width_data_FE, gen_soft_asymmetries_width_data_FE_error, true, gaustails, 1, dummy_vec_x, dummy_vec_y);
 
   print3(asymmetries_width_SM);
   print3(asymmetries_width_FE);
@@ -1006,16 +1037,17 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
 
   std::vector< std::vector< TGraphErrors *> > MC_correlated_graphs_SM, data_correlated_graphs_SM, gen_correlated_graphs_SM, gen_data_correlated_graphs_SM;
   std::vector< std::vector< TGraphErrors *> > MC_correlated_graphs_FE, data_correlated_graphs_FE, gen_correlated_graphs_FE, gen_data_correlated_graphs_FE;
+  TH1F* h_chi2_tot = new TH1F("h_chi2_tot","h_chi2_tot",100, -10,10);
 
-  histLinCorFit(asymmetries_width_SM, asymmetries_width_SM_error, MC_correlated_graphs_SM, extrapolated_widths_correlated_SM, extrapolated_widths_correlated_SM_error, false, true);
-  histLinCorFit(asymmetries_width_data_SM, asymmetries_width_data_SM_error, data_correlated_graphs_SM, extrapolated_widths_correlated_data_SM, extrapolated_widths_correlated_data_SM_error, false, false);
-  histLinCorFit(gen_asymmetries_width_SM, gen_asymmetries_width_SM_error, gen_correlated_graphs_SM, extrapolated_gen_widths_correlated_SM, extrapolated_gen_widths_correlated_SM_error, false, false);
-  histLinCorFit(gen_asymmetries_width_data_SM, gen_asymmetries_width_data_SM_error, gen_data_correlated_graphs_SM, extrapolated_gen_widths_correlated_data_SM, extrapolated_gen_widths_correlated_data_SM_error, false, false);
+  histLinCorFit(asymmetries_width_SM, asymmetries_width_SM_error, MC_correlated_graphs_SM, extrapolated_widths_correlated_SM, extrapolated_widths_correlated_SM_error, false, true, h_chi2_tot);
+  histLinCorFit(asymmetries_width_data_SM, asymmetries_width_data_SM_error, data_correlated_graphs_SM, extrapolated_widths_correlated_data_SM, extrapolated_widths_correlated_data_SM_error, false, false, h_chi2_tot);
+  histLinCorFit(gen_asymmetries_width_SM, gen_asymmetries_width_SM_error, gen_correlated_graphs_SM, extrapolated_gen_widths_correlated_SM, extrapolated_gen_widths_correlated_SM_error, false, false, h_chi2_tot);
+  histLinCorFit(gen_asymmetries_width_data_SM, gen_asymmetries_width_data_SM_error, gen_data_correlated_graphs_SM, extrapolated_gen_widths_correlated_data_SM, extrapolated_gen_widths_correlated_data_SM_error, false, false, h_chi2_tot);
 
-  histLinCorFit(asymmetries_width_FE, asymmetries_width_FE_error, MC_correlated_graphs_FE, extrapolated_widths_correlated_FE, extrapolated_widths_correlated_FE_error, true, true);
-  histLinCorFit(asymmetries_width_data_FE, asymmetries_width_data_FE_error, data_correlated_graphs_FE, extrapolated_widths_correlated_data_FE, extrapolated_widths_correlated_data_FE_error, true, false);
-  histLinCorFit(gen_asymmetries_width_FE, gen_asymmetries_width_FE_error, gen_correlated_graphs_FE, extrapolated_gen_widths_correlated_FE, extrapolated_gen_widths_correlated_FE_error, true, false);
-  histLinCorFit(gen_asymmetries_width_data_FE, gen_asymmetries_width_data_FE_error, gen_data_correlated_graphs_FE, extrapolated_gen_widths_correlated_data_FE, extrapolated_gen_widths_correlated_data_FE_error, true, false);
+  histLinCorFit(asymmetries_width_FE, asymmetries_width_FE_error, MC_correlated_graphs_FE, extrapolated_widths_correlated_FE, extrapolated_widths_correlated_FE_error, true, true, h_chi2_tot);
+  histLinCorFit(asymmetries_width_data_FE, asymmetries_width_data_FE_error, data_correlated_graphs_FE, extrapolated_widths_correlated_data_FE, extrapolated_widths_correlated_data_FE_error, true, false, h_chi2_tot);
+  histLinCorFit(gen_asymmetries_width_FE, gen_asymmetries_width_FE_error, gen_correlated_graphs_FE, extrapolated_gen_widths_correlated_FE, extrapolated_gen_widths_correlated_FE_error, true, false, h_chi2_tot);
+  histLinCorFit(gen_asymmetries_width_data_FE, gen_asymmetries_width_data_FE_error, gen_data_correlated_graphs_FE, extrapolated_gen_widths_correlated_data_FE, extrapolated_gen_widths_correlated_data_FE_error, true, false, h_chi2_tot);
 
   print2(extrapolated_widths_correlated_SM);
   print2(extrapolated_widths_correlated_FE);
@@ -1255,6 +1287,7 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
 
 
   std::cout << "TROVATO" << '\n';
+  print1H(JER_uncorrelated_data_hist_SM);
   print1H(JER_correlated_MC_hist_SM);
   print1H(JER_correlated_MC_hist_FE);
   print1H(JER_correlated_MC_hist_FE_control);
@@ -1275,15 +1308,14 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
   PLOT_MCT(JER_MC_Truth_FE,JER_uncorrelated_MC_hist_FE,JER_correlated_MC_hist_FE,JER015_uncorrelated_MC_hist_FE,outdir+"pdfy/MCTruth/",eta_bins_edge_FE, true);
   fMCTruth.Close();
 
-
-
-
-  if (false) {
+  bool plot_all = true;
+  //bool plot_all = false;
+  if (plot_all) {
     ////////////////////////////////////////////////////////////////////////////
     //  Plots Asymmetries                                                     //
     ////////////////////////////////////////////////////////////////////////////
-    PLOT_ASY(asymmetries_data_SM,  asymmetries_SM, gen_asymmetries_SM,  asymmetries_width_data_SM, asymmetries_width_SM, gen_asymmetries_width_SM, asymmetries_width_data_SM_error, asymmetries_width_SM_error, gen_asymmetries_width_SM_error, outdir+"output/asymmetries/", eta_bins_edge_SM, Pt_bins_Central, alpha);
-    PLOT_ASY(asymmetries_data_FE,  asymmetries_FE, gen_asymmetries_FE,  asymmetries_width_data_FE, asymmetries_width_FE, gen_asymmetries_width_FE, asymmetries_width_data_FE_error, asymmetries_width_FE_error, gen_asymmetries_width_FE_error, outdir+"output/asymmetries/", eta_bins_edge_SM, Pt_bins_HF, alpha);
+    PLOT_ASY(asymmetries_data_SM,  asymmetries_SM, gen_asymmetries_SM,  asymmetries_width_data_SM, asymmetries_width_SM, gen_asymmetries_width_SM, asymmetries_width_data_SM_error, asymmetries_width_SM_error, gen_asymmetries_width_SM_error, outdir+"output/asymmetries/", eta_bins_edge_SM, Pt_bins_Central, alpha, lower_x_data_SM, upper_x_data_SM, lower_x_SM, upper_x_SM, gen_lower_x_SM, gen_upper_x_SM);
+    PLOT_ASY(asymmetries_data_FE,  asymmetries_FE, gen_asymmetries_FE,  asymmetries_width_data_FE, asymmetries_width_FE, gen_asymmetries_width_FE, asymmetries_width_data_FE_error, asymmetries_width_FE_error, gen_asymmetries_width_FE_error, outdir+"output/asymmetries/", eta_bins_edge_SM, Pt_bins_HF, alpha, lower_x_data_FE, upper_x_data_FE, lower_x_FE, upper_x_FE, gen_lower_x_FE, gen_upper_x_FE);
 
     TFile asyroot(outdir+"output/asymmetries.root","RECREATE");
     for( unsigned int m = 0; m < asymmetries_SM.size(); m++){
@@ -1307,27 +1339,22 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
     asyroot.Close();
 
   }
-  if (true) {
+  if (plot_all) {
     ////////////////////////////////////////////////////////////////////////////
     //  Plots with widths(alpha)                                              //
     ////////////////////////////////////////////////////////////////////////////
 
-    // PLOT_WIDTH(widths_hist_data_SM, widths_hist_SM, gen_widths_hist_SM, outdir+"pdfy/widths/", eta_bins_edge_SM,Pt_bins_Central);
-    // PLOT_WIDTH(widths_hist_data_FE, widths_hist_FE, gen_widths_hist_FE, outdir+"pdfy/widths/", eta_bins_edge_SM,Pt_bins_HF);
+    PLOT_WIDTH(widths_hist_data_SM, widths_hist_SM, gen_widths_hist_SM, outdir+"pdfy/widths/", eta_bins_edge_SM,Pt_bins_Central);
+    PLOT_WIDTH(widths_hist_data_FE, widths_hist_FE, gen_widths_hist_FE, outdir+"pdfy/widths/", eta_bins_edge_SM,Pt_bins_HF);
 
     PLOT_WIDTH_gr(data_correlated_graphs_SM, MC_correlated_graphs_SM, gen_correlated_graphs_SM, outdir+"ClosureTest/", eta_bins_edge_SM, Pt_bins_Central, false);
-    // PLOT_WIDTH_gr(data_correlated_graphs_FE, MC_correlated_graphs_FE, gen_correlated_graphs_FE, outdir+"ClosureTest/", eta_bins_edge_SM, Pt_bins_HF, true);
-
-    // sprintf(legTitle, "#eta #in [%.3f,%.3f], p_{T} #in [%.0f,%.0f] GeV",
-    // eta_bins_edge_SM[shift_ - widths_hist_FE.size() + m],
-    // eta_bins_edge_SM[shift_ - widths_hist_FE.size() + m+1],
-    // Pt_bins_HF[p], Pt_bins_HF[p+1]);
+    PLOT_WIDTH_gr(data_correlated_graphs_FE, MC_correlated_graphs_FE, gen_correlated_graphs_FE, outdir+"ClosureTest/", eta_bins_edge_SM, Pt_bins_HF, true);
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //  Plots with all points of widths(alpha)                                                                                               //
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // PLOT_3_2(soft_widths_hist_data_SM, soft_widths_hist_SM, soft_gen_widths_hist_SM,outdir+"pdfy/widths/allPoints_");
-    // PLOT_3_2(soft_widths_hist_data_FE, soft_widths_hist_FE, soft_gen_widths_hist_FE,outdir+"pdfy/widths/allPoints_");
+    PLOT_ALLWIDTHS(soft_widths_hist_data_SM, soft_widths_hist_SM, soft_gen_widths_hist_SM,outdir+"pdfy/widths/allPoints_");
+    PLOT_ALLWIDTHS(soft_widths_hist_data_FE, soft_widths_hist_FE, soft_gen_widths_hist_FE,outdir+"pdfy/widths/allPoints_");
 
     TFile widthroot(outdir+"output/widths.root","RECREATE");
     for( unsigned int m = 0; m < widths_hist_SM.size(); m++ ){
@@ -1344,6 +1371,7 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
         widths_hist_data_FE.at(m).at(p) -> Write();
       }
     }
+    h_chi2_tot->Write();
     widthroot.Close();
 
   }
@@ -1353,10 +1381,10 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
 
   TFile NSCroot(outdir+"output/NSC.root","RECREATE");
 
-  // PLOT_NCS(JER_uncorrelated_data_hist_SM,JER_uncorrelated_MC_hist_SM,JER_uncorrelated_scale_hist_SM,outdir,eta_bins_edge_SM,false);
-  // PLOT_NCS(JER_correlated_data_hist_SM,JER_correlated_MC_hist_SM,JER_correlated_scale_hist_SM,outdir,eta_bins_edge_SM,false);
-  // PLOT_NCS(JER_uncorrelated_data_hist_FE,JER_uncorrelated_MC_hist_FE,JER_uncorrelated_scale_hist_FE,outdir,eta_bins_edge_FE, true);
-  // PLOT_NCS(JER_correlated_data_hist_FE,JER_correlated_MC_hist_FE,JER_correlated_scale_hist_FE,outdir,eta_bins_edge_FE, true);
+  PLOT_NCS(JER_uncorrelated_data_hist_SM,JER_uncorrelated_MC_hist_SM,JER_uncorrelated_scale_hist_SM,outdir,eta_bins_edge_SM,false);
+  PLOT_NCS(JER_correlated_data_hist_SM,JER_correlated_MC_hist_SM,JER_correlated_scale_hist_SM,outdir,eta_bins_edge_SM,false);
+  PLOT_NCS(JER_uncorrelated_data_hist_FE,JER_uncorrelated_MC_hist_FE,JER_uncorrelated_scale_hist_FE,outdir,eta_bins_edge_FE, true);
+  PLOT_NCS(JER_correlated_data_hist_FE,JER_correlated_MC_hist_FE,JER_correlated_scale_hist_FE,outdir,eta_bins_edge_FE, true);
 
   NSCroot.Close();
 
@@ -1383,25 +1411,6 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
 
   TFile gbis(outdir+"output/SFs.root","RECREATE");
 
-  // for( unsigned int m = 0; m < JER_FE_uncorrelated_scale_control_hist.size(); m++ ){
-  //   TF1 * constfit = new TF1( "constfit", "pol0", 0, 0.25 );
-  //   JER_FE_uncorrelated_scale_control_hist.at(m) -> Fit("constfit","RMQ+");
-  //   JER_FE_uncorrelated_scale_control_hist.at(m) -> Write();
-  // }
-  //
-  // for( unsigned int m = 0; m < JER015_scale_hist_SM.size(); m++ ){
-  //   TF1 * constfit = new TF1( "constfit", "pol0", 0, 0.25 );
-  //   JER015_scale_hist_SM.at(m) -> Fit("constfit","RMQ+");
-  //   JER015_scale_hist_SM.at(m) -> Write();
-  // }
-  //
-  // for( unsigned int m = 0; m < JER015_scale_hist_FE.size(); m++ ){
-  //   TF1 * constfit = new TF1( "constfit", "pol0", 0, 0.25 );
-  //   JER015_scale_hist_FE.at(m) -> Fit("constfit","RMQ+");
-  //   JER015_scale_hist_FE.at(m) -> Write();
-  // }
-
-  return true;
   std::vector<double> SF_uncorrelated_SM, SF_uncorrelated_SM_error, SF_correlated_SM, SF_correlated_SM_error, SF_uncorrelated_FE, SF_uncorrelated_FE_error, SF_correlated_FE, SF_correlated_FE_error, eta_bin_SM_center, eta_bin_SM_error, eta_bin_FE_center, eta_bin_FE_error;
   std::vector<double> SF_uncorrelated_SM_ptdep_min, SF_correlated_SM_ptdep_min, SF_uncorrelated_FE_ptdep_min, SF_correlated_FE_ptdep_min;
   std::vector<double> SF_uncorrelated_SM_ptdep_max, SF_correlated_SM_ptdep_max, SF_uncorrelated_FE_ptdep_max, SF_correlated_FE_ptdep_max;
@@ -1454,17 +1463,17 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
   leg->AddEntry(gr_fe, "Forward ext", "lep");
   leg->Draw("same");
 
-  canv_SF->SaveAs(outdir+"output/SF.png");
   canv_SF->SaveAs(outdir+"output/SF.pdf");
-  canv_SF->SaveAs(outdir+"output/SF.root");
+  // canv_SF->SaveAs(outdir+"output/SF.png");
+  // canv_SF->SaveAs(outdir+"output/SF.root");
 
   //////////////////////////////////////////////////////////////////////////////////////////
   //    SF plots overlayed with ...                                                       //
   //////////////////////////////////////////////////////////////////////////////////////////
   TFile SFsoverlayed(outdir+"output/SFsoverlayed.root","RECREATE");
 
-  // PLOT_SF(JER_uncorrelated_scale_hist_SM, JER_correlated_scale_hist_SM, JER015_scale_hist_SM, outdir+"pdfy/SFs/", eta_bins_edge_SM, false);
-  // PLOT_SF(JER_uncorrelated_scale_hist_FE, JER_correlated_scale_hist_FE, JER015_scale_hist_FE, outdir+"pdfy/SFs/", eta_bins_edge_FE, true);
+  PLOT_SF(JER_uncorrelated_scale_hist_SM, JER_correlated_scale_hist_SM, JER015_scale_hist_SM, outdir+"pdfy/SFs/", eta_bins_edge_SM, false);
+  PLOT_SF(JER_uncorrelated_scale_hist_FE, JER_correlated_scale_hist_FE, JER015_scale_hist_FE, outdir+"pdfy/SFs/", eta_bins_edge_FE, true);
 
   SFsoverlayed.Close();
 

@@ -2,7 +2,7 @@ import sys
 import os
 import time
 
-sys.path.append("/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/PersonalCode/")
+sys.path.append("/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94X_v2/CMSSW_9_4_1/src/UHH2/PersonalCode/")
 from parallelise import *
 
 def main_program(path="", list_path="", out_path="", JECVersions=[], JetLabels=[], systematics=[], samples=[], barrel_check = 0):
@@ -32,13 +32,15 @@ def main_program(path="", list_path="", out_path="", JECVersions=[], JetLabels=[
             run_list = list_path_+pattern+"file_QCD"+sample+".txt"
             with open(run_list, "w") as outputfile:
               for writable in sorted(os.listdir(source_path)):
+                if "15to30" in writable:
+                  continue
                 if not os.path.isfile(source_path+writable):
                   continue
-                if (sample=="flat" and "15to7000" in writable) or (sample!="flat" and not "15to7000" in writable):
+                if sample in writable and ".root" in writable:
                   outputfile.write(source_path+writable+"\n")
             if not os.path.isfile(run_list):
               continue
-            outdir = out_path_+pattern+sample+"/"
+            outdir = out_path_+pattern+"QCD"+sample+"/"
             if not os.path.isdir(outdir):
               os.makedirs(outdir)
             print "RUNNING ON ", run_list
@@ -53,13 +55,13 @@ def main_program(path="", list_path="", out_path="", JECVersions=[], JetLabels=[
             if barrel_check>0:
               if barrel_check == 1:
                 cmd = 'sed -i -e """s/s_eta_barr/0.522/g" MySelector.C'
-                outdir = out_path_+pattern+sample+"_barrel_check_1/"
+                outdir = out_path_+pattern+"QCD"+sample+"_barrel_check_1/"
               if barrel_check == 2:
                 cmd = 'sed -i -e """s/s_eta_barr/0.783/g" MySelector.C'
-                outdir = out_path_+pattern+sample+"_barrel_check_2/"
+                outdir = out_path_+pattern+"QCD"+sample+"_barrel_check_2/"
               if barrel_check == 3:
                 cmd = 'sed -i -e """s/s_eta_barr/1.131/g" MySelector.C'
-                outdir = out_path_+pattern+sample+"_barrel_check_3/"
+                outdir = out_path_+pattern+"QCD"+sample+"_barrel_check_3/"
               a = os.system(cmd)
               if not os.path.isdir(outdir):
                 os.makedirs(outdir)
@@ -78,8 +80,6 @@ def main_program(path="", list_path="", out_path="", JECVersions=[], JetLabels=[
             logfilename = "log.txt"
             f = open(logfilename,'w')
             cmd = './Analysis.x %s >> log.txt &' % (run_list)
-            # print cmd
-            # a = os.system(cmd)
             command = [outdir+"Analysis.x", run_list, outdir]
             list_processes.append(command)
             list_logfiles.append(outdir+"log.txt")
@@ -87,37 +87,31 @@ def main_program(path="", list_path="", out_path="", JECVersions=[], JetLabels=[
             os.chdir(common_path+"wide_eta_bin/")
             print ("time needed: "+str((time.time()-temp_time))+" s")
 
-samples = ["","flat"]
-JECVersions = ["Fall17_17Nov2017_V6", "Fall17_17Nov2017_V10", "Fall17_17Nov2017_V24"]
-JetLabels   = ["AK4CHS", "AK8PUPPI"]
-systematics = ["PU", "JEC"]
-common_path = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/JER2017/Analysis/hist_preparation/MC/"
-study = "Single"
-study = "LowPtJets"
+
+common_path = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94X_v2/CMSSW_9_4_1/src/UHH2/JER2017/Analysis/hist_preparation/MC/"
 study = "StandardPtBins"
 
 list_path   = common_path+"lists/"+study+"/"
 out_path    = common_path+"wide_eta_bin/file/"+study+"/"
 os.chdir(common_path+"wide_eta_bin/")
 
-inputdir = "JER2017_v2"
+inputdir = "JER2017"
 
 sframe_ = "/nfs/dust/cms/user/amalara/sframe_all/"
 
 list_processes = []
 list_logfiles = []
-# for el in ["JER2017_QCD", "JER2017_MB_QCD", "JER2017_MB_test_QCD", "JER2017_Threshold_QCD"]:
-for el in ["", "_LowPt"]:
+for el in [""]:
   path = sframe_+inputdir+el+"_QCD/"
-  samples = [""]
-  JECVersions = ["Fall17_17Nov2017_V27"]
+  samples = ["Pt","HT"]
+  JECVersions = ["Fall17_17Nov2017_V31"]
   JetLabels = ["AK4CHS"]
   systematics = ["PU", "JEC"]
-  # systematics = []
   main_program(path, list_path, out_path, JECVersions, JetLabels, systematics, samples)
-  if el == "":
-    main_program(path, list_path, out_path, JECVersions, JetLabels, [], samples, barrel_check = 1)
-    main_program(path, list_path, out_path, JECVersions, JetLabels, [], samples, barrel_check = 2)
-    main_program(path, list_path, out_path, JECVersions, JetLabels, [], samples, barrel_check = 3)
 
-parallelise(list_processes, 1, list_logfiles)
+print len(list_processes)
+
+for i in list_processes:
+  print i
+
+parallelise(list_processes, 2, list_logfiles)

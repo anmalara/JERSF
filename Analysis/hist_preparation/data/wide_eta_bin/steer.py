@@ -2,7 +2,7 @@ import sys
 import os
 import time
 
-sys.path.append("/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/PersonalCode/")
+sys.path.append("/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94X_v2/CMSSW_9_4_1/src/UHH2/PersonalCode/")
 from parallelise import *
 
 def main_program(path="", list_path="", out_path="", JECVersions=[], JetLabels=[], systematics=[], samples=[], barrel_check = 0):
@@ -34,9 +34,15 @@ def main_program(path="", list_path="", out_path="", JECVersions=[], JetLabels=[
               for writable in sorted(os.listdir(source_path)):
                 if not os.path.isfile(source_path+writable):
                   continue
+                if not "ECAL" in sample and "ECAL" in writable:
+                  continue
                 for el in sample:
+                  if "ECAL" in sample:
+                    el = sample
                   if "Run"+el in writable and ".root" in writable:
                     outputfile.write(source_path+writable+"\n")
+                  if "ECAL" in sample:
+                    break
             if not os.path.isfile(run_list):
               continue
             outdir = out_path_+pattern+"Run"+sample+"/"
@@ -79,8 +85,6 @@ def main_program(path="", list_path="", out_path="", JECVersions=[], JetLabels=[
             logfilename = "log.txt"
             f = open(logfilename,'w')
             cmd = './Analysis.x %s >> log.txt &' % (run_list)
-            # print cmd
-            # a = os.system(cmd)
             command = [outdir+"Analysis.x", run_list, outdir]
             list_processes.append(command)
             list_logfiles.append(outdir+"log.txt")
@@ -88,37 +92,32 @@ def main_program(path="", list_path="", out_path="", JECVersions=[], JetLabels=[
             os.chdir(common_path+"wide_eta_bin/")
             print ("time needed: "+str((time.time()-temp_time))+" s")
 
-samples = ["B","C","D","E","F","BC","DE","DEF","BCDEF"]
-JECVersions = ["Fall17_17Nov2017_V6", "Fall17_17Nov2017_V10", "Fall17_17Nov2017_V24"]
-JetLabels   = ["AK4CHS", "AK8PUPPI"]
-systematics = ["PU", "JEC"]
-common_path = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/JER2017/Analysis/hist_preparation/data/"
-study = "Single"
-study = "LowPtJets"
+
+common_path = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94X_v2/CMSSW_9_4_1/src/UHH2/JER2017/Analysis/hist_preparation/data/"
 study = "StandardPtBins"
 
 list_path   = common_path+"lists/"+study+"/"
 out_path    = common_path+"wide_eta_bin/file/"+study+"/"
 os.chdir(common_path+"wide_eta_bin/")
 
-inputdir = "JER2017_v2"
+inputdir = "JER2017"
 
 sframe_ = "/nfs/dust/cms/user/amalara/sframe_all/"
 
 list_processes = []
 list_logfiles = []
-# for el in ["JER2017_DATA", "JER2017_MB_DATA", "JER2017_MB_test_DATA", "JER2017_Threshold_DATA"]:
-for el in ["", "_LowPt"]:
+for el in [""]:
   path = sframe_+inputdir+el+"_DATA/"
-  samples = ["BCDEF"]
-  JECVersions = ["Fall17_17Nov2017_V27"]
+  samples = ["B","C","D","E","F","BC","DE","DEF", "BCDEF", "F_ECAL"]
+  # samples = ["F_ECAL"]
+  JECVersions = ["Fall17_17Nov2017_V31"]
   JetLabels = ["AK4CHS"]
   systematics = ["PU", "JEC"]
-  # systematics = []
   main_program(path, list_path, out_path, JECVersions, JetLabels, systematics, samples)
-  if el == "":
-    main_program(path, list_path, out_path, JECVersions, JetLabels, [], samples, barrel_check = 1)
-    main_program(path, list_path, out_path, JECVersions, JetLabels, [], samples, barrel_check = 2)
-    main_program(path, list_path, out_path, JECVersions, JetLabels, [], samples, barrel_check = 3)
 
-parallelise(list_processes, 10, list_logfiles)
+print len(list_processes)
+
+for i in list_processes:
+  print i
+
+parallelise(list_processes, 20, list_logfiles)

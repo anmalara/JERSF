@@ -78,11 +78,11 @@ fit_data data;
 void histLoadAsym( TFile &f, bool data, TString text, std::vector< std::vector< std::vector< TH1F* > > > &Asymmetry, std::vector< std::vector< std::vector< TH1F* > > > &GenAsymmetry, int etaBins, int ptBins, int AlphaBins, int etaShift);
 void histMeanPt( std::vector< std::vector< std::vector< TH1F* > > > &Asymmetry , std::vector< std::vector< std::vector< double > > > &Widths );
 void histWidthAsym_old( std::vector<std::vector<std::vector<TH1F*> > > &Asymmetry , std::vector<std::vector<std::vector<double> > > &Widths, std::vector<std::vector<std::vector<double> > > &WidthsError , bool fill_all );
-void histWidthAsym( std::vector< std::vector< std::vector< TH1F* > > > &Asymmetry , std::vector< std::vector< std::vector< double > > > &Widths, std::vector< std::vector< std::vector< double > > > &WidthsError , bool fill_all, double alpha = 0.985, bool isFE = 0);
+void histWidthAsym( std::vector< std::vector< std::vector< TH1F* > > > &Asymmetry , std::vector< std::vector< std::vector< double > > > &Widths, std::vector< std::vector< std::vector< double > > > &WidthsError , bool fill_all, double alpha, bool isFE, std::vector< std::vector< std::vector< double > > > &lower_x, std::vector< std::vector< std::vector< double > > > &upper_x);
 void histWidthMCTruth( std::vector<std::vector<std::vector<TH1F*> > > &Asymmetry , std::vector<std::vector<std::vector<double> > > &Widths, std::vector<std::vector<std::vector<double> > > &WidthsError );
 void fill_widths_hists( TString name1, std::vector< std::vector< TH1F* > > &widths , std::vector< std::vector< std::vector< double > > > Widths, std::vector< std::vector< std::vector< double > > > WidthsError);
 void histLinFit( std::vector< std::vector< TH1F* > > widths_hist_all , std::vector< std::vector< double > > &Widths, std::vector< std::vector< double > > &WidthsError, bool isFE );
-void histLinCorFit( std::vector< std::vector< std::vector< double > > > Widths, std::vector< std::vector< std::vector< double > > > WidthsError, std::vector< std::vector< TGraphErrors* > > &output_graph, std::vector< std::vector< double > > &output, std::vector< std::vector< double > > &output_error, bool isFE, bool isMC);
+void histLinCorFit( std::vector< std::vector< std::vector< double > > > Widths, std::vector< std::vector< std::vector< double > > > WidthsError, std::vector< std::vector< TGraphErrors* > > &output_graph, std::vector< std::vector< double > > &output, std::vector< std::vector< double > > &output_error, bool isFE, bool isMC, TH1F* h_chi2_tot);
 void widths_015_ratios( TString name1, std::vector<TH1F*> &widths, std::vector<std::vector<std::vector<double> > > Widths, std::vector<std::vector<std::vector<double> > > WidthsError, std::vector<std::vector<std::vector<double> > > WidthsTwo, std::vector<std::vector<std::vector<double> > > WidthsTwoError, std::vector<std::vector<std::vector<double> > > forward_width_pt );
 void correctJERwithPLI(std::vector< std::vector< double > > &Output, std::vector< std::vector< double > > &OutputError, std::vector< std::vector< double > > Widths, std::vector< std::vector< double > > WidthsError, std::vector< std::vector< double > > PLI, std::vector< std::vector< double > > PLIError, float shift = 0.0);
 void correctJERwithPLI015(std::vector<std::vector<double> > &Output, std::vector<std::vector<double> > &OutputError, std::vector<std::vector<std::vector<double> > > Widths, std::vector<std::vector<std::vector<double> > > WidthsError, std::vector<std::vector<std::vector<double> > > PLI, std::vector<std::vector< std::vector< double > > > PLIError, float shift = 0.0);
@@ -91,11 +91,14 @@ void makeScales( std::vector< std::vector< double > > &Output, std::vector< std:
 void fill_mctruth_hist( TString name1, std::vector< TH1F* > &output, std::vector< std::vector< std::vector< double > > > Widths, std::vector< std::vector< std::vector< double > > > WidthsError, std::vector< std::vector< std::vector< double > > > pt_binning, double range);
 void fill_hist( TString name1, std::vector< TH1F* > &output, std::vector< std::vector< double > > Widths, std::vector< std::vector< double > > WidthsError, std::vector< std::vector< std::vector< double > > > pt_binning, double range, int shift2 = 0);
 void Fill_Map3D(std::vector< std::vector < std::vector < TH1F* > > > &Asymmetry, std::vector < TH2F* > &Map, std::vector < double > &eta_bins, std::vector < double > &pt_bins );
-void make_lin_fit(double & slope, double & d_slope, double & offset, double & d_offset, double min_slope, double max_offset);
+void make_lin_fit(double & slope, double & d_slope, double & offset, double & d_offset, double min_slope, double max_slope, double min_offset, double max_offset, double & chi2);
 void chi2_linear(Int_t& npar, Double_t* grad, Double_t& fval, Double_t* p, Int_t status);
 double sumSquare(double a, double b);
 double findMinMax(TH1F* JER, std::vector< std::vector< double > > pt_width, TF1* NSC_ratio, TF1* constfit, bool isMin);
 void fitLin( TH1F &hist, double &width, double &error );
+bool removePointsforWidth(bool isFE, int m, int p, int r);
+bool removePointsforFit(bool isFE, int m, int p);
+void chi2_calculation(Double_t& fval, Double_t* p);
 
 void histLoadAsym( TFile &f, bool data, TString text, std::vector< std::vector< std::vector< TH1F* > > > &Asymmetry, std::vector< std::vector< std::vector< TH1F* > > > &GenAsymmetry, int etaBins, int ptBins, int AlphaBins, int etaShift) {
   for( int m = etaShift; m < etaBins+etaShift; m++ ) {
@@ -143,20 +146,28 @@ void histMeanPt( std::vector< std::vector< std::vector< TH1F* > > > &Asymmetry ,
   }
 }
 
-void histWidthAsym( std::vector< std::vector< std::vector< TH1F* > > > &Asymmetry , std::vector< std::vector< std::vector< double > > > &Widths, std::vector< std::vector< std::vector< double > > > &WidthsError , bool fill_all, double alpha, bool isFE) {
+void histWidthAsym( std::vector< std::vector< std::vector< TH1F* > > > &Asymmetry , std::vector< std::vector< std::vector< double > > > &Widths, std::vector< std::vector< std::vector< double > > > &WidthsError , bool fill_all, double alpha, bool isFE, std::vector< std::vector< std::vector< double > > > &lower_x, std::vector< std::vector< std::vector< double > > > &upper_x) {
   double asym;
   double asymerr;
 
   for( unsigned int m = 0; m < Asymmetry.size(); m++ ) {
     std::vector< std::vector< double > > temp2;
     std::vector< std::vector< double > > temp_error2;
+    std::vector< std::vector< double > > temp2_lower_x, temp2_upper_x;
     for( unsigned int p = 0; p < Asymmetry.at(m).size() ; p++ ) {
       std::vector< double > temp1;
       std::vector< double > temp_error1;
+      std::vector< double > temp1_lower_x, temp1_upper_x;
       for( unsigned int r = 0; r < Asymmetry.at(m).at(p).size(); r++ ) {
         // std::cout << "eta pt alpha bins " << m << ", " << p << ", " << r << std::endl;
         TH1F* temp_hist = (TH1F*) Asymmetry.at(m).at(p).at(r)->Clone();
+        double low, up;
         if (temp_hist->Integral() > 0) {
+          for (int i = 0; i <= temp_hist->GetNbinsX(); i++) {
+               if (i < temp_hist->FindBin(-0.5) || i > temp_hist->FindBin(0.5)) {
+        	temp_hist->SetBinContent(i,0);
+      		}
+    	  }
           temp_hist->ComputeIntegral();
           Double_t xq[2], yq[2];
           xq[0] = std::min(alpha, 1.-alpha);
@@ -165,37 +176,26 @@ void histWidthAsym( std::vector< std::vector< std::vector< TH1F* > > > &Asymmetr
           temp_hist->GetXaxis()->SetRange(temp_hist->FindBin(yq[0]), temp_hist->FindBin(yq[1]));
           asym = temp_hist->GetRMS();
           asymerr = temp_hist->GetRMSError();
-        } else { asym = 0.; asymerr = 0.; };
+          low = temp_hist->GetBinCenter(temp_hist->FindBin(yq[0])); up = temp_hist->GetBinCenter(temp_hist->FindBin(yq[1]));
+        } else { asym = 0.; asymerr = 0.; low = 10.0; up = 10.0;};
 
         if (!fill_all) {
-          if ( p == 0 && r < 4) { asym = 0.; asymerr = 0.; };
-          if ( p == 1 && r < 3) { asym = 0.; asymerr = 0.; };
-          if ( p == 2 && r < 2) { asym = 0.; asymerr = 0.; };
-          if ( p == 3 && r < 1) { asym = 0.; asymerr = 0.; };
-          if ( p == 4 && r < 1) { asym = 0.; asymerr = 0.; };
-					if ( p == 5 && r < 1) { asym = 0.; asymerr = 0.; };
-          if (!isFE   && m == 6 && p == 2 && r < 3) { asym = 0.; asymerr = 0.; };
-          if (!isFE   && m == 6 && p == 3 && r < 3) { asym = 0.; asymerr = 0.; };
-          if (!isFE   && m == 5 && p == 6 && r < 1) { asym = 0.; asymerr = 0.; };
-          if (!isFE   && m == 6 && p == 6 && r < 2) { asym = 0.; asymerr = 0.; };
-          if (!isFE   && m == 6 && p == 9 && r < 1) { asym = 0.; asymerr = 0.; };
-          if (!isFE   && m == 7 && p == 6 && r < 1) { asym = 0.; asymerr = 0.; };
-          if (!isFE   && m == 7 && p == 7 && r < 1) { asym = 0.; asymerr = 0.; };
-          if (!isFE   && m == 7 && p == 8 && r < 1) { asym = 0.; asymerr = 0.; };
-          if (!isFE   && m == 8 && p == 2 && r < 3) { asym = 0.; asymerr = 0.; };
-          if (!isFE   && m == 8 && p == 6 && r < 3) { asym = 0.; asymerr = 0.; };
-          if (!isFE   && m == 9 && p == 3 && r < 2) { asym = 0.; asymerr = 0.; };
-          if ( isFE   && m == 9 && p >= 7 && r < 1) { asym = 0.; asymerr = 0.; };
-          if ( isFE   && m == 11&& p == 7 && r < 2) { asym = 0.; asymerr = 0.; };
+          if (removePointsforWidth(isFE, m, p, r)) { asym = 0.; asymerr = 0.; };
         }
         temp1.push_back( asym );
         temp_error1.push_back( asymerr );
+        temp1_lower_x.push_back(low);
+        temp1_upper_x.push_back(up);
       }
       temp2.push_back(temp1);
       temp_error2.push_back(temp_error1);
+      temp2_lower_x.push_back(temp1_lower_x);
+      temp2_upper_x.push_back(temp1_upper_x);
     }
     Widths.push_back(temp2);
     WidthsError.push_back(temp_error2);
+    lower_x.push_back(temp2_lower_x);
+    upper_x.push_back(temp2_upper_x);
   }
 }
 
@@ -257,21 +257,8 @@ void histLinFit( std::vector< std::vector< TH1F* > > widths_hist_all , std::vect
       if ( widths_hist_all.at(m).at(p)->GetEntries() != 0 ) {
         fitLin( *( widths_hist_all.at(m).at(p) ), value, error );
 
-        if ( p==0 ) {value = 0; error = 0;}
-        if ( !isFE && m==1  && p==1 ) {value = 0; error = 0;}
-        if ( !isFE && m==3  && p==1 ) {value = 0; error = 0;}
-        if ( !isFE && m>=6  && p==1 ) {value = 0; error = 0;}
-        if ( !isFE && m==5  && p==8 ) {value = 0; error = 0;}
-        if ( !isFE && m==6  && p==8 ) {value = 0; error = 0;}
-        if ( !isFE && m==7  && p>=8 ) {value = 0; error = 0;}
-        if ( !isFE && m==8  && p==1 ) {value = 0; error = 0;}
-        if ( !isFE && m==8  && p>=6 ) {value = 0; error = 0;}
-        if ( !isFE && m==9  && p>=5 ) {value = 0; error = 0;}
-        if (  isFE && m==10 && p==6 ) {value = 0; error = 0;}
-        if (  isFE && m==10 && p>=8 ) {value = 0; error = 0;}
-        if (  isFE && m==11 && p>=8 ) {value = 0; error = 0;}
-        if (  isFE && m==12 && p>=7 ) {value = 0; error = 0;}
-        if (  isFE && m>=11 && p==1 ) {value = 0; error = 0;}
+        if (removePointsforFit(isFE, m, p)) {value = 0; error = 0;}
+
         temp2.push_back(value);
         temp_error2.push_back(error);
       } else {
@@ -284,7 +271,7 @@ void histLinFit( std::vector< std::vector< TH1F* > > widths_hist_all , std::vect
   }
 }
 
-void histLinCorFit( std::vector< std::vector< std::vector< double > > > Widths, std::vector< std::vector< std::vector< double > > > WidthsError, std::vector< std::vector< TGraphErrors* > > &output_graph, std::vector< std::vector< double > > &output, std::vector< std::vector< double > > &output_error, bool isFE, bool isMC) {
+void histLinCorFit( std::vector< std::vector< std::vector< double > > > Widths, std::vector< std::vector< std::vector< double > > > WidthsError, std::vector< std::vector< TGraphErrors* > > &output_graph, std::vector< std::vector< double > > &output, std::vector< std::vector< double > > &output_error, bool isFE, bool isMC, TH1F* h_chi2_tot) {
   for( unsigned int m = 0; m < Widths.size(); m++ ) {
     // eta loop
     std::vector<TGraphErrors*> temp2_graph;
@@ -337,45 +324,38 @@ void histLinCorFit( std::vector< std::vector< std::vector< double > > > Widths, 
       // choose start values for the fit
       // double slope = (Widths.at(m).at(p).at(Widths.at(m).at(p).size()-1) - Widths.at(m).at(p).at(Widths.at(m).at(p).size()-3))/(x.at(x.size()-1) - x.at(x.size()-3));
       // double offset = Widths.at(m).at(p).at(Widths.at(m).at(p).size()-1) - (slope*x.at(x.size()-1));
+      double chi2 = -10.0;
+      int ndf = Widths.at(m).at(p).size()-2;
       double slope  = 0.15;
       double offset = 0.05;
       double d_slope = slope;
       double d_offset = offset;
       double min_slope = 0.05;
+      double max_slope = 0.5;
+      double min_offset = 0.001;
       double max_offset = 0.15;
-      if ( !isFE && m == 7 && p == 2) min_slope  = 0.215;
-      if ( !isFE && m == 7 && p == 2) max_offset = 0.07;
-      if ( !isFE && m == 8 && p == 6) min_slope  = 0.09;
-      if ( !isFE && m == 8 && p == 6) max_offset = 0.1;
-      if ( !isFE && m >= 10&& p == 2) max_offset = 0.4;
-      if (isFE&&isMC && m == 10&& p == 6) max_offset = 0.06;
-      if (isFE&&isMC && m == 10&& p == 6) min_slope  = 0.13;
+      if ( !isFE && m == 7 && p == 2) { min_slope = 0.15; max_offset = 0.08;}
+      if ( !isFE && m == 7 && p == 6) { min_slope = 0.01; max_offset = 0.08;}
+      if ( !isFE && m == 8 && p == 6) { min_slope = 0.09; max_offset = 0.045;}
+      if ( !isFE && m >= 10&& p == 2) { max_offset = 0.4;}
+      if (isFE&&isMC&&m==10&& p == 6) { min_slope = 0.13; max_offset = 0.06;}
+      if (!isFE&&isMC&&m==7&& p == 6) { min_slope = 0.01; max_offset = 0.08; min_offset = 0.04;}
+      if (!isFE&&isMC&&m==7&& p == 2) { min_slope = 0.15; max_offset = 0.08; min_offset = 0.06;}
+
       //         std::cout << "eta: " << m <<  ", p_T: " << p << std::endl;
       //         std::cout << "fit start values: " << "slope: " << slope << " offset: " << offset << std::endl;
-      make_lin_fit(slope, d_slope, offset, d_offset, min_slope, max_offset);
+      make_lin_fit(slope, d_slope, offset, d_offset, min_slope, max_slope, min_offset, max_offset, chi2);
       //         std::cout << "fit values: " << "slope: " << slope << " offset: " << offset << std::endl;
       lin_extrapol_mc->SetParameter(0, offset);
       lin_extrapol_mc->SetParError(0, d_offset);
       lin_extrapol_mc->SetParameter(1, slope);
       lin_extrapol_mc->SetParError(1, d_slope);
-      lin_extrapol_mc->SetChisquare(0.);//TODO: set the correct chi/2
+      lin_extrapol_mc->SetChisquare(chi2);//TODO: set the correct chi/2
+      lin_extrapol_mc->SetNDF(ndf);
       extrapol_MC->GetListOfFunctions()->Add(lin_extrapol_mc);
+      if (removePointsforFit(isFE, m, p)) {offset = 0; d_offset = 0; chi2 = -10; }
 
-      if ( p==0 ) {offset = 0; d_offset = 0; }
-      if ( !isFE && m==1  && p==1 ) {offset = 0; d_offset = 0; }
-      if ( !isFE && m==3  && p==1 ) {offset = 0; d_offset = 0; }
-      if ( !isFE && m>=6  && p==1 ) {offset = 0; d_offset = 0; }
-      if ( !isFE && m==5  && p==8 ) {offset = 0; d_offset = 0; }
-      if ( !isFE && m==6  && p==8 ) {offset = 0; d_offset = 0; }
-      if ( !isFE && m==7  && p>=8 ) {offset = 0; d_offset = 0; }
-      if ( !isFE && m==8  && p==1 ) {offset = 0; d_offset = 0; }
-      if ( !isFE && m==8  && p>=6 ) {offset = 0; d_offset = 0; }
-      if ( !isFE && m==9  && p>=5 ) {offset = 0; d_offset = 0; }
-      if (  isFE && m==10 && p==6 ) {offset = 0; d_offset = 0; }
-      if (  isFE && m==10 && p>=8 ) {offset = 0; d_offset = 0; }
-      if (  isFE && m==11 && p>=8 ) {offset = 0; d_offset = 0; }
-      if (  isFE && m==12 && p>=7 ) {offset = 0; d_offset = 0; }
-      if (  isFE && m>=11 && p==1 ) {offset = 0; d_offset = 0; }
+      h_chi2_tot->Fill(chi2/ndf);
 
       temp2.push_back(offset);
       temp_error2.push_back(d_offset);
@@ -628,24 +608,51 @@ void Fill_Map3D(std::vector< std::vector < std::vector < TH1F* > > > &Asymmetry,
 }
 
 
-void make_lin_fit(double & slope, double & d_slope, double & offset, double & d_offset, double min_slope, double max_offset) {
+void make_lin_fit(double & slope, double & d_slope, double & offset, double & d_offset, double min_slope, double max_slope, double min_offset, double max_offset, double & chi2) {
   TMinuit min;
   min.SetPrintLevel(-1);
   //min.SetPrintLevel(0);
   if (slope  < 0.05  || slope  > 0.5) slope  = 0.15;
   if (offset < 0.001 || offset > 0.1) offset = 0.05;
-  int err = min.DefineParameter(0, "slope", slope, d_slope, min_slope, 0.5);
+  int err = min.DefineParameter(0, "slope", slope, d_slope, min_slope, max_slope);
   assert(err==0);
-  err = min.DefineParameter(1, "offset", offset, d_offset, 0.001, max_offset);
+  err = min.DefineParameter(1, "offset", offset, d_offset, min_offset, max_offset);
   assert(err==0);
   min.SetFCN(chi2_linear);
   min.mnmigr();
   min.GetParameter(0, slope, d_slope);
   min.GetParameter(1, offset, d_offset);
+  Double_t par[2]; par[0] = slope; par[1] = offset;
+  chi2_calculation(chi2, par);
 }
 
 
 void chi2_linear(Int_t& npar, Double_t* grad, Double_t& fval, Double_t* p, Int_t status) {
+  if (data.y_cov_inv.GetNcols()==0) {
+    double dummy;
+    int ncols = data.y_cov.GetNcols();
+    data.y_cov_inv.ResizeTo(ncols, ncols);
+    data.y_cov_inv = data.y_cov.Invert(&dummy);
+  }
+  const size_t ndata = data.x_val.size(); // number of data points in x,y graph to fit to
+  std::vector<double> delta_y(ndata);
+  for(size_t i=0; i<ndata; ++i) {
+    delta_y[i] = data.x_val[i]*p[0] + p[1] - data.y_val[i];
+  }
+  // now calculate the chi2, i.e.
+  //  dy^T * C^{-1} * dy
+  // where C is the variance--covariance matrix and dy = (y_data - y_pred)
+  // This could probably be implemented in ROOT, but it's so simple, we just do it here:
+  fval = 0.0;
+  for(size_t i=0; i<ndata; ++i) {
+    for(size_t j=0; j<ndata; ++j) {
+      fval += delta_y[i] * delta_y[j] * data.y_cov_inv(i,j);
+    }
+  }
+}
+
+
+void chi2_calculation(Double_t& fval, Double_t* p) {
   if (data.y_cov_inv.GetNcols()==0) {
     double dummy;
     int ncols = data.y_cov.GetNcols();
@@ -833,4 +840,65 @@ void fitLin( TH1F &hist, double &width, double &error ) {
   width = linfit -> GetParameter(0);
   error = 1. * ( linfit -> GetParError(0) );
   delete linfit;
+}
+
+
+
+bool removePointsforWidth(bool isFE, int m, int p, int r) {
+  bool check = false;
+  if ( p == 0 && r < 4) check = true;
+  if ( p == 1 && r < 4) check = true;
+  if ( p == 2 && r < 3) check = true;
+  if ( p == 3 && r < 2) check = true;
+  if ( p == 4 && r < 1) check = true;
+  if ( p == 5 && r < 1) check = true;
+  if ( p == 6 && r < 1) check = true;
+  if (!isFE   && m == 0 && p == 5 && r < 2) check = true;
+  if (!isFE   && m == 1 && p >= 8 && r < 1) check = true;
+  if (!isFE   && m == 2 && p == 7 && r < 1) check = true;
+  if (!isFE   && m == 3 && p == 5 && r < 2) check = true;
+  if (!isFE   && m == 4 && p == 8 && r < 1) check = true;
+  if (!isFE   && m == 5 && p == 6 && r < 2) check = true;
+  if (!isFE   && m == 5 && p == 7 && r < 1) check = true;
+  if (!isFE   && m == 6 && p == 3 && r < 3) check = true;
+  if (!isFE   && m == 6 && p == 4 && r < 2) check = true;
+  if (!isFE   && m == 6 && p == 5 && r < 2) check = true;
+  if (!isFE   && m == 6 && p == 9 && r < 1) check = true;
+  if (!isFE   && m == 7 && p == 4 && r < 2) check = true;
+  if (!isFE   && m == 7 && p == 6 && r < 2) check = true;
+  if (!isFE   && m == 7 && p == 7 && r < 1) check = true;
+  if (!isFE   && m == 7 && p == 8 && r < 1) check = true;
+  if (!isFE   && m == 8 && p == 3 && r < 3) check = true;
+  if (!isFE   && m == 8 && p == 4 && r < 2) check = true;
+  if ( isFE   && m == 2 && p == 5 && r < 1) check = true;
+  if ( isFE   && m == 6 && p == 8 && r < 2) check = true;
+  if ( isFE   && m == 7 && p == 7 && r < 2) check = true;
+  if ( isFE   && m == 8 && p == 3 && r < 3) check = true;
+  if ( isFE   && m == 9 && p >= 7 && r < 1) check = true;
+  if ( isFE   && m == 10&& p == 3 && r < 3) check = true;
+  if ( isFE   && m == 10&& p == 7 && r < 1) check = true;
+  if ( isFE   && m == 11&& p == 3 && r < 1) check = true;
+  if ( isFE   && m == 11&& p == 7 && r < 2) check = true;
+  if ( isFE   && m == 12&& p == 5 && r < 2) check = true;
+  return check;
+}
+
+
+bool removePointsforFit(bool isFE, int m, int p) {
+  bool check = false;
+  if ( p<=1 ) check = true;
+  if ( !isFE && m==5  && p==8 ) check = true;
+  if ( !isFE && m==6  && p==8 ) check = true;
+  if ( !isFE && m==7  && p>=8 ) check = true;
+  if ( !isFE && m==8  && p>=5 ) check = true;
+  if ( !isFE && m==9  && p>=5 ) check = true;
+  if (  isFE && m==5  && p==2 ) check = true;
+  if (  isFE && m==6  && p==8 ) check = true;
+  if (  isFE && m==7  && p==7 ) check = true;
+  if (  isFE && m==8  && p==2 ) check = true;
+  if (  isFE && m==10 && p==6 ) check = true;
+  if (  isFE && m==10 && p>=8 ) check = true;
+  if (  isFE && m==11 && p>=7 ) check = true;
+  if (  isFE && m==12 && p>=7 ) check = true;
+  return check;
 }
