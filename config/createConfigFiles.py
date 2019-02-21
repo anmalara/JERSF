@@ -80,7 +80,11 @@ def createConfigFiles(processes=["QCDPt15to30", "QCDPt15to30_MB", "DATA_RunF"], 
                 change_lines(path, filename, [el[0:2] for el in controls ], [el[2:3] for el in controls ], [el[3:4] for el in controls ])
 
                 for sys in systematics:
+                    if sys == "":
+                        continue
                     for dir in ["up", "down"]:
+                        if "JER" in sys:
+                            dir = "nominal"
                         add_path_sys = sys+"/"+dir+"/"
                         if not os.path.exists(path+add_path_sys):
                             os.makedirs(path+add_path_sys)
@@ -99,7 +103,7 @@ def createConfigFiles(processes=["QCDPt15to30", "QCDPt15to30_MB", "DATA_RunF"], 
                         if "JEC" in sys:
                             controls.append(["<!ENTITY", "JECSMEAR_DIRECTION", '"nominal"', '"'+dir+'"'])
                         elif "JER" in sys:
-                            controls.append(["<!ENTITY", "JERSMEAR_DIRECTION", '"nominal"', '"'+dir+'"'])
+                            controls.append(["<!ENTITY", "DO_JERSMEAR", '"false"', '"true"'])
                         elif "PU" in sys:
                             controls.append(["<!ENTITY", "SYSTYPE_PU", '"central"', '"'+dir+'"'])
                         change_lines(path+add_path_sys, newfilename, [el[0:2] for el in controls ], [el[2:3] for el in controls ], [el[3:4] for el in controls ])

@@ -13,6 +13,7 @@ constexpr static float s_delta_phi = 2.7;
 /* //SingleJet central triggers highest ------------- */
 const int n_pt_bins_Si = 10;
 const double pt_bins_Si[n_pt_bins_Si]       = { 40, 72,  95, 160, 226, 283, 344, 443, 577, 606};
+const double pt_bins_SiAK8PUPPI[n_pt_bins_Si] = { 73,  90, 115, 181, 251, 312, 378, 457, 519, 566};
 /* //SingleJet HF triggers highest ------------- */
 const int n_pt_bins_Si_HF = 10;
 const double pt_bins_Si_HF[n_pt_bins_Si_HF] = { 40, 72,  95, 160, 226, 283, 344, 443, 577, 606};

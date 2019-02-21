@@ -4,10 +4,14 @@ def cont_event(paths ="./submittedJobs/" , JECVersions_Data=["Fall17_17Nov2017_V
     count = 0
     for newJECVersion in JECVersions_Data:
         for newJetLabel in JetLabels:
-            for sys in systematics+[""]:
+            for sys in systematics:
                 for dir in ["", "up", "down"]:
                     if sys == "" and dir != "":
                         continue
+                    if sys == "JER" and dir != "":
+                        continue
+                    if sys == "JER" and dir == "":
+                        dir = "nominal"
                     path = paths+newJECVersion+"/"+newJetLabel+"/"+sys+"/"+dir+"/"
                     for sample in sorted(os.listdir(path)):
                         if not ".xml" in sample:
@@ -20,11 +24,16 @@ def condor_control(original_dir ="./submittedJobs/" , JECVersions_Data=["Fall17_
     count = 0
     for newJECVersion in JECVersions_Data:
         for newJetLabel in JetLabels:
-            for sys in systematics+[""]:
+            for sys in systematics:
                 for dir in ["", "up", "down"]:
                     if sys == "" and dir != "":
                         continue
+                    if sys == "JER" and dir != "":
+                        continue
+                    if sys == "JER" and dir == "":
+                        dir = "nominal"
                     path = original_dir+newJECVersion+"/"+newJetLabel+"/"+sys+"/"+dir+"/"
+                    print path
                     for sample in sorted(os.listdir(path)):
                         if not ".xml" in sample:
                             continue
@@ -51,10 +60,14 @@ def delete_workdir(original_dir ="./SubmittedJobs/" , JECVersions_Data=["Fall17_
     for sample in ["DATA", "QCD"]:
         for newJECVersion in JECVersions_Data:
             for newJetLabel in JetLabels:
-                for sys in systematics+[""]:
+                for sys in systematics:
                     for dir in ["", "up", "down"]:
                         if sys == "" and dir != "":
                             continue
+                        if sys == "JER" and dir != "":
+                            continue
+                    	if sys == "JER" and dir == "":
+                       	    dir = "nominal"
                         path = "/nfs/dust/cms/user/amalara/sframe_all/"+outdir+add_name+"_"+sample+"/"+newJECVersion+"/"+newJetLabel+"/"+sys+"/"+dir+"/"
                         if os.path.isdir(path):
                             for workdir in sorted(os.listdir(path)):
@@ -148,7 +161,7 @@ Data_process.append("DATA_RunD_MB")
 Data_process.append("DATA_RunE_MB")
 Data_process.append("DATA_RunF_MB")
 
-Data_process.append("DATA_RunF_ECAL")
+# Data_process.append("DATA_RunF_ECAL")
 
 processes = QCD_process+Data_process
 
@@ -160,10 +173,12 @@ original_file = "JER2017.xml"
 outdir = "JER2017"
 original_dir_ = os.getcwd()
 
-JECVersions_Data = ["Fall17_17Nov2017_V31"]
-JECVersions_MC = ["Fall17_17Nov2017_V24"]
-JetLabels = ["AK4CHS"]
-systematics = ["PU", "JEC"]
+JECVersions_Data = ["Fall17_17Nov2017_V32"]
+JECVersions_MC = ["Fall17_17Nov2017_V32"]
+# JetLabels = ["AK4CHS"]
+JetLabels = ["AK8PUPPI"]
+systematics = ["", "PU", "JEC", "JER"]
+# systematics = ["JER"]
 
 isLowPt = False
 isMB = False

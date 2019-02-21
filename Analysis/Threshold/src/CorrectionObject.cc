@@ -12,7 +12,7 @@ CorrectionObject::CorrectionObject(const TString & runnr, const TString & genera
       _jettag = s_tmp;
       TString inputPath;
       TString inputPath_MC;
-      
+
       //Declare path for input, weights, output
       inputPath  = _input_path;//+"/";
       inputPath_MC  = _input_path_MC;
@@ -22,12 +22,13 @@ CorrectionObject::CorrectionObject(const TString & runnr, const TString & genera
 
      TString input_base = inputPath;
      input_base.Resize(input_base.Last('/')+1);
-     _outpath    = input_base +"Run" + _runnr + _outpath_postfix + "/";
+     // _outpath    = input_base +"Run" + _runnr + _outpath_postfix + "/";
+     _outpath = _outpath_postfix;
 
-          
+
 // "/nfs/dust/cms/user/karavdia/JEC_Summer16_V8_ForWeights/uhh2.AnalysisModuleRunner.MC.QCDPt50toInf_pythia8_AK4CHS.root
      //FIXME hardcoded 2016 MC paths
-     //For QCD pT binned samples 
+     //For QCD pT binned samples
       if(_generator == "pythia"){
 	_MCpath = _input_path_MC;
 	// if(_trigger_central && !_trigger_fwd)     { _MCpath = inputPath_MC;}
@@ -35,13 +36,13 @@ CorrectionObject::CorrectionObject(const TString & runnr, const TString & genera
        	// //else if(_trigger_central && _trigger_fwd) {_MCpath = input_path + "uhh2.AnalysisModuleRunner.MC.QCDPt50toInf_pythia8_" + _collection  +".root";}
        	// else if(_trigger_central && _trigger_fwd)  {_MCpath = "/nfs/dust/cms/user/karavdia/JEC_Summer16_V8_ForWeights/uhh2.AnalysisModuleRunner.MC.QCDPt50toInf_pythia8_AK4CHS.root";}
 	// else throw runtime_error("In Correction Object: No valid Trigger-Flag (main.C) was set.");
-	
+
 	// _MCpath_ForWeights_FLAT = _weightpath_FLAT + "uhh2.AnalysisModuleRunner.MC.QCDPt50toInf_pythia8_" + _collection + ".root";//  "_Flat.root";
 	// _MCpath_ForWeights_FWD  = _weightpath_FWD + "uhh2.AnalysisModuleRunner.MC.QCDPt50toInf_pythia8_" + _collection  + ".root";// "_Fwd.root";
 	_MCpath_ForWeights  = _MCpath; // _weightpath + "uhh2.AnalysisModuleRunner.MC.QCDPt50toInf_pythia8_" + _collection  + ".root";
 	_generator_tag = "pythia8";
       }
-     
+
       //For flat MC samples:
       /*
       if(_generator == "pythia"){
@@ -50,7 +51,7 @@ CorrectionObject::CorrectionObject(const TString & runnr, const TString & genera
 	//else if(_trigger_central && _trigger_fwd)  {_MCpath = input_path + "uhh2.AnalysisModuleRunner.MC.QCDPt15to7000_pythia8_" + _collection  +".root";}
 	else if(_trigger_central && _trigger_fwd)  {_MCpath = input_path + "uhh2.AnalysisModuleRunner.MC.QCDPt15to7000_pythia8_" + _collection  + "_Full_Run" + _runnr  + ".root";}
 	else throw runtime_error("In Correction Object: No valid Trigger-Flag (main.C) was set.");
-	
+
 	_MCpath_ForWeights_FLAT = _weightpath_FLAT + "uhh2.AnalysisModuleRunner.MC.QCDPt15to7000_pythia8_" + _collection  + "_Flat.root";
 	_MCpath_ForWeights_FWD  = _weightpath_FWD + "uhh2.AnalysisModuleRunner.MC.QCDPt15to7000_pythia8_" + _collection  + "_Fwd.root";
 	_MCpath_ForWeights  = _weight_path + "uhh2.AnalysisModuleRunner.MC.QCDPt15to7000_pythia8_" + _collection  + ".root";
@@ -74,13 +75,13 @@ CorrectionObject::CorrectionObject(const TString & runnr, const TString & genera
 	throw runtime_error("In CorrectionObject.cc can not find generator " + _generator);
       }
 
-      //DATA 
+      //DATA
       _DATApath = input_path // + "uhh2.AnalysisModuleRunner.DATA.DATA_Run" + _runnr + "_" + _collection + ".root"
 	;
       // _DATApath_ForWeights_FLAT = _weightpath_FLAT + "uhh2.AnalysisModuleRunner.DATA.DATA_Run" + _runnr + "_" + _collection + ".root";
       // _DATApath_ForWeights_FWD = _weightpath_FWD + "uhh2.AnalysisModuleRunner.DATA.DATA_Run" + _runnr + "_" + _collection + ".root";
       _DATApath_ForWeights = _DATApath;// _weight_path + "uhh2.AnalysisModuleRunner.DATA.DATA_Run" + _runnr + "_" + _collection + ".root";
-      
+
       //Check if files are in place:
       cout << "Opening MC file:   " << _MCpath << endl;
       cout << "Opening DATA file: " << _DATApath << endl << endl;
@@ -89,7 +90,7 @@ CorrectionObject::CorrectionObject(const TString & runnr, const TString & genera
       	cout << "No new Directory was created" << endl;
       }
       cout << endl;
-      
+
       _MCFile = new TFile(_MCpath,"READ");
       _DATAFile = new TFile(_DATApath,"READ");
 
@@ -98,15 +99,15 @@ CorrectionObject::CorrectionObject(const TString & runnr, const TString & genera
 
 
       //lumitags
-      if(_runnr == "BC") _lumitag      = "RunBC 14.4 fb^{-1}";   //2017! 
+      if(_runnr == "BC") _lumitag      = "RunBC 14.4 fb^{-1}";   //2017!
       //FIXME differentiate between 2016 (5.8 fb^{-1}) and 2017
       else if(_runnr == "B") _lumitag      = "RunB  4.8 fb^{-1}";
       else if(_runnr == "C") _lumitag      = "RunC  9.6 fb^{-1}";
       else if(_runnr == "D") _lumitag      = "RunD  4.2 fb^{-1}";
       else if(_runnr == "E") _lumitag      = "RunE  9.3 fb^{-1}";
       else if(_runnr == "F") _lumitag      = "RunF  13.5 fb^{-1}";
-      else if(_runnr == "DE") _lumitag      = "RunDE  13.5 fb^{-1}"; 
-      else if(_runnr == "DEF") _lumitag      = "RunDEF  26.9 fb^{-1}"; 
+      else if(_runnr == "DE") _lumitag      = "RunDE  13.5 fb^{-1}";
+      else if(_runnr == "DEF") _lumitag      = "RunDEF  26.9 fb^{-1}";
       else if(_runnr == "BCD") _lumitag      = "RunBCD  18.6 fb^{-1}";
       else if(_runnr == "BCDEF") _lumitag      = "RunBCDEF  41.3 fb^{-1}";
       else if(_runnr == "CDEF") _lumitag      = "RunCDEF 36.5 fb^{-1}";
@@ -116,7 +117,7 @@ CorrectionObject::CorrectionObject(const TString & runnr, const TString & genera
 void CorrectionObject::FullCycle_CorrectFormulae(double kfsr_fitrange, bool useCombinedkSFR){
   std::cout<<"Doing the Full Cycle"<<std::endl;
   std::cout<<"\nStarting ControlPlots()\n"<<std::endl;
-  CorrectionObject::ControlPlots();  
+  CorrectionObject::ControlPlots();
   if(not useCombinedkSFR){
     std::cout<<"\nStarting kFSR_CorrectFormulae()\n"<<std::endl;
     CorrectionObject::kFSR_CorrectFormulae();
@@ -140,4 +141,3 @@ void CorrectionObject::FullCycle_CorrectFormulae_eta(){
   CorrectionObject::L2ResOutput_eta();
   CorrectionObject::FinalControlPlots_CorrectFormulae_eta();
 }
-

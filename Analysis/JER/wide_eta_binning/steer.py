@@ -51,7 +51,9 @@ def main_function(gaustails=False, shiftForPLI="central", gaustail_num = 0.985):
             a = os.system(cmd)
     else:
         os.makedirs(outdir)
-    cmd = "cp mainRun.cxx %s" % (outdir)
+    programm ="mainRun"
+    if "AK8" in outdir: programm += "AK8"
+    cmd = "cp %s.cxx %s" % (programm, outdir)
     a = os.system(cmd)
     cmd = "cp functions.C %s" % (outdir)
     a = os.system(cmd)
@@ -74,8 +76,9 @@ def main_function(gaustails=False, shiftForPLI="central", gaustail_num = 0.985):
     MC_type = '\\"MC\\"'
     data_type = '\\"Data\\"'
     trigger_type = '\\"'+study[:-1]+'\\"'
-    # cmd = 'root -l -b -q "%smainRun.cxx(false, %s, %s, %s, %s , %s, %s, %s, %s, %s, %s)" >> log.txt &' % (outdir, MC_file, Data_file, LABEL_LUMI_INV_FB, MC_type, data_type, trigger_type, '\\"'+outdir+'\\"', gaustail_num, shiftForPLI_num, ref_shift)
-    cmd = 'root -l -b -q "%smainRun.cxx(false, %s, %s, %s, %s , %s, %s, %s, %s, %s, %s)" >> log.txt  ' % (outdir, MC_file, Data_file, LABEL_LUMI_INV_FB, MC_type, data_type, trigger_type, '\\"'+outdir+'\\"', gaustail_num, shiftForPLI_num, ref_shift)
+    # cmd = 'root -l -b -q "%s%s.cxx(false, %s, %s, %s, %s , %s, %s, %s, %s, %s, %s)" >> log.txt &' % (outdir, programm, MC_file, Data_file, LABEL_LUMI_INV_FB, MC_type, data_type, trigger_type, '\\"'+outdir+'\\"', gaustail_num, shiftForPLI_num, ref_shift)
+    # cmd = 'root -l -b -q "%s%s.cxx(false, %s, %s, %s, %s , %s, %s, %s, %s, %s, %s)" >> log.txt  ' % (outdir, programm, MC_file, Data_file, LABEL_LUMI_INV_FB, MC_type, data_type, trigger_type, '\\"'+outdir+'\\"', gaustail_num, shiftForPLI_num, ref_shift)
+    cmd = 'root -l -b -q "%s%s.cxx(false, %s, %s, %s, %s , %s, %s, %s, %s, %s, %s)"' % (outdir, programm, MC_file, Data_file, LABEL_LUMI_INV_FB, MC_type, data_type, trigger_type, '\\"'+outdir+'\\"', gaustail_num, shiftForPLI_num, ref_shift)
     print cmd
     a = os.system(cmd)
     print ("time needed: "+str((time.time()-temp_time))+" s")
@@ -90,16 +93,17 @@ common_path = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94X_v2/CMSSW_9_4_1/sr
 
 samples = ["B","C","D","E","F","BC","DE","DEF","BCDEF", "F_ECAL"]
 samples = ["BCDEF"]
-QCDSamples = ["QCDPt","QCDHT"]
-# QCDSamples = ["QCDPt"]
-JetLabels=["AK4CHS"]
-JECVersions=["Fall17_17Nov2017_V31"]
+# QCDSamples = ["QCDPt","QCDHT"]
+QCDSamples = ["QCDPt"]
+# JetLabels=["AK4CHS"]
+JetLabels=["AK8PUPPI"]
+JECVersions=["Fall17_17Nov2017_V32"]
 dirs = ["", "up", "down"]
 # studies = ["StandardPtBins/", "StandardPtBins_L1Seed/"]
 studies = ["StandardPtBins/", "StandardPtBins_allweights/", "StandardPtBins_weightcut/"]
 studies = ["StandardPtBins/"]
-systematics=["", "PU", "JEC", "alpha"]
-# systematics=[""]
+# systematics=["", "PU", "JEC", "alpha", "JER"]
+systematics=[""]
 
 list_processes = []
 list_logfiles = []
@@ -111,6 +115,10 @@ for extraText in [""]:
             for newJetLabel in JetLabels:
                 for syst in systematics:
                     for dir in dirs:
+                        if syst == "JER" and dir != "":
+                          continue
+                        if syst == "JER" and dir == "":
+                          dir = "nominal"
                         if (syst == "" and dir != "") or (syst == "alpha" and dir != "") or ((syst != "" and syst != "alpha") and dir == ""):
                             continue
                         pattern = newJECVersion+"/"+newJetLabel+"/"+syst+"/"+dir+"/"
@@ -133,11 +141,11 @@ for extraText in [""]:
                                     continue
                                 # print MC_file, Data_file
                                 main_function(gaustails=False)
-                                if syst == "":
-                                    main_function(gaustails=False, shiftForPLI="up")
-                                    main_function(gaustails=False, shiftForPLI="down")
-                                    main_function(gaustails=True, shiftForPLI="central")
-                                    main_function(gaustails=True, shiftForPLI="central", gaustail_num = 0.95)
+                                #if syst == "":
+                                    #main_function(gaustails=False, shiftForPLI="up")
+                                    #main_function(gaustails=False, shiftForPLI="down")
+                                    #main_function(gaustails=True, shiftForPLI="central")
+                                    #main_function(gaustails=True, shiftForPLI="central", gaustail_num = 0.95)
                                     # for gaustail_num in np.arange(0.8,1.0,0.005):
                                        # main_function(gaustails=True, shiftForPLI="central", gaustail_num=gaustail_num)
 

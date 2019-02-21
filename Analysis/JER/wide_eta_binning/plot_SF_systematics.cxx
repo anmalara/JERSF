@@ -431,8 +431,9 @@ void plot_SF_systematics() {
   std::vector<TString> JECs;
   // JECs.push_back("Fall17_17Nov2017_V10");
   // JECs.push_back("Fall17_17Nov2017_V24");
-  //JECs.push_back("Fall17_17Nov2017_V27");
+  // JECs.push_back("Fall17_17Nov2017_V27");
   JECs.push_back("Fall17_17Nov2017_V31");
+  JECs.push_back("Fall17_17Nov2017_V32");
 
   std::vector<TString> JETs;
   JETs.push_back("AK4CHS");
@@ -440,7 +441,7 @@ void plot_SF_systematics() {
 
   std::vector<TString> QCDS;
   QCDS.push_back("QCDPt");
-  // QCDS.push_back("QCDHT");
+  QCDS.push_back("QCDHT");
 
   std::vector<TString> DATAS;
   // DATAS.push_back("RunB");

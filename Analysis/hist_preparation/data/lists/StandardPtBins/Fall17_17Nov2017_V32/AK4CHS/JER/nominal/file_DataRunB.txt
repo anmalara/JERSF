@@ -1,0 +1,1 @@
+/nfs/dust/cms/user/amalara/sframe_all/JER2017_DATA/Fall17_17Nov2017_V32/AK4CHS/JER/nominal/uhh2.AnalysisModuleRunner.DATA.DATA_RunB.root

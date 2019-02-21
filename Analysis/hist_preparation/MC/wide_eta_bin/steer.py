@@ -10,12 +10,17 @@ def main_program(path="", list_path="", out_path="", JECVersions=[], JetLabels=[
   out_path_=out_path[:-1]+path[path.find(inputdir)+len(inputdir):path.find("QCD")-1]+"/"
   for newJECVersion in JECVersions:
     for newJetLabel in JetLabels:
-      for sys in set(systematics+["", "alpha"]):
+      for sys in set(systematics):
         if sys == "alpha":
           alpha_cut = 10
         else:
           alpha_cut = 15
         for dir in ["", "up", "down"]:
+          if sys == "JER" and dir != "":
+            continue
+          if sys == "JER" and dir == "":
+            dir = "nominal"
+            print sys, dir
           if (sys == "" and dir != "") or (sys == "alpha" and dir != "") or ((sys != "" and sys != "alpha") and dir == ""):
             continue
           pattern = newJECVersion+"/"+newJetLabel+"/"+sys+"/"+dir+"/"
@@ -104,9 +109,12 @@ list_logfiles = []
 for el in [""]:
   path = sframe_+inputdir+el+"_QCD/"
   samples = ["Pt","HT"]
-  JECVersions = ["Fall17_17Nov2017_V31"]
-  JetLabels = ["AK4CHS"]
-  systematics = ["PU", "JEC"]
+  # samples = ["HT"]
+  JECVersions = ["Fall17_17Nov2017_V32"]
+  JetLabels = ["AK8PUPPI"]
+  # JetLabels = ["AK4CHS"]
+  systematics = ["", "alpha","PU", "JEC", "JER"]
+  # systematics = ["JER"]
   main_program(path, list_path, out_path, JECVersions, JetLabels, systematics, samples)
 
 print len(list_processes)
