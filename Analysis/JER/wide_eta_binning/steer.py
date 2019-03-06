@@ -3,7 +3,7 @@ import os
 import time
 import numpy as np
 
-sys.path.append("/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94X_v2/CMSSW_9_4_1/src/UHH2/PersonalCode/")
+sys.path.append("/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/PersonalCode/")
 from parallelise import *
 
 def getLabel(sample):
@@ -57,7 +57,7 @@ def main_function(gaustails=False, shiftForPLI="central", gaustail_num = 0.985):
     a = os.system(cmd)
     cmd = "cp functions.C %s" % (outdir)
     a = os.system(cmd)
-    cmd = "cp /nfs/dust/cms/user/amalara/WorkingArea/UHH2_94X_v2/CMSSW_9_4_1/src/UHH2/PersonalCode/tdrstyle_all.C %s" % (outdir)
+    cmd = "cp /nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/PersonalCode/tdrstyle_all.C %s" % (outdir)
     a = os.system(cmd)
     os.chdir(outdir)
     os.makedirs("pdfy")
@@ -87,23 +87,29 @@ def main_function(gaustails=False, shiftForPLI="central", gaustail_num = 0.985):
 
 
 
-source_path = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94X_v2/CMSSW_9_4_1/src/UHH2/JER2017/Analysis/hist_preparation/"
-common_path = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94X_v2/CMSSW_9_4_1/src/UHH2/JER2017/Analysis/JER/wide_eta_binning/"
+source_path = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/JERSF/Analysis/hist_preparation/"
+common_path = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/JERSF/Analysis/JER/wide_eta_binning/"
 
 
 samples = ["B","C","D","E","F","BC","DE","DEF","BCDEF", "F_ECAL"]
 samples = ["BCDEF"]
+# samples = ["A"]
+samples = ["A"]
+# samples = ["B"]
+# samples = ["D"]
+# samples = ["A", "B", "AB", "D"]
 # QCDSamples = ["QCDPt","QCDHT"]
-QCDSamples = ["QCDPt"]
-# JetLabels=["AK4CHS"]
-JetLabels=["AK8PUPPI"]
-JECVersions=["Fall17_17Nov2017_V32"]
+QCDSamples = ["QCD_Flat2018"]
+JetLabels=["AK4CHS"]
+# JetLabels=["AK8PUPPI"]
+JECVersions=["Autumn18_V4"]
 dirs = ["", "up", "down"]
 # studies = ["StandardPtBins/", "StandardPtBins_L1Seed/"]
 studies = ["StandardPtBins/", "StandardPtBins_allweights/", "StandardPtBins_weightcut/"]
 studies = ["StandardPtBins/"]
-# systematics=["", "PU", "JEC", "alpha", "JER"]
+systematics=["", "PU", "JEC", "alpha", "JER"]
 systematics=[""]
+# systematics=["", "JEC"]
 
 list_processes = []
 list_logfiles = []
@@ -136,23 +142,23 @@ for extraText in [""]:
                                 # Data_file = '\\"'+source_path+"data/wide_eta_bin/file/save_v1/"+study+pattern.replace("/standard","")+run+extraText+"/histograms_data_incl_full.root"+'\\"'
                                 MC_file   = '\\"'+source_path+"MC/wide_eta_bin/file/"+study+pattern.replace("/standard","")+QCDsample+extraText+"/histograms_mc_incl_full.root"+'\\"'
                                 Data_file = '\\"'+source_path+"data/wide_eta_bin/file/"+study+pattern.replace("/standard","")+run+extraText+"/histograms_data_incl_full.root"+'\\"'
-                                # print MC_file, Data_file
+                                print MC_file, Data_file
                                 if not os.path.isfile(str(MC_file.replace("\\","").strip("\""))) or not os.path.isfile(str(Data_file.replace("\\","").strip("\""))):
                                     continue
                                 # print MC_file, Data_file
                                 main_function(gaustails=False)
-                                #if syst == "":
-                                    #main_function(gaustails=False, shiftForPLI="up")
-                                    #main_function(gaustails=False, shiftForPLI="down")
-                                    #main_function(gaustails=True, shiftForPLI="central")
-                                    #main_function(gaustails=True, shiftForPLI="central", gaustail_num = 0.95)
+                                # if syst == "":
+                                #     main_function(gaustails=False, shiftForPLI="up")
+                                #     main_function(gaustails=False, shiftForPLI="down")
+                                #     main_function(gaustails=True, shiftForPLI="central")
+                                #     main_function(gaustails=True, shiftForPLI="central", gaustail_num = 0.95)
                                     # for gaustail_num in np.arange(0.8,1.0,0.005):
-                                       # main_function(gaustails=True, shiftForPLI="central", gaustail_num=gaustail_num)
+                                    #    main_function(gaustails=True, shiftForPLI="central", gaustail_num=gaustail_num)
 
 
 
 # for i in list_processes:
-#   print i
-
+#     print i
+#
 # print len(list_processes)
 # parallelise(list_processes, 10, list_logfiles)

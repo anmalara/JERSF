@@ -1,4 +1,4 @@
-#include "UHH2/JER2017/include/JER2017Hists.h"
+#include "UHH2/JERSF/include/JERSFHists.h"
 #include "UHH2/core/include/Event.h"
 
 #include "TH1F.h"
@@ -8,10 +8,10 @@ using namespace std;
 using namespace uhh2;
 using namespace uhh2examples;
 
-JER2017Hists::JER2017Hists(Context & ctx, const string & dirname): Hists(ctx, dirname){
+JERSFHists::JERSFHists(Context & ctx, const string & dirname): Hists(ctx, dirname){
   // book all histograms here
   // jets
-  book<TH1F>("N_jets", "N_{jets}", 20, 0, 20);  
+  book<TH1F>("N_jets", "N_{jets}", 20, 0, 20);
   book<TH1F>("eta_jet1", "#eta^{jet 1}", 40, -2.5, 2.5);
   book<TH1F>("eta_jet2", "#eta^{jet 2}", 40, -2.5, 2.5);
   book<TH1F>("eta_jet3", "#eta^{jet 3}", 40, -2.5, 2.5);
@@ -28,19 +28,19 @@ JER2017Hists::JER2017Hists(Context & ctx, const string & dirname): Hists(ctx, di
 }
 
 
-void JER2017Hists::fill(const Event & event){
+void JERSFHists::fill(const Event & event){
   // fill the histograms. Please note the comments in the header file:
   // 'hist' is used here a lot for simplicity, but it will be rather
   // slow when you have many histograms; therefore, better
   // use histogram pointers as members as in 'UHH2/common/include/ElectronHists.h'
-  
+
   // Don't forget to always use the weight when filling.
   double weight = event.weight;
-  
+
   std::vector<Jet>* jets = event.jets;
   int Njets = jets->size();
   hist("N_jets")->Fill(Njets, weight);
-  
+
   if(Njets>=1){
     hist("eta_jet1")->Fill(jets->at(0).eta(), weight);
   }
@@ -61,9 +61,9 @@ void JER2017Hists::fill(const Event & event){
       hist("eta_mu")->Fill(thismu.eta(), weight);
       hist("reliso_mu")->Fill(thismu.relIso(), weight);
   }
-  
+
   int Npvs = event.pvs->size();
   hist("N_pv")->Fill(Npvs, weight);
 }
 
-JER2017Hists::~JER2017Hists(){}
+JERSFHists::~JERSFHists(){}

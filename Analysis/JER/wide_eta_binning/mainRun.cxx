@@ -17,7 +17,7 @@
 #include <TFrame.h>
 #include <TString.h>
 
-#include "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/JER2017/include/constants.hpp"
+#include "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/JERSF/include/constants.hpp"
 #include "functions.C"
 #include "tdrstyle_all.C"
 
@@ -518,6 +518,7 @@ void SFtoTXT(std::ofstream& texfile, std::vector< TH1F* > h_JER, std::vector< st
     TF1 * constfit = h_JER.at(m) -> GetFunction("constfit");
     TF1 * NSC_ratio = h_JER.at(m) -> GetFunction("NSC_ratio");
     h_JER.at(m)->GetFunction("NSC_ratio")->SetBit(TF1::kNotDraw);
+    if (constfit==0)  continue;
     std::cout << findMinMax(h_JER.at(m), width_pt.at(m), NSC_ratio, constfit, 1) << " " <<  findMinMax(h_JER.at(m), width_pt.at(m), NSC_ratio, constfit, 0) << '\n';
     SF_ptdep_min.push_back(findMinMax(h_JER.at(m), width_pt.at(m), NSC_ratio, constfit, 1));
     SF_ptdep_max.push_back(findMinMax(h_JER.at(m), width_pt.at(m), NSC_ratio, constfit, 0));
@@ -618,8 +619,8 @@ void PLOT_NCS(std::vector< TH1F* > h_data, std::vector< TH1F* > h_MC, std::vecto
     TH1F* dtERR = (TH1F*)h_data.at(m)->Clone();
     MCFIT(h_MC.at(m), mcERR, N, S, C, Nerr, Serr, Cerr, mcChi, mcNDF);
     DTFIT(h_data.at(m), dtERR, N, S, C, kNS, kC, Nerr, Serr, Cerr, kNSerr, kCerr, dtChi, dtNDF, m, isFE);
-    h_data.at(m)-> GetFunction("dtFIT")->SetLineColor(color_data+2);
-    h_MC.at(m)-> GetFunction("mcFIT")->SetLineColor(color_MC+2);
+    if (h_data.at(m)-> GetFunction("dtFIT")!=0) h_data.at(m)-> GetFunction("dtFIT")->SetLineColor(color_data+2);
+    if (h_MC.at(m)-> GetFunction("mcFIT")!=0) h_MC.at(m)-> GetFunction("mcFIT")->SetLineColor(color_MC+2);
     mcERR->SetFillColorAlpha(color_MC+2,0.35);
     dtERR->SetFillColorAlpha(color_data+2,0.35);
     TString canvName  = h_data.at(m)->GetTitle();
@@ -713,8 +714,8 @@ void PLOT_NCS(std::vector< TH1F* > h_data, std::vector< TH1F* > h_MC, std::vecto
 //
 // bool data_ = false;
 // bool real_data = true;
-// const char* filename = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/JER2017/Analysis/hist_preparation/MC/wide_eta_bin/file/Single/Fall17_17Nov2017_V10/AK4CHS/histograms_mc_incl_full.root"
-// const char* filename_data = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/JER2017/Analysis/hist_preparation/data/wide_eta_bin/file/Single/Fall17_17Nov2017_V10/AK4CHS/RunBCDEF/histograms_data_incl_full.root"
+// const char* filename = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/JERSF/Analysis/hist_preparation/MC/wide_eta_bin/file/Single/Fall17_17Nov2017_V10/AK4CHS/histograms_mc_incl_full.root"
+// const char* filename_data = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/JERSF/Analysis/hist_preparation/data/wide_eta_bin/file/Single/Fall17_17Nov2017_V10/AK4CHS/RunBCDEF/histograms_data_incl_full.root"
 //
 // TString Trigger = "Single"
 //
@@ -774,10 +775,10 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
     for (int i = 0; i < n_pt_bins_MB; i++) Pt_bins_Central.push_back(pt_bins_MB[i]);
     for (int i = 0; i < n_pt_bins_MB_HF; i++) Pt_bins_HF.push_back(pt_bins_MB_HF[i]);
   } else {
-    PtBins_Central  = n_pt_bins_Si;
-    PtBins_HF       = n_pt_bins_Si_HF;
-    for (int i = 0; i < n_pt_bins_Si; i++) Pt_bins_Central.push_back(pt_bins_Si[i]);
-    for (int i = 0; i < n_pt_bins_Si_HF; i++) Pt_bins_HF.push_back(pt_bins_Si_HF[i]);
+    PtBins_Central  = n_pt_bins_Di;
+    PtBins_HF       = n_pt_bins_Di_HF;
+    for (int i = 0; i < n_pt_bins_Di; i++) Pt_bins_Central.push_back(pt_bins_Di[i]);
+    for (int i = 0; i < n_pt_bins_Di_HF; i++) Pt_bins_HF.push_back(pt_bins_Di_HF[i]);
   }
 
   Pt_bins_Central.push_back(1500);
@@ -785,10 +786,20 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
 
   std::cout << "Trigger " << Trigger << '\n';
   print1(Pt_bins_Central);
+  for (size_t i = 0; i < Pt_bins_Central.size(); i++) std::cout << Pt_bins_Central[i] << '\t'; std::cout << '\n';
+
   print1(Pt_bins_HF);
+  for (size_t i = 0; i < Pt_bins_HF.size(); i++) std::cout << Pt_bins_HF[i] << '\t'; std::cout << '\n';
 
   std::vector<double> eta_bins_edge_SM(eta_bins, eta_bins + sizeof(eta_bins)/sizeof(double));
   std::vector<double> eta_bins_edge_FE(eta_bins+1, eta_bins + sizeof(eta_bins)/sizeof(double));
+
+
+  std::cout << "Eta bins " << Trigger << '\n';
+  print1(eta_bins_edge_SM);
+  for (size_t i = 0; i < eta_bins_edge_SM.size(); i++) std::cout << eta_bins_edge_SM[i] << '\t'; std::cout << '\n';
+  print1(eta_bins_edge_FE);
+  for (size_t i = 0; i < eta_bins_edge_FE.size(); i++) std::cout << eta_bins_edge_FE[i] << '\t'; std::cout << '\n';
 
   // EtaBins_FE   = 3;
   // EtaBins_SM       = n_eta_bins - EtaBins_FE - 1;
@@ -846,7 +857,9 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
   histLoadAsym( *f,       data_,       "mctruth_FE",           MC_Truth_asymmetries_FE,  dummy_hists,       EtaBins_FE,           PtBins_HF,      AlphaBins, etaShift_FE);
 
   print3H(asymmetries_SM);
-  print3H(asymmetries_FE);
+  print3H(asymmetries_data_SM);
+  print3H(asymmetries_SM);
+  print3H(asymmetries_data_FE);
   std::cout << "1 Done" << '\n';
 
   // std::vector < TH2F* > Map_mean_data;
@@ -915,8 +928,7 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
 
   // asdf_2(asymmetries_SM);
   // asdf(asymmetries_width_SM);
-  asdff(lower_x_SM);
-
+  // asdff(lower_x_SM);
 
   ////////////////////////////////////////////////////////////////////////////
   //    I calculate widths, this time also including                        //
@@ -1285,9 +1297,9 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
   fill_hist( "data_JER_correlated_FE_control", JER_correlated_data_hist_FE_control,  JER_correlated_corrected_data_FE_ref, JER_correlated_corrected_data_FE_ref_error, width_pt_FE, hist_max_value);
   fill_hist( "SF_correlated_FE_control",       JER_correlated_scale_hist_FE_control, scales_correlated_FE_control, scales_correlated_FE_control_error, width_pt_FE, hist_max_value_SF);
 
-
   std::cout << "TROVATO" << '\n';
   print1H(JER_uncorrelated_data_hist_SM);
+  std::cout << "TROVATO1" << '\n';
   print1H(JER_correlated_MC_hist_SM);
   print1H(JER_correlated_MC_hist_FE);
   print1H(JER_correlated_MC_hist_FE_control);
@@ -1308,8 +1320,8 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
   PLOT_MCT(JER_MC_Truth_FE,JER_uncorrelated_MC_hist_FE,JER_correlated_MC_hist_FE,JER015_uncorrelated_MC_hist_FE,outdir+"pdfy/MCTruth/",eta_bins_edge_FE, true);
   fMCTruth.Close();
 
-  //bool plot_all = true;
-  bool plot_all = false;
+  bool plot_all = true;
+  // bool plot_all = false;
   if (plot_all) {
     ////////////////////////////////////////////////////////////////////////////
     //  Plots Asymmetries                                                     //
@@ -1380,7 +1392,6 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
   /////////////////////////////////////////////////////////////////////////////////////////
 
   TFile NSCroot(outdir+"output/NSC.root","RECREATE");
-
   PLOT_NCS(JER_uncorrelated_data_hist_SM,JER_uncorrelated_MC_hist_SM,JER_uncorrelated_scale_hist_SM,outdir,eta_bins_edge_SM,false);
   PLOT_NCS(JER_correlated_data_hist_SM,JER_correlated_MC_hist_SM,JER_correlated_scale_hist_SM,outdir,eta_bins_edge_SM,false);
   PLOT_NCS(JER_uncorrelated_data_hist_FE,JER_uncorrelated_MC_hist_FE,JER_uncorrelated_scale_hist_FE,outdir,eta_bins_edge_FE, true);

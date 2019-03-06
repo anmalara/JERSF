@@ -1,4 +1,4 @@
-#include "UHH2/JER2017/include/selection.h"
+#include "UHH2/JERSF/include/selection.h"
 
 #include <iostream>
 #include "UHH2/core/include/Jet.h"
@@ -6,7 +6,7 @@
 #include "UHH2/core/include/PrimaryVertex.h"
 // #include "UHH2/BaconTrans/baconheaders/TJet.hh"
 //#include "UHH2/BaconTrans/baconheaders/TVertex.hh"
-#include "UHH2/JER2017/include/constants.hpp"
+#include "UHH2/JERSF/include/constants.hpp"
 
 #include "TVector2.h"
 #include <TFile.h>
@@ -43,7 +43,7 @@ namespace uhh2bacon {
     tt_mpf_r = ctx.declare_event_output<float>("mpf_r");
     tt_asymmetry = ctx.declare_event_output<float>("asymmetry");
     tt_nPU = ctx.declare_event_output<int>("nPU");
-    handle_l1jet_seeds = ctx.declare_event_input< vector< L1Jet>>("L1Jet_seeds");
+    // handle_l1jet_seeds = ctx.declare_event_input< vector< L1Jet>>("L1Jet_seeds");
 
     Cut_Dir = ctx.get("Cut_dir");
     dataset_version = ctx.get("dataset_version");

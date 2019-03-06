@@ -1,4 +1,4 @@
-#include "UHH2/JER2017/include/JECRunnumberHists.h"
+#include "UHH2/JERSF/include/JECRunnumberHists.h"
 #include "UHH2/core/include/Event.h"
 #include "UHH2/core/include/Jet.h"
 

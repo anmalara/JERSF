@@ -1,5 +1,5 @@
-#include "UHH2/JER2017/include/JECAnalysisHists.h"
-#include "UHH2/JER2017/include/constants.hpp"
+#include "UHH2/JERSF/include/JECAnalysisHists.h"
+#include "UHH2/JERSF/include/constants.hpp"
 #include "UHH2/core/include/Event.h"
 #include "UHH2/core/include/Jet.h"
 

@@ -1,4 +1,4 @@
-#include "UHH2/JER2017/include/JER2017Selections.h"
+#include "UHH2/JERSF/include/JERSFSelections.h"
 #include "UHH2/core/include/Event.h"
 
 #include <stdexcept>
@@ -8,7 +8,7 @@ using namespace uhh2;
 
 
 DijetSelection::DijetSelection(float dphi_min_, float third_frac_max_): dphi_min(dphi_min_), third_frac_max(third_frac_max_){}
-    
+
 bool DijetSelection::passes(const Event & event){
     assert(event.jets); // if this fails, it probably means jets are not read in
     if(event.jets->size() < 2) return false;
@@ -21,5 +21,3 @@ bool DijetSelection::passes(const Event & event){
     auto third_jet_frac = jet2.pt() / (0.5 * (jet0.pt() + jet1.pt()));
     return third_jet_frac < third_frac_max;
 }
-
-

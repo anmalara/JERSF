@@ -1,6 +1,8 @@
+#!/usr/bin/env python
+
 from createConfigFiles import *
 
-def cont_event(paths ="./submittedJobs/" , JECVersions_Data=["Fall17_17Nov2017_V6"], JetLabels=["AK4CHS"], systematics=["", "PU", "JEC", "JER"]):
+def cont_event(paths ="./submittedJobs/" , JECVersions_Data=["Autumn18_V4"], JetLabels=["AK4CHS"], systematics=["", "PU", "JEC", "JER"]):
     count = 0
     for newJECVersion in JECVersions_Data:
         for newJetLabel in JetLabels:
@@ -20,7 +22,7 @@ def cont_event(paths ="./submittedJobs/" , JECVersions_Data=["Fall17_17Nov2017_V
     return count
 
 @timeit
-def condor_control(original_dir ="./submittedJobs/" , JECVersions_Data=["Fall17_17Nov2017_V6"], JetLabels=["AK4CHS"], systematics=["", "PU", "JEC", "JER"], internal_option="-l"):
+def condor_control(original_dir ="./submittedJobs/" , JECVersions_Data=["Autumn18_V4"], JetLabels=["AK4CHS"], systematics=["", "PU", "JEC", "JER"], internal_option="-l"):
     count = 0
     for newJECVersion in JECVersions_Data:
         for newJetLabel in JetLabels:
@@ -55,7 +57,7 @@ def condor_control(original_dir ="./submittedJobs/" , JECVersions_Data=["Fall17_
 
 from createConfigFiles import *
 @timeit
-def delete_workdir(original_dir ="./SubmittedJobs/" , JECVersions_Data=["Fall17_17Nov2017_V6", "Fall17_17Nov2017_V10"], JetLabels=["AK4CHS", "AK8PUPPI"], systematics=["", "PU", "JEC", "JER"]):
+def delete_workdir(original_dir ="./SubmittedJobs/" , JECVersions_Data=["Autumn18_V4", "Autumn18_V4"], JetLabels=["AK4CHS", "AK8PUPPI"], systematics=["", "PU", "JEC", "JER"]):
     add_name = original_dir[original_dir.find("SubmittedJobs")+len("SubmittedJobs"):-1]
     for sample in ["DATA", "QCD"]:
         for newJECVersion in JECVersions_Data:
@@ -84,7 +86,7 @@ def delete_workdir(original_dir ="./SubmittedJobs/" , JECVersions_Data=["Fall17_
 
 
 
-def main_program(option="", internal_option="", processes=[], JECVersions_Data=[], JECVersions_MC=[], JetLabels=[], systematics=[], original_dir="./SubmittedJobs/", original_file="JER2017.xml", isMB=False, test_trigger=False, isThreshold=False, isLowPt=False, isL1Seed=False, isECAL=False):
+def main_program(option="", internal_option="", processes=[], JECVersions_Data=[], JECVersions_MC=[], JetLabels=[], systematics=[], original_dir="./SubmittedJobs/", original_file="JER2018.xml", isMB=False, test_trigger=False, isThreshold=False, isLowPt=False, isL1Seed=False, isECAL=False):
     if option == "new":
         createConfigFiles(processes, JECVersions_Data, JECVersions_MC, JetLabels, systematics, original_dir, original_file, outdir, isMB, test_trigger, isThreshold,isLowPt,isL1Seed,isECAL)
     elif option == "remove" or option == "delete":
@@ -122,63 +124,67 @@ else:
 
 
 QCD_process= []
-QCD_process.append("QCDPt15to30")
-QCD_process.append("QCDPt30to50")
-QCD_process.append("QCDPt50to80")
-QCD_process.append("QCDPt80to120")
-QCD_process.append("QCDPt120to170")
-QCD_process.append("QCDPt170to300")
-QCD_process.append("QCDPt300to470")
-QCD_process.append("QCDPt470to600")
-QCD_process.append("QCDPt600to800")
-QCD_process.append("QCDPt800to1000")
-QCD_process.append("QCDPt1000to1400")
-QCD_process.append("QCDPt1400to1800")
-QCD_process.append("QCDPt1800to2400")
-QCD_process.append("QCDPt2400to3200")
-QCD_process.append("QCDPt3200toInf")
-
-QCD_process.append("QCDHT100to200")
-QCD_process.append("QCDHT200to300")
-QCD_process.append("QCDHT300to500")
-QCD_process.append("QCDHT500to700")
-QCD_process.append("QCDHT700to1000")
-QCD_process.append("QCDHT1000to1500")
-QCD_process.append("QCDHT1500to2000")
-QCD_process.append("QCDHT2000toInf")
+QCD_process.append("QCD_Flat2018")
+# QCD_process.append("QCDPt15to30")
+# QCD_process.append("QCDPt30to50")
+# QCD_process.append("QCDPt50to80")
+# QCD_process.append("QCDPt80to120")
+# QCD_process.append("QCDPt120to170")
+# QCD_process.append("QCDPt170to300")
+# QCD_process.append("QCDPt300to470")
+# QCD_process.append("QCDPt470to600")
+# QCD_process.append("QCDPt600to800")
+# QCD_process.append("QCDPt800to1000")
+# QCD_process.append("QCDPt1000to1400")
+# QCD_process.append("QCDPt1400to1800")
+# QCD_process.append("QCDPt1800to2400")
+# QCD_process.append("QCDPt2400to3200")
+# QCD_process.append("QCDPt3200toInf")
+#
+# QCD_process.append("QCDHT100to200")
+# QCD_process.append("QCDHT200to300")
+# QCD_process.append("QCDHT300to500")
+# QCD_process.append("QCDHT500to700")
+# QCD_process.append("QCDHT700to1000")
+# QCD_process.append("QCDHT1000to1500")
+# QCD_process.append("QCDHT1500to2000")
+# QCD_process.append("QCDHT2000toInf")
 
 
 Data_process= []
+Data_process.append("DATA_RunA")
 Data_process.append("DATA_RunB")
-Data_process.append("DATA_RunC")
+# Data_process.append("DATA_RunC")
 Data_process.append("DATA_RunD")
-Data_process.append("DATA_RunE")
-Data_process.append("DATA_RunF")
+# Data_process.append("DATA_RunE")
+# Data_process.append("DATA_RunF")
 #
-Data_process.append("DATA_RunB_MB")
-Data_process.append("DATA_RunC_MB")
-Data_process.append("DATA_RunD_MB")
-Data_process.append("DATA_RunE_MB")
-Data_process.append("DATA_RunF_MB")
+# Data_process.append("DATA_RunB_MB")
+# Data_process.append("DATA_RunC_MB")
+# Data_process.append("DATA_RunD_MB")
+# Data_process.append("DATA_RunE_MB")
+# Data_process.append("DATA_RunF_MB")
 
 # Data_process.append("DATA_RunF_ECAL")
 
 processes = QCD_process+Data_process
 
-# JECVersions_Data = ["Fall17_17Nov2017_V6", "Fall17_17Nov2017_V10", "Fall17_17Nov2017_V11"]
+# JECVersions_Data = ["Autumn18_V4"]
 # JetLabels = ["AK4CHS", "AK8PUPPI"]
 # systematics = ["PU", "JEC", "JER"]
 
-original_file = "JER2017.xml"
-outdir = "JER2017"
+original_file = "JER2018.xml"
+outdir = "JER2018"
 original_dir_ = os.getcwd()
 
+# JECVersions_Data = ["Autumn18_V4","Autumn18_V5", "Autumn18_V7","Fall17_17Nov2017_V32"]
+# JECVersions_MC = ["Autumn18_V4", "Autumn18_V5", "Autumn18_V7", "Fall17_17Nov2017_V32"]
 JECVersions_Data = ["Fall17_17Nov2017_V32"]
 JECVersions_MC = ["Fall17_17Nov2017_V32"]
-# JetLabels = ["AK4CHS"]
-JetLabels = ["AK8PUPPI"]
+JetLabels = ["AK4CHS"]
+# JetLabels = ["AK8PUPPI"]
 systematics = ["", "PU", "JEC", "JER"]
-# systematics = ["JER"]
+# systematics = [""]
 
 isLowPt = False
 isMB = False

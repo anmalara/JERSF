@@ -17,7 +17,7 @@
 #include <TFrame.h>
 #include <TString.h>
 
-#include "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94X_v2/CMSSW_9_4_1/src/UHH2/JER2017/include/constants.hpp"
+#include "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/JERSF/include/constants.hpp"
 #include "functions.C"
 #include "tdrstyle_all.C"
 
@@ -713,8 +713,8 @@ void PLOT_NCS(std::vector< TH1F* > h_data, std::vector< TH1F* > h_MC, std::vecto
 //
 // bool data_ = false;
 // bool real_data = true;
-// const char* filename = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/JER2017/Analysis/hist_preparation/MC/wide_eta_bin/file/Single/Fall17_17Nov2017_V10/AK4CHS/histograms_mc_incl_full.root"
-// const char* filename_data = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/JER2017/Analysis/hist_preparation/data/wide_eta_bin/file/Single/Fall17_17Nov2017_V10/AK4CHS/RunBCDEF/histograms_data_incl_full.root"
+// const char* filename = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/JERSF/Analysis/hist_preparation/MC/wide_eta_bin/file/Single/Fall17_17Nov2017_V10/AK4CHS/histograms_mc_incl_full.root"
+// const char* filename_data = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/JERSF/Analysis/hist_preparation/data/wide_eta_bin/file/Single/Fall17_17Nov2017_V10/AK4CHS/RunBCDEF/histograms_data_incl_full.root"
 //
 // TString Trigger = "Single"
 //
@@ -1386,7 +1386,6 @@ int mainRunAK8( bool data_, const char* filename, const char* filename_data, TSt
     widthroot.Close();
 
   }
-
   /////////////////////////////////////////////////////////////////////////////////////////
   // plot with JERs with NSC fit
   /////////////////////////////////////////////////////////////////////////////////////////

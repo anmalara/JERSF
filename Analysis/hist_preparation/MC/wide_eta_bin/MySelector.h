@@ -165,6 +165,7 @@ public:
   std::vector< std::vector< TH1F* > > alpha_spectrum_SM, alpha_spectrum_SM_control, alpha_spectrum_FE_reference, alpha_spectrum_FE_control, alpha_spectrum_FE;
   std::vector< std::vector< TH2F* > > alpha2D_SM, alpha2D_SM_control, alpha2D_FE_reference, alpha2D_FE_control, alpha2D_FE;
   std::vector< std::vector< std::vector< TH1F* > > > MC_Truth_asymmetries_SM, MC_Truth_asymmetries_SM_control, MC_Truth_asymmetries_FE_reference, MC_Truth_asymmetries_FE_control, MC_Truth_asymmetries_FE;
+  std::vector< std::vector< std::vector< TH2F* > > > MC_Truth_asymmetries_2D_SM, MC_Truth_asymmetries_2D_SM_control, MC_Truth_asymmetries_2D_FE_reference, MC_Truth_asymmetries_2D_FE_control, MC_Truth_asymmetries_2D_FE;
 
   std::vector< std::vector< std::vector< TH2F* > > > dR_SM, 					gen_dR_SM,						dR_probe_SM,						gen_dR_probe_SM,            dR_barrel_SM,						gen_dR_barrel_SM;
   std::vector< std::vector< std::vector< TH2F* > > > dR_SM_control, 	gen_dR_SM_control,		dR_probe_SM_control,		gen_dR_probe_SM_control,    dR_barrel_SM_control,		gen_dR_barrel_SM_control;

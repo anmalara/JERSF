@@ -73,7 +73,7 @@ struct fit_data{
   }
 };
 
-fit_data data;
+fit_data data_;
 
 void histLoadAsym( TFile &f, bool data, TString text, std::vector< std::vector< std::vector< TH1F* > > > &Asymmetry, std::vector< std::vector< std::vector< TH1F* > > > &GenAsymmetry, int etaBins, int ptBins, int AlphaBins, int etaShift);
 void histMeanPt( std::vector< std::vector< std::vector< TH1F* > > > &Asymmetry , std::vector< std::vector< std::vector< double > > > &Widths );
@@ -315,12 +315,12 @@ void histLinCorFit( std::vector< std::vector< std::vector< double > > > Widths, 
       TF1 *lin_extrapol_mc = new TF1("lin_extrapol_mc","[0]+[1]*x",0,alpha.back()+0.05);
 
       // fit
-      data.reset();
-      data.x_val = x;
-      data.y_val = Widths.at(m).at(p);
-      data.y_cov.ResizeTo(alpha.size(), alpha.size());
-      data.y_cov = y_cov_mc;
-      data.CheckPoints();
+      data_.reset();
+      data_.x_val = x;
+      data_.y_val = Widths.at(m).at(p);
+      data_.y_cov.ResizeTo(alpha.size(), alpha.size());
+      data_.y_cov = y_cov_mc;
+      data_.CheckPoints();
       // choose start values for the fit
       // double slope = (Widths.at(m).at(p).at(Widths.at(m).at(p).size()-1) - Widths.at(m).at(p).at(Widths.at(m).at(p).size()-3))/(x.at(x.size()-1) - x.at(x.size()-3));
       // double offset = Widths.at(m).at(p).at(Widths.at(m).at(p).size()-1) - (slope*x.at(x.size()-1));
@@ -628,16 +628,16 @@ void make_lin_fit(double & slope, double & d_slope, double & offset, double & d_
 
 
 void chi2_linear(Int_t& npar, Double_t* grad, Double_t& fval, Double_t* p, Int_t status) {
-  if (data.y_cov_inv.GetNcols()==0) {
+  if (data_.y_cov_inv.GetNcols()==0) {
     double dummy;
-    int ncols = data.y_cov.GetNcols();
-    data.y_cov_inv.ResizeTo(ncols, ncols);
-    data.y_cov_inv = data.y_cov.Invert(&dummy);
+    int ncols = data_.y_cov.GetNcols();
+    data_.y_cov_inv.ResizeTo(ncols, ncols);
+    data_.y_cov_inv = data_.y_cov.Invert(&dummy);
   }
-  const size_t ndata = data.x_val.size(); // number of data points in x,y graph to fit to
+  const size_t ndata = data_.x_val.size(); // number of data points in x,y graph to fit to
   std::vector<double> delta_y(ndata);
   for(size_t i=0; i<ndata; ++i) {
-    delta_y[i] = data.x_val[i]*p[0] + p[1] - data.y_val[i];
+    delta_y[i] = data_.x_val[i]*p[0] + p[1] - data_.y_val[i];
   }
   // now calculate the chi2, i.e.
   //  dy^T * C^{-1} * dy
@@ -646,23 +646,23 @@ void chi2_linear(Int_t& npar, Double_t* grad, Double_t& fval, Double_t* p, Int_t
   fval = 0.0;
   for(size_t i=0; i<ndata; ++i) {
     for(size_t j=0; j<ndata; ++j) {
-      fval += delta_y[i] * delta_y[j] * data.y_cov_inv(i,j);
+      fval += delta_y[i] * delta_y[j] * data_.y_cov_inv(i,j);
     }
   }
 }
 
 
 void chi2_calculation(Double_t& fval, Double_t* p) {
-  if (data.y_cov_inv.GetNcols()==0) {
+  if (data_.y_cov_inv.GetNcols()==0) {
     double dummy;
-    int ncols = data.y_cov.GetNcols();
-    data.y_cov_inv.ResizeTo(ncols, ncols);
-    data.y_cov_inv = data.y_cov.Invert(&dummy);
+    int ncols = data_.y_cov.GetNcols();
+    data_.y_cov_inv.ResizeTo(ncols, ncols);
+    data_.y_cov_inv = data_.y_cov.Invert(&dummy);
   }
-  const size_t ndata = data.x_val.size(); // number of data points in x,y graph to fit to
+  const size_t ndata = data_.x_val.size(); // number of data points in x,y graph to fit to
   std::vector<double> delta_y(ndata);
   for(size_t i=0; i<ndata; ++i) {
-    delta_y[i] = data.x_val[i]*p[0] + p[1] - data.y_val[i];
+    delta_y[i] = data_.x_val[i]*p[0] + p[1] - data_.y_val[i];
   }
   // now calculate the chi2, i.e.
   //  dy^T * C^{-1} * dy
@@ -671,7 +671,7 @@ void chi2_calculation(Double_t& fval, Double_t* p) {
   fval = 0.0;
   for(size_t i=0; i<ndata; ++i) {
     for(size_t j=0; j<ndata; ++j) {
-      fval += delta_y[i] * delta_y[j] * data.y_cov_inv(i,j);
+      fval += delta_y[i] * delta_y[j] * data_.y_cov_inv(i,j);
     }
   }
 }
