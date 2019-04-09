@@ -22,7 +22,7 @@ def cont_event(paths ="./submittedJobs/" , JECVersions_Data=["Autumn18_V4"], Jet
     return count
 
 @timeit
-def condor_control(original_dir ="./submittedJobs/" , JECVersions_Data=["Autumn18_V4"], JetLabels=["AK4CHS"], systematics=["", "PU", "JEC", "JER"], internal_option="-l"):
+def condor_control(original_dir ="./submittedJobs/" , JECVersions_Data=["Autumn18_V4"], JetLabels=["AK4CHS"], systematics=["", "PU", "JEC", "JER"], internal_option="-l", processes=[]):
     count = 0
     for newJECVersion in JECVersions_Data:
         for newJetLabel in JetLabels:
@@ -39,6 +39,7 @@ def condor_control(original_dir ="./submittedJobs/" , JECVersions_Data=["Autumn1
                     for sample in sorted(os.listdir(path)):
                         if not ".xml" in sample:
                             continue
+ 			if all(not control in sample for control in processes): continue
                         count += 1
                         all_events = cont_event(original_dir, JECVersions_Data, JetLabels, systematics)
                         print "Already completed "+str(count)+" out of "+str(all_events)+" jobs --> "+str(float(count)/float(all_events)*100)+"%."
@@ -92,7 +93,7 @@ def main_program(option="", internal_option="", processes=[], JECVersions_Data=[
     elif option == "remove" or option == "delete":
         delete_workdir(original_dir, JECVersions_Data, JetLabels, systematics)
     else:
-        condor_control(original_dir, JECVersions_Data, JetLabels, systematics, internal_option)
+        condor_control(original_dir, JECVersions_Data, JetLabels, systematics, internal_option, processes)
 
 
 
@@ -124,7 +125,8 @@ else:
 
 
 QCD_process= []
-QCD_process.append("QCD_Flat2018")
+# QCD_process.append("QCD_Flat2018")
+QCD_process.append("QCD_Flat")
 # QCD_process.append("QCDPt15to30")
 # QCD_process.append("QCDPt30to50")
 # QCD_process.append("QCDPt50to80")
@@ -141,31 +143,22 @@ QCD_process.append("QCD_Flat2018")
 # QCD_process.append("QCDPt2400to3200")
 # QCD_process.append("QCDPt3200toInf")
 #
-# QCD_process.append("QCDHT100to200")
-# QCD_process.append("QCDHT200to300")
-# QCD_process.append("QCDHT300to500")
-# QCD_process.append("QCDHT500to700")
-# QCD_process.append("QCDHT700to1000")
-# QCD_process.append("QCDHT1000to1500")
-# QCD_process.append("QCDHT1500to2000")
-# QCD_process.append("QCDHT2000toInf")
+QCD_process.append("QCDHT50to100")
+QCD_process.append("QCDHT100to200")
+QCD_process.append("QCDHT200to300")
+QCD_process.append("QCDHT300to500")
+QCD_process.append("QCDHT500to700")
+QCD_process.append("QCDHT700to1000")
+QCD_process.append("QCDHT1000to1500")
+QCD_process.append("QCDHT1500to2000")
+QCD_process.append("QCDHT2000toInf")
 
 
 Data_process= []
 Data_process.append("DATA_RunA")
 Data_process.append("DATA_RunB")
-# Data_process.append("DATA_RunC")
+Data_process.append("DATA_RunC")
 Data_process.append("DATA_RunD")
-# Data_process.append("DATA_RunE")
-# Data_process.append("DATA_RunF")
-#
-# Data_process.append("DATA_RunB_MB")
-# Data_process.append("DATA_RunC_MB")
-# Data_process.append("DATA_RunD_MB")
-# Data_process.append("DATA_RunE_MB")
-# Data_process.append("DATA_RunF_MB")
-
-# Data_process.append("DATA_RunF_ECAL")
 
 processes = QCD_process+Data_process
 
@@ -177,10 +170,8 @@ original_file = "JER2018.xml"
 outdir = "JER2018"
 original_dir_ = os.getcwd()
 
-# JECVersions_Data = ["Autumn18_V4","Autumn18_V5", "Autumn18_V7","Fall17_17Nov2017_V32"]
-# JECVersions_MC = ["Autumn18_V4", "Autumn18_V5", "Autumn18_V7", "Fall17_17Nov2017_V32"]
-JECVersions_Data = ["Fall17_17Nov2017_V32"]
-JECVersions_MC = ["Fall17_17Nov2017_V32"]
+JECVersions_Data = ["Autumn18_V8"]
+JECVersions_MC = ["Autumn18_V8"]
 JetLabels = ["AK4CHS"]
 # JetLabels = ["AK8PUPPI"]
 systematics = ["", "PU", "JEC", "JER"]

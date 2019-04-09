@@ -21,6 +21,7 @@
 
 
 #include "UHH2/JERSF/include/JECAnalysisHists.h"
+#include "UHH2/JERSF/include/TestHists.h"
 #include "UHH2/JERSF/include/JECCrossCheckHists.h"
 #include "UHH2/JERSF/include/JECRunnumberHists.h"
 
@@ -60,6 +61,7 @@ protected:
 
   // selections
   std::unique_ptr<uhh2::Selection> lumi_selection;
+  std::unique_ptr<uhh2::AnalysisModule> PVCleaner;
   std::unique_ptr<uhh2::AndSelection> metfilters_sel;
   std::unique_ptr<uhh2::Selection> trigger40_sel;
   std::unique_ptr<uhh2::Selection> trigger60_sel;
@@ -95,7 +97,8 @@ protected:
 
 
   Event::Handle<int> tt_hf_trigger; Event::Handle<int> tt_bl_trigger;
-  Event::Handle<float> tt_gen_pthat; Event::Handle<float> tt_gen_weight;  //Event::Handle<float> tt_gen_PUpthat;
+  Event::Handle<float> tt_gen_pthat; Event::Handle<float> tt_gen_weight;
+  Event::Handle<float> tt_PU_pt_hat;//number of jets
   Event::Handle<float> tt_jet1_pt;     Event::Handle<float> tt_jet2_pt;     Event::Handle<float> tt_jet3_pt;
   Event::Handle<float> tt_jet1_eta;     Event::Handle<float> tt_jet2_eta;     Event::Handle<float> tt_jet3_eta;
   Event::Handle<float> tt_jet1_phi;     Event::Handle<float> tt_jet2_phi;     Event::Handle<float> tt_jet3_phi;
@@ -103,7 +106,6 @@ protected:
   Event::Handle<float> tt_jet1_ptGen;  Event::Handle<float> tt_jet2_ptGen;  Event::Handle<float> tt_jet3_ptGen;
   Event::Handle<float> tt_jet1_etaGen;  Event::Handle<float> tt_jet2_etaGen;  Event::Handle<float> tt_jet3_etaGen;
   Event::Handle<float> tt_jet1_phiGen;  Event::Handle<float> tt_jet2_phiGen;  Event::Handle<float> tt_jet3_phiGen;
-  Event::Handle<float> tt_jet1_pt_onoff_Resp;     Event::Handle<float> tt_jet2_pt_onoff_Resp;
   Event::Handle<int> tt_nvertices;
   Event::Handle<float> tt_probejet_eta;  Event::Handle<float> tt_probejet_phi; Event::Handle<float> tt_probejet_pt; Event::Handle<float> tt_probejet_ptRaw;
   Event::Handle<float> tt_barreljet_eta;  Event::Handle<float> tt_barreljet_phi; Event::Handle<float> tt_barreljet_pt; Event::Handle<float> tt_barreljet_ptRaw;
@@ -121,8 +123,8 @@ protected:
   Event::Handle<float> tt_jets_pt;//sum of jets pT
   Event::Handle<int> tt_jet_n;//number of jets
   Event::Handle<float> tt_rho;//event energy density
-  Event::Handle<int> tt_nGoodvertices;
-  Event::Handle<int> tt_partonFlavor; //only MC
+  // Event::Handle<int> tt_nGoodvertices;
+  // Event::Handle<int> tt_partonFlavor; //only MC
   Event::Handle<int> tt_flavorBarreljet, tt_flavorProbejet, tt_flavorLeadingjet, tt_flavorSubleadingjet; //only MC
   Event::Handle<float> tt_response_leadingjet;
   Event::Handle<float> tt_had_n_Efrac, tt_had_ch_Efrac, tt_mu_Efrac, tt_ph_Efrac;
@@ -159,7 +161,6 @@ protected:
   Event::Handle<float> tt_gen_alpha_p;
   Event::Handle<float> tt_gen_asymmetry;
   Event::Handle<int> tt_genjet_n;//number of jets
-  Event::Handle<float> tt_pthat;//number of jets
   Event::Handle<int> tt_no_mc_spikes;//number of jets
 
   // Event::Handle<int> tt_jet1_l1bx;
@@ -167,14 +168,17 @@ protected:
   // Event::Handle<int> tt_jet3_l1bx;
 
 
-  std::unique_ptr<JECAnalysisHists> h_nocuts, h_sel, h_dijet, h_match, h_final;
+  std::unique_ptr<TestHists> h_nocuts, h_postreweight, h_postleptonveto, h_postjetcleaning, h_postleptoncleaning, h_postjer, h_posttrigger, h_precleaning;
+
+  std::unique_ptr<JECAnalysisHists> h_cleaned, h_sel, h_dijet, h_match, h_final;
   std::unique_ptr<JECAnalysisHists> h_trg40, h_trg60, h_trg80, h_trg140, h_trg200,h_trg260,h_trg320,h_trg400, h_trg450,h_trg500;
   std::unique_ptr<JECAnalysisHists> h_trgHF60, h_trgHF80,h_trgHF100, h_trgHF160,h_trgHF220, h_trgHF300;
   std::unique_ptr<LuminosityHists> h_lumi_nocuts, h_lumi_sel, h_lumi_dijet, h_lumi_match, h_lumi_final;
   std::unique_ptr<LuminosityHists> h_lumi_Trig40, h_lumi_Trig60, h_lumi_Trig80, h_lumi_Trig140, h_lumi_Trig200, h_lumi_Trig260, h_lumi_Trig320, h_lumi_Trig400, h_lumi_Trig450, h_lumi_Trig500;
   std::unique_ptr<LuminosityHists> h_lumi_TrigHF60, h_lumi_TrigHF80, h_lumi_TrigHF100, h_lumi_TrigHF160, h_lumi_TrigHF220, h_lumi_TrigHF300;
   std::unique_ptr<JECRunnumberHists> h_runnr_input;
-  uhh2bacon::Selection sel;
+  std::unique_ptr<uhh2bacon::Selection> sel;
+  // uhh2bacon::Selection sel;
 
   bool debug, no_genp;
   bool isMC, closure, apply_EtaPhi_cut, apply_EtaPhi_HCAL, do_only_centraltriggers, do_only_forwardtriggers, do_fulltriggers, trigger_central, trigger_fwd, DO_Pu_ReWeighting, DO_Lumi_ReWeighting, apply_L1seed_from_bx1_filter;
@@ -198,8 +202,9 @@ protected:
 
 };
 
-JERSFModule::JERSFModule(uhh2::Context & ctx) : sel(ctx) {
+JERSFModule::JERSFModule(uhh2::Context & ctx) {
 
+  sel.reset(new uhh2bacon::Selection(ctx));
   // for(auto & kv : ctx.get_all()){
   //  cout << " " << kv.first << " = " << kv.second << endl;
   // }
@@ -216,19 +221,24 @@ JERSFModule::JERSFModule(uhh2::Context & ctx) : sel(ctx) {
   //#############################################  Filters  #########################################################
   // COMMON MODULES
   if(!isMC) lumi_selection.reset(new LumiSelection(ctx));
+  PVCleaner.reset(new PrimaryVertexCleaner());
   /* MET filters */
   if(!isMC) {
+    PrimaryVertexId pvid=StandardPrimaryVertexId();
     metfilters_sel.reset(new uhh2::AndSelection(ctx, "metfilters"));
-    metfilters_sel->add<TriggerSelection>("1-good-vtx", "Flag_goodVertices");
-    metfilters_sel->add<TriggerSelection>("globalTightHalo2016Filter", "Flag_globalSuperTightHalo2016Filter");
+    metfilters_sel->add<TriggerSelection>("goodVertices", "Flag_goodVertices");
+    metfilters_sel->add<TriggerSelection>("globalSuperTightHalo2016Filter", "Flag_globalSuperTightHalo2016Filter");
     metfilters_sel->add<TriggerSelection>("HBHENoiseFilter", "Flag_HBHENoiseFilter");
     metfilters_sel->add<TriggerSelection>("HBHENoiseIsoFilter", "Flag_HBHENoiseIsoFilter");
     metfilters_sel->add<TriggerSelection>("EcalDeadCellTriggerPrimitiveFilter", "Flag_EcalDeadCellTriggerPrimitiveFilter");
-    // metfilters_sel->add<TriggerSelection>("CSCTightHalo2016Filter", "Flag_CSCTightHalo2016Filter");
     metfilters_sel->add<TriggerSelection>("BadPFMuonFilter", "Flag_BadPFMuonFilter");
     metfilters_sel->add<TriggerSelection>("BadChargedCandidateFilter", "Flag_BadChargedCandidateFilter");
-    metfilters_sel->add<TriggerSelection>("eeBadScFilter", "Flag_eeBadScFilter");
-    metfilters_sel->add<TriggerSelection>("ecalBadCalibFilter","Flag_ecalBadCalibFilter");
+    metfilters_sel->add<TriggerSelection>("eeBadScFilter", "Flag_eeBadScFilter"); // Not recommended for MC, but do check
+    metfilters_sel->add<TriggerSelection>("ecalBadCalibFilter", "Flag_ecalBadCalibFilter"); // for 2017 and 2018 is always 1. need a EcalBadCalibSelection for the recalculated value.
+    metfilters_sel->add<EcalBadCalibSelection>("EcalBadCalibSelection");
+    metfilters_sel->add<NPVSelection>("1 good PV",1,-1,pvid);
+
+
   }
   //Jet cleaner
   Jet_PFID = JetPFID(JetPFID::WP_TIGHT_CHS);
@@ -378,9 +388,8 @@ JERSFModule::JERSFModule(uhh2::Context & ctx) : sel(ctx) {
   if(isMC){ //L123 for MC
     if (jetLabel == "AK4CHS") {
       MAKE_JEC_MC(Autumn18_V4, AK4PFchs)
-      else MAKE_JEC_MC(Autumn18_V5, AK4PFchs)
       else MAKE_JEC_MC(Autumn18_V7, AK4PFchs)
-      else MAKE_JEC_MC(Fall17_17Nov2017_V32, AK4PFchs)
+      else MAKE_JEC_MC(Autumn18_V8, AK4PFchs)
       else throw runtime_error("In JERSFModule.cxx: Invalid JEC_Version for deriving residuals on AK4CHS, MC specified ("+JEC_Version+") ");
     }
     else if (jetLabel == "AK8PUPPI") {
@@ -393,9 +402,8 @@ JERSFModule::JERSFModule(uhh2::Context & ctx) : sel(ctx) {
     if (jetLabel == "AK4CHS") {
       // MAKE_JEC(Autumn18_V4, AK4PFchs)
       MAKE_JEC2(Autumn18_V4, AK4PFchs)
-      else MAKE_JEC(Autumn18_V5, AK4PFchs)
       else MAKE_JEC(Autumn18_V7, AK4PFchs)
-      else MAKE_JEC2017(Fall17_17Nov2017_V32, AK4PFchs)
+      else MAKE_JEC(Autumn18_V8, AK4PFchs)
       else throw runtime_error("In JERSFModule.cxx: Invalid JEC_Version for deriving residuals on AK4CHS "+JEC_Version+", DATA specified.");
     }
     else if (jetLabel == "AK8PUPPI") {
@@ -428,17 +436,8 @@ JERSFModule::JERSFModule(uhh2::Context & ctx) : sel(ctx) {
 
   // JER Smearing for corresponding JEC-Version
   if(closure && isMC) {
-    // jet_resolution_smearer.reset(new JetResolutionSmearer(ctx,JERSmearing::SF_13TeV_Fall17_V3));
-    jet_resolution_smearer.reset(new GenericJetResolutionSmearer(ctx, "jets", "genjets", JERSmearing::SF_13TeV_Fall17_V3, "2017/Fall17_V3_MC_PtResolution_AK4PFchs.txt"));
+    jet_resolution_smearer.reset(new GenericJetResolutionSmearer(ctx, "jets", "genjets", JERSmearing::SF_13TeV_Autumn18_RunABC_V1, "2018/Autumn18_V1_MC_PtResolution_AK4PFchs.txt"));
   }
-  // if(isMC){
-  //   if(JEC_Version == "Fall17_17Nov2017_V4") jetER_smearer.reset(new GenericJetResolutionSmearer(ctx, "jets", "genjets", true, JERSmearing::SF_13TeV_2016_03Feb2017));
-  //   else if(JEC_Version == "Fall17_17Nov2017_V5") jetER_smearer.reset(new GenericJetResolutionSmearer(ctx, "jets", "genjets", true, JERSmearing::SF_13TeV_2016_03Feb2017));
-  //   else if(JEC_Version == "Fall17_17Nov2017_V6") jetER_smearer.reset(new GenericJetResolutionSmearer(ctx, "jets", "genjets", true, JERSmearing::SF_13TeV_2016_03Feb2017));
-  //   else if(JEC_Version == "Fall17_17Nov2017_V7") jetER_smearer.reset(new GenericJetResolutionSmearer(ctx, "jets", "genjets", true, JERSmearing::SF_13TeV_2016_03Feb2017));
-  //   else throw runtime_error("In JERSFModule.cxx: When setting up JER smearer, invalid 'JEC_Version' was specified.");
-  // }
-
 
   //output
   ctx.undeclare_all_event_output();
@@ -459,6 +458,7 @@ JERSFModule::JERSFModule(uhh2::Context & ctx) : sel(ctx) {
   tt_hf_trigger = ctx.declare_event_output<int>("hf_trigger");
   tt_bl_trigger = ctx.declare_event_output<int>("bl_trigger");
   tt_gen_pthat = ctx.declare_event_output<float>("gen_pthat");
+  tt_PU_pt_hat= ctx.declare_event_output<float>("PU_pt_hat");
   tt_gen_weight = ctx.declare_event_output<float>("gen_weight");
   tt_jet1_pt = ctx.declare_event_output<float>("jet1_pt");
   tt_jet2_pt = ctx.declare_event_output<float>("jet2_pt");
@@ -481,10 +481,8 @@ JERSFModule::JERSFModule(uhh2::Context & ctx) : sel(ctx) {
   tt_jet1_phiGen = ctx.declare_event_output<float>("jet1_phiGen");
   tt_jet2_phiGen = ctx.declare_event_output<float>("jet2_phiGen");
   tt_jet3_phiGen = ctx.declare_event_output<float>("jet3_phiGen");
-  tt_jet1_pt_onoff_Resp = ctx.declare_event_output<float>("jet1_pt_onoff_Resp");
-  tt_jet2_pt_onoff_Resp = ctx.declare_event_output<float>("jet2_pt_onoff_Resp");
   tt_nvertices = ctx.declare_event_output<int>("nvertices");
-  tt_nGoodvertices = ctx.declare_event_output<int>("nGoodvertices");
+  // tt_nGoodvertices = ctx.declare_event_output<int>("nGoodvertices");
   tt_probejet_eta = ctx.declare_event_output<float>("probejet_eta");
   tt_probejet_phi = ctx.declare_event_output<float>("probejet_phi");
   tt_probejet_pt = ctx.declare_event_output<float>("probejet_pt");
@@ -508,7 +506,7 @@ JERSFModule::JERSFModule(uhh2::Context & ctx) : sel(ctx) {
   tt_jets_pt= ctx.declare_event_output<float>("sum_jets_pt");
   tt_jet_n= ctx.declare_event_output<int>("Njet");
   tt_rho = ctx.declare_event_output<float>("rho");
-  tt_partonFlavor = ctx.declare_event_output<int>("partonFlavor");
+  // tt_partonFlavor = ctx.declare_event_output<int>("partonFlavor");
   tt_flavorBarreljet = ctx.declare_event_output<int>("flavorBarreljet");
   tt_flavorProbejet = ctx.declare_event_output<int>("flavorProbejet");
   tt_flavorLeadingjet = ctx.declare_event_output<int>("flavorLeadingjet");
@@ -568,16 +566,22 @@ JERSFModule::JERSFModule(uhh2::Context & ctx) : sel(ctx) {
   tt_gen_asymmetry = ctx.declare_event_output<float>("gen_asymmetry");
   tt_genjet_n= ctx.declare_event_output<int>("Ngenjet");
   tt_no_mc_spikes= ctx.declare_event_output<int>("no_mc_spikes");
-  tt_pthat= ctx.declare_event_output<float>("pthat");
 
   // tt_jet1_l1bx = ctx.declare_event_output<int>("jet1_l1bx");
   // tt_jet2_l1bx = ctx.declare_event_output<int>("jet1_l2bx");
   // tt_jet3_l1bx = ctx.declare_event_output<int>("jet1_l3bx");
 
-
-
   h_runnr_input.reset(new JECRunnumberHists(ctx,"Runnr_input"));
-  h_nocuts.reset(new JECAnalysisHists(ctx,"NoCuts"));
+
+  h_nocuts.reset(new TestHists(ctx,"NoCuts"));
+  h_postreweight.reset(new TestHists(ctx,"postreweight"));
+  h_postleptonveto.reset(new TestHists(ctx,"postleptonveto"));
+  h_postjetcleaning.reset(new TestHists(ctx,"postjetcleaning"));
+  h_postleptoncleaning.reset(new TestHists(ctx,"postleptoncleaning"));
+  h_postjer.reset(new TestHists(ctx,"postjer"));
+  h_posttrigger.reset(new TestHists(ctx,"posttrigger"));
+  h_precleaning.reset(new TestHists(ctx,"precleaning"));
+  h_cleaned.reset(new JECAnalysisHists(ctx,"Cleaned"));
   h_dijet.reset(new JECAnalysisHists(ctx,"diJet"));
   h_match.reset(new JECAnalysisHists(ctx,"JetMatching"));
   h_sel.reset(new JECAnalysisHists(ctx,"Selection"));
@@ -676,6 +680,8 @@ JERSFModule::JERSFModule(uhh2::Context & ctx) : sel(ctx) {
   upper_binborders_runnrs.push_back(last_entry); //this is not exactly an UPPER limit because it is equal to the highest possible entry, not greater than it...created exception for this case.
   lumi_in_bins.push_back(ilumi_current_bin);
 
+  std::cout << "end Constructor" << '\n';
+
 };
 
 
@@ -692,6 +698,7 @@ bool JERSFModule::process(Event & event) {
 
   n_evt++;
 
+  h_nocuts->fill(event);
 
   //Dump Input
   // h_input->fill(event);
@@ -710,6 +717,8 @@ bool JERSFModule::process(Event & event) {
     if(!pass_reweighting) return false;
   }
 
+  h_postreweight->fill(event);
+
   //LEPTON selection
   muoSR_cleaner->process(event);
   sort_by_pt<Muon>(*event.muons);
@@ -721,6 +730,10 @@ bool JERSFModule::process(Event & event) {
 
   if (event.electrons->size()>0 || event.muons->size()>0) return false; //TEST lepton cleaning
 
+  h_postleptonveto->fill(event);
+
+  // PrimaryVertexV Cleaner
+  if (!PVCleaner->process(event)) return false;
 
   // CMS-certified luminosity sections
   if (event.isRealData) {
@@ -762,11 +775,12 @@ bool JERSFModule::process(Event & event) {
   if (debug) std::cout << "n_jets_beforeCleaner vs n_jets_afterCleaner " << n_jets_beforeCleaner << " " << n_jets_afterCleaner << '\n';
   if (n_jets_beforeCleaner != n_jets_afterCleaner) return false;
   sort_by_pt<Jet>(*ak4jets);
-  //h_cleaner->fill(event);
 
   const int jet_n = ak4jets->size();
   if (debug) std::cout << "jet_n " << jet_n << '\n';
   if(jet_n<2) return false;
+
+  h_postjetcleaning->fill(event);
 
   bool apply_A = false;
   bool apply_B = false;
@@ -814,7 +828,11 @@ bool JERSFModule::process(Event & event) {
   //   std::cout << "ERROR JER" << '\n';
   // }
 
+  h_postleptoncleaning->fill(event);
+
   if(closure && isMC) jet_resolution_smearer->process(event);
+
+  h_postjer->fill(event);
 
   //correct MET only AFTER smearing the jets
   // if(apply_A){
@@ -1063,8 +1081,15 @@ bool JERSFModule::process(Event & event) {
   if(pass_trigger220_HFJEC){ n_trig++; trigger220_HFJEC = 1;}
   if(pass_trigger300_HFJEC){ n_trig++; trigger300_HFJEC = 1;}
 
+
+  h_posttrigger->fill(event);
   //read or calculated values for dijet events
-  float gen_pthat = 0; //pt hat (from QCD simulation) //todo!
+  float gen_pthat = 0;
+  float PU_pt_hat = 0;
+  if (isMC) {
+    gen_pthat = event.genInfo->qScale(); //pt hat (from QCD simulation) //todo!
+    PU_pt_hat = event.genInfo->PU_pT_hat_max();
+  }
   //    if(isMC) gen_pthat = event.genInfo->binningValues()[0];
   float gen_weight = 0;
   if(!event.isRealData) gen_weight = event.weight;
@@ -1112,6 +1137,7 @@ bool JERSFModule::process(Event & event) {
   jet2_2Dv.SetPtEtaPhi( jet2->pt(), 0.0, jet2->phi());
 
   float alpha_p = 0;
+
   if(jet_n>2){
     jet3 = &ak4jets->at(2);
     jet3_pt = jet3->pt();
@@ -1137,21 +1163,21 @@ bool JERSFModule::process(Event & event) {
   for(int i=2;i<jet_n;i++){
     jets_pt += ((Jet*)&ak4jets->at(i))->pt();
   }
-  int flavor = 0;
+  // int flavor = 0;
   //separate flat and fwd samples at |eta| = 2.853
-  if(dataset_version.Contains("_Fwd") && fabs(probejet_eta) < eta_cut && isMC) return false;
-  if((dataset_version.Contains("_Flat")) && fabs(probejet_eta) >= eta_cut && isMC) return false;
+  // if(dataset_version.Contains("_Fwd") && fabs(probejet_eta) < eta_cut && isMC) return false;
+  // if((dataset_version.Contains("_Flat")) && fabs(probejet_eta) >= eta_cut && isMC) return false;
 
   double had_n_Efrac = ak4jets->at(0).neutralHadronEnergyFraction();
   double had_ch_Efrac = ak4jets->at(0).chargedHadronEnergyFraction();
   double mu_Efrac = ak4jets->at(0).muonEnergyFraction();
   double ph_Efrac = ak4jets->at(0).photonEnergyFraction();
-  float onoffDummy =0.;
 
   //fill the containers
   event.set(tt_hf_trigger,pass_trigger_hf);
   event.set(tt_bl_trigger,pass_trigger_bl);
   event.set(tt_gen_pthat,gen_pthat);
+  event.set(tt_PU_pt_hat, PU_pt_hat);
   event.set(tt_gen_weight,gen_weight);
   event.set(tt_jet1_pt,jet1_pt);
   event.set(tt_jet2_pt,jet2_pt);
@@ -1174,8 +1200,6 @@ bool JERSFModule::process(Event & event) {
   event.set(tt_jet1_phiGen,genjet1_phi);
   event.set(tt_jet2_phiGen,genjet2_phi);
   event.set(tt_jet3_phiGen,genjet3_phi);
-  event.set(tt_jet1_pt_onoff_Resp,onoffDummy);
-  event.set(tt_jet2_pt_onoff_Resp,onoffDummy);
   event.set(tt_nvertices,nvertices);
   event.set(tt_probejet_eta,probejet_eta);
   event.set(tt_probejet_phi,probejet_phi);
@@ -1200,7 +1224,7 @@ bool JERSFModule::process(Event & event) {
   event.set(tt_jets_pt,jets_pt);
   event.set(tt_jet_n,jet_n);
   event.set(tt_rho,event.rho);
-  event.set(tt_partonFlavor,flavor);
+  // event.set(tt_partonFlavor,flavor);
   event.set(tt_had_n_Efrac,had_n_Efrac);
   event.set(tt_had_ch_Efrac,had_ch_Efrac);
   event.set(tt_mu_Efrac,mu_Efrac);
@@ -1231,10 +1255,6 @@ bool JERSFModule::process(Event & event) {
   // Start MC
   if(isMC){
     const int genjet_n = event.genjets->size();
-    float pThat = 0;
-    //        cout << "Will try to read pthat" << endl;
-    //        //pThat = event.genInfo->binningValues()[0];
-    //        cout << "Read pthat"<< pThat << endl;
     sort_by_pt<GenJet>(*event.genjets);
     if (debug) std::cout << "genjet_n " << genjet_n << '\n';
     if(genjet_n<2) return false; // Not sure about this
@@ -1242,7 +1262,7 @@ bool JERSFModule::process(Event & event) {
     GenJet* genjet1 = &event.genjets->at(0);// leading genjet
     GenJet* genjet2 = &event.genjets->at(1);// sub-leading genjet
     float genjet1_pt = genjet1->pt(); float genjet2_pt = genjet2->pt();
-    bool no_mc_spikes = (genjet1_pt < 1.5*pThat || jet1_pt < 1.5*genjet1_pt); //(pTgen1 < 1.5*pThat || pTreco1 < 1.5* pTgen1) // pthat cut from mikko
+    bool no_mc_spikes = (genjet1_pt < 1.5*gen_pthat || jet1_pt < 1.5*genjet1_pt); //(pTgen1 < 1.5*gen_pthat || pTreco1 < 1.5* pTgen1) // pthat cut from mikko
     float gen_pt_ave = (genjet1_pt + genjet2_pt)/2.;
     GenJet* genjet_barrel = genjet1; GenJet* genjet_probe = genjet2;
     // if ((fabs(genjet1->eta())<s_eta_barr)&&(fabs(genjet2->eta())<s_eta_barr)) {
@@ -1316,7 +1336,6 @@ bool JERSFModule::process(Event & event) {
     //event.set(tt_genjet3_ptRaw,genjet3_ptRaw);
     event.set(tt_nvertices,nvertices);
     event.set(tt_genjet_n,genjet_n);
-    event.set(tt_pthat, pThat);
     event.set(tt_no_mc_spikes, no_mc_spikes);
     event.set(tt_probegenjet_eta,probegenjet_eta);
     event.set(tt_probegenjet_phi,probegenjet_phi);
@@ -1348,7 +1367,6 @@ bool JERSFModule::process(Event & event) {
     event.set(tt_nvertices,0);
     event.set(tt_genjet_n,0);
     event.set(tt_no_mc_spikes,0);
-    event.set(tt_pthat,0);
     event.set(tt_probegenjet_eta,0);
     event.set(tt_probegenjet_phi,0);
     event.set(tt_probegenjet_pt,0);
@@ -1362,18 +1380,20 @@ bool JERSFModule::process(Event & event) {
     event.set(tt_gen_alpha_p,0);
     event.set(tt_gen_asymmetry,0);
   }
-  sel.SetEvent(event);
-  //good primary vertex
-  int nGoodVts = sel.goodPVertex();
 
-  if(dataset_version.Contains("PUpthat") || dataset_version.Contains("QCD_Pt") || dataset_version.Contains("QCDPt"))
-  {
+  sel->SetEvent(event);
+
+  //good primary vertex
+  // int nGoodVts = sel.goodPVertex();
+  h_precleaning->fill(event);
+  if(isMC) {
     //cout << "Checking PUpthat..." << endl;
-    gen_pthat = event.genInfo->binningValues()[0];
-    // cout << " genpthat is " << gen_pthat << endl;
+
     if(!event.isRealData){
-      if(!sel.PUpthat(event)) return false;
+
+      if(!sel->PUpthat(event)) return false;
     }
+
     // cout << "Passed PUpthat";
     if(debug){
       cout << "debug is: " << debug << endl;
@@ -1384,32 +1404,29 @@ bool JERSFModule::process(Event & event) {
     //cout << "dataset does not contain PUpthat or QCD_Pt -- not applying pt hat cut" << endl;
     //cout << "dataset version:" << dataset_version << endl;
   }
-  if(nGoodVts<=0) return false;
-  event.set(tt_nGoodvertices, nGoodVts);
+  // if(nGoodVts<=0) return false;
+  // event.set(tt_nGoodvertices, nGoodVts);
   if(debug){
     cout << "before 'dijet selection' : " << endl;
     cout << " Evt# "<<event.event<<" Run: "<<event.run<<" " << endl;
   }
-  if(!sel.DiJet()) return false;
-  h_nocuts->fill(event);
+
+  if(!sel->DiJet()) return false;
+
+  h_cleaned->fill(event);
   h_lumi_nocuts->fill(event);
   if(debug){
     cout << "before 'dijet advanced selection' : " << endl;
     cout << " Evt# "<<event.event<<" Run: "<<event.run<<" " << endl;
   }
   // Selection from Jens and or Mikko to filter hot jet regions from ECAL
-  if(false){
-    cout << "before Now looking at EtaPhiCleaning of hot jet regions in ECAL" << endl;
-    cout << "before Event has:" << endl;
-    cout << "before jet1 eta: " << jet1->eta() << endl;
-    cout << "before jet2 eta: " << jet2->eta() << endl;
-    cout << "before jet1 phi: " << jet1->phi() << endl;
-    cout << "before jet2 phi:" << jet2->phi() << endl;
-  }
 
   //PhiEta Region cleaning
-  if(apply_EtaPhi_cut && !sel.EtaPhiCleaning(event)) return false;
-  if(apply_EtaPhi_HCAL && !sel.EtaPhi(event)) return false;
+
+  if(apply_EtaPhi_cut && !sel->ApplyHotMap(event)) return false;
+
+  if(apply_EtaPhi_HCAL && !sel->EtaPhiCleaning(event)) return false;
+
   if(false){
     cout << "after Event not in a hot region:" << endl;
     cout << "after jet1 eta: " << jet1->eta() << endl;
@@ -1417,7 +1434,9 @@ bool JERSFModule::process(Event & event) {
     cout << "after jet1 phi: " << jet1->phi() << endl;
     cout << "after jet2 phi:" << jet2->phi() << endl;
   }
-  if(!sel.DiJetAdvanced(event)) return false;
+
+  if(!sel->DiJetAdvanced(event)) return false;
+
   h_dijet->fill(event);
   h_lumi_dijet->fill(event);
   h_match->fill(event);

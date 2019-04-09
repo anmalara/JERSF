@@ -7,26 +7,20 @@ sys.path.append("/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_
 from parallelise import *
 
 def getLabel(sample):
-    if sample == "B":
-        LABEL_LUMI_INV_FB = "[MC 94X] Run2017B 4.77 fb^{-1}"
+    if sample == "A":
+        LABEL_LUMI_INV_FB = "[MC 102X] Run2018A 14.00 fb^{-1}"
+    elif sample == "B":
+        LABEL_LUMI_INV_FB = "[MC 102X] Run2018B 7.10 fb^{-1}"
     elif sample == "C":
-        LABEL_LUMI_INV_FB = "[MC 94X] Run2017C 9.58 fb^{-1}"
+        LABEL_LUMI_INV_FB = "[MC 102X] Run2018C 6.94 fb^{-1}"
     elif sample == "D":
-        LABEL_LUMI_INV_FB="[MC 94X] Run2017D 4.22 fb^{-1}"
-    elif sample == "E":
-        LABEL_LUMI_INV_FB="[MC 94X] Run2017E 9.26 fb^{-1}"
-    elif sample == "F":
-        LABEL_LUMI_INV_FB="[MC 94X] Run2017F 13.46 fb^{-1}"
-    elif sample == "BC":
-        LABEL_LUMI_INV_FB="[MC 94X] Run2017BC 14.35 fb^{-1}"
-    elif sample == "DE":
-        LABEL_LUMI_INV_FB="[MC 94X] Run2017DE 13.48 fb^{-1}"
-    elif sample == "DEF":
-        LABEL_LUMI_INV_FB="[MC 94X] Run2017DEF 26.95 fb^{-1}"
-    elif sample == "BCDEF":
-        LABEL_LUMI_INV_FB="[MC 94X] 2017 41.53 fb^{-1}"
+        LABEL_LUMI_INV_FB = "[MC 102X] Run2018D 31.93 fb^{-1}"
+    elif sample == "ABC":
+        LABEL_LUMI_INV_FB = "[MC 102X] Run2018 28.04 fb^{-1}"
+    elif sample == "ABCD":
+        LABEL_LUMI_INV_FB = "[MC 102X] Run2018 59.97 fb^{-1}"
     else:
-        LABEL_LUMI_INV_FB="[MC 94X] (2017)"
+        LABEL_LUMI_INV_FB = "[MC 102X] (2018)"
     return LABEL_LUMI_INV_FB
 
 
@@ -91,18 +85,23 @@ source_path = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10
 common_path = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/JERSF/Analysis/JER/wide_eta_binning/"
 
 
-samples = ["B","C","D","E","F","BC","DE","DEF","BCDEF", "F_ECAL"]
-samples = ["BCDEF"]
 # samples = ["A"]
-samples = ["A"]
+# samples = ["ABC"]
 # samples = ["B"]
 # samples = ["D"]
-# samples = ["A", "B", "AB", "D"]
+samples = ["A", "B", "C", "ABC"]
+#samples = ["A", "B", "C"]
+samples = ["D"]
+samples = ["A", "B", "C", "D", "ABC", "ABCD"]
+samples = ["ABC"]
 # QCDSamples = ["QCDPt","QCDHT"]
 QCDSamples = ["QCD_Flat2018"]
+QCDSamples = ["QCD_Flat", "QCD_Flat2018"]
+QCDSamples = ["QCDHT"]
+#QCDSamples = ["QCD_Flat"]
 JetLabels=["AK4CHS"]
 # JetLabels=["AK8PUPPI"]
-JECVersions=["Autumn18_V4"]
+JECVersions=["Autumn18_V8"]
 dirs = ["", "up", "down"]
 # studies = ["StandardPtBins/", "StandardPtBins_L1Seed/"]
 studies = ["StandardPtBins/", "StandardPtBins_allweights/", "StandardPtBins_weightcut/"]

@@ -19,7 +19,14 @@ public:
   TestHists(uhh2::Context & ctx, const std::string & dirname);
 
   virtual void fill(const uhh2::Event & ev) override;
-  void fill(const uhh2::Event & ev, const double eta);
+  void fill(const uhh2::Event & ev, const int rand);
   virtual ~TestHists();
 
+  // TH2D *ptjet3_vs_alpha,*pt_ave_vs_alpha;
+private:
+  //    uhh2::Event::Handle<TClonesArray> h_jets;
+  //    uhh2::Event::Handle<baconhep::TEventInfo> h_eventInfo;
+  //    uhh2::Event::Handle<TClonesArray> h_pv;
+  //Variables specific for dijet events
+  
 };

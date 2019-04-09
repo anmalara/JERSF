@@ -72,27 +72,27 @@ namespace uhh2bacon {
     ~Selection();
 
     void SetEvent(uhh2::Event& evt);
-    // bool Trigger(uhh2::Event& evt);
-    bool PtMC(uhh2::Event& evt); //apply lowest Pt cut on MC
     bool DiJet();
     bool DiJetAdvanced(uhh2::Event& evt);
-    int goodPVertex();
-    bool triggerFired(float bin1, float bin2);
+
+    bool PUpthat(uhh2::Event& evt);
+    bool EtaPhiCleaning(uhh2::Event& evt);
+    bool ApplyHotMap(uhh2::Event& evt);
 
     //  bool FullSelection();
-    //Cut events with pthat in PU higher than pthat
-    bool PUpthat(uhh2::Event& evt);
-    bool EtaPhi(uhh2::Event& evt);
-    bool EtaPhiCleaning(uhh2::Event& evt);
-
-    bool L1JetBXclean(Jet& jet, bool usePtRatioFilter = false);
-    bool L1JetBXcleanFull();
-    bool L1JetBXcleanSmart();
+    // bool PtMC(uhh2::Event& evt); //apply lowest Pt cut on MC
+    // bool triggerFired(float bin1, float bin2);
+    // bool Trigger(uhh2::Event& evt);
+    // int goodPVertex();
+    // bool L1JetBXclean(Jet& jet, bool usePtRatioFilter = false);
+    // bool L1JetBXcleanFull();
+    // bool L1JetBXcleanSmart();
+    // bool EtaPhi(uhh2::Event& evt);
 
     //jetmatching, find the jet in the event that corresponds to the jetid-th jet in the trigger object of the trigger with threshold trigger_th
     //returns -1 if the triggerobject does not contain less than jetid jets
     //returns -2 if no jet is matched within dR
-    int FindMatchingJet(unsigned int jetid, unsigned int trigger_th, bool use_fwd = false);
+    // int FindMatchingJet(unsigned int jetid, unsigned int trigger_th, bool use_fwd = false);
   };
 
 }

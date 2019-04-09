@@ -44,7 +44,7 @@ dR_barrel_##region.at(r).at(k).at(m) -> Fill( Delta_R_radiation_barrel, asy, wei
 dR3_##region.at(r).at(k).at(m) -> Fill( asy, Delta_R_radiation_barrel, Delta_R_radiation_probe, weight ); \
 if (DR1 < s_delta_R) MC_Truth_asymmetries_##region.at(r).at(k).at(m) -> Fill( Resp1, weight );            \
 if (DR2 < s_delta_R) MC_Truth_asymmetries_##region.at(r).at(k).at(m) -> Fill( Resp2, weight );            \
-MC_Truth_asymmetries_2D_##region.at(r).at(k).at(m) -> Fill( Resp2,Resp1, weight );                         \
+MC_Truth_asymmetries_2D_##region.at(r).at(k).at(m) -> Fill( Resp2,Resp1, weight );                        \
 if ( m == AlphaBins-1 ) {                                                                                 \
   h_JetAvePt_##method -> Fill( pt_ave, weight );                                                          \
   h_Jet1Pt_##method -> Fill( jet1_pt, weight );                                                           \
@@ -98,13 +98,11 @@ if (cond1 || cond2) {                                                           
       double phi_probe = TMath::Abs(TMath::Power(TVector2::Phi_mpi_pi(barreljet_phi- jet3_phi),2));                                                           \
       double phi_barrel= TMath::Abs(TMath::Power(TVector2::Phi_mpi_pi(probejet_phi - jet3_phi),2));                                                           \
       if (cond3) {                                                                                                                                            \
-        std::cout << "swap"<< std::endl;\
         asy = - asymmetry;                                                                                                                                    \
         std::swap(Delta_R_radiation_barrel, Delta_R_radiation_probe);                                                                                         \
         std::swap(eta_probe, eta_barrel);                                                                                                                     \
         std::swap(phi_probe, phi_barrel);                                                                                                                     \
       }                                                                                                                                                       \
-      std::cout << asy<< std::endl;\
       FILL_HISTOS(region,method)                                                                                                                              \
       for (unsigned int i = 0; i < dR_bins.size()-1; i++) {                                                                                                   \
         if (Delta_R_radiation_probe > dR_bins[i] && Delta_R_radiation_probe < dR_bins[i+1]) { asy_dR_barrel_FE.at(r).at(k).at(m).at(i)-> Fill( asy, Delta_R_radiation_barrel, weight); }\
@@ -431,16 +429,17 @@ Bool_t MySelector::Process(Long64_t entry) {
   ++TotalEvents;
   if ( TotalEvents%100000 == 0 ) {  std::cout << "            Analyzing event #" << TotalEvents << std::endl; }
 
+  GetEntry( entry );
+  BuildEvent();
+
   if (weight <= 0 || weight > 50) {
     TString filename = fChain->GetDirectory()->GetPath();
     std::cout << "WARNING: weight was very small/large " << weight << std::endl;
     std::cout << "Filename is " << filename << std::endl;
     std::cout << "leading jet eta is " << probejet_eta << std::endl;
     weight = 0;
+    return kFALSE;
   }
-
-  GetEntry( entry );
-  BuildEvent();
 
   //2017
   std::vector<double> Eta_bins_SM(            eta_bins + etaShift_SM,            eta_bins + etaShift_SM + EtaBins_SM + 1);
@@ -575,7 +574,6 @@ Bool_t MySelector::Process(Long64_t entry) {
             SELECT_ETA_ALPHA_BIN(SM_control,SM,cond1,cond2,cond3)
           }
           for ( int r = 0 ; r < EtaBins_FE ; r++ ) {
-            std::cout << barreljet_eta << " " << probejet_eta << std::endl;
             cond1 = (TMath::Abs(barreljet_eta)> 0. && TMath::Abs(barreljet_eta)< s_eta_barr && TMath::Abs(probejet_eta) > Eta_bins_FE[r] && TMath::Abs(probejet_eta) < Eta_bins_FE[r+1]);
             cond2 = (TMath::Abs(probejet_eta) > 0. && TMath::Abs(probejet_eta) < s_eta_barr && TMath::Abs(barreljet_eta)> Eta_bins_FE[r] && TMath::Abs(barreljet_eta)< Eta_bins_FE[r+1]);
             cond3 = cond2;

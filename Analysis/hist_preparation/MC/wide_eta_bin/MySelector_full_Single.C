@@ -423,16 +423,17 @@ Bool_t MySelector::Process(Long64_t entry) {
   ++TotalEvents;
   if ( TotalEvents%100000 == 0 ) {  std::cout << "            Analyzing event #" << TotalEvents << std::endl; }
 
+  GetEntry( entry );
+  BuildEvent();
+
   if (weight <= 0 || weight > 50) {
     TString filename = fChain->GetDirectory()->GetPath();
     std::cout << "WARNING: weight was very small/large " << weight << std::endl;
     std::cout << "Filename is " << filename << std::endl;
     std::cout << "leading jet eta is " << probejet_eta << std::endl;
     weight = 0;
+    return kFALSE;
   }
-
-  GetEntry( entry );
-  BuildEvent();
 
   //2017
   std::vector<double> Eta_bins_SM(            eta_bins + etaShift_SM,            eta_bins + etaShift_SM + EtaBins_SM + 1);

@@ -36,7 +36,7 @@
 <!ENTITY APPLY_EtaPhi_cut           "true">     <!--Apply Eta Phi cleaning during ECAL problems -->
 <!ENTITY APPLY_EtaPhi_HCAL          "true">     <!--Apply Eta Phi cleaning during HCAL problems -->
 <!ENTITY apply_L1seed_from_bx1_filter "false">  <!--Apply L1seed matching -->
-<!ENTITY CUT_DIR                    "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94X_v2/CMSSW_9_4_1/src/UHH2/hotjets/"> <!-- Directory for hotjet map -->
+<!ENTITY CUT_DIR                    "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/JERSF/hotjets/"> <!-- Directory for hotjet map -->
 
 <!-- MC Samples -->
 <!ENTITY QCDPt15to30        SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/MC_QCD_Pt-15to30_TuneCP5_Flat2017_13TeV_pythia8_withLowPtJets.xml">
@@ -55,21 +55,24 @@
 <!ENTITY QCDPt2400to3200    SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/MC_QCD_Pt-2400to3200_TuneCP5_Flat2017_13TeV_pythia8_withLowPtJets.xml">
 <!ENTITY QCDPt3200toInf     SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/MC_QCD_Pt-3200toInf_TuneCP5_Flat2017_13TeV_pythia8_withLowPtJets.xml">
 
-<!ENTITY QCDHT100to200      SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/MC_QCD_HT100to200_withLowPtJets_wXCONE04R_wPartons.xml">
-<!ENTITY QCDHT200to300      SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/MC_QCD_HT200to300_withLowPtJets_wXCONE04R_wPartons.xml">
-<!ENTITY QCDHT300to500      SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/MC_QCD_HT300to500_withLowPtJets_wXCONE04R_wPartons.xml">
-<!ENTITY QCDHT500to700      SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/MC_QCD_HT500to700_withLowPtJets_wXCONE04R_wPartons.xml">
-<!ENTITY QCDHT700to1000     SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/MC_QCD_HT700to1000_withLowPtJets_wXCONE04R_wPartons.xml">
-<!ENTITY QCDHT1000to1500    SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/MC_QCD_HT1000to1500_withLowPtJets_wXCONE04R_wPartons.xml">
-<!ENTITY QCDHT1500to2000    SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/MC_QCD_HT1500to2000_withLowPtJets_wXCONE04R_wPartons.xml">
-<!ENTITY QCDHT2000toInf     SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/MC_QCD_HT2000toInf_withLowPtJets_wXCONE04R_wPartons.xml">
+<!ENTITY QCDHT50to100       SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/2018/MC_QCD_HT50to100_madgraph.xml">
+<!ENTITY QCDHT100to200      SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/2018/MC_QCD_HT100to200_madgraph_PFandGENcandidates.xml">
+<!ENTITY QCDHT200to300      SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/2018/MC_QCD_HT200to300_DiJetZoo.xml">
+<!ENTITY QCDHT300to500      SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/2018/MC_QCD_HT300to500_madgraph_PFandGENcandidates.xml">
+<!ENTITY QCDHT500to700      SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/2018/MC_QCD_HT500to700_madgraph_PFandGENcandidates.xml">
+<!ENTITY QCDHT700to1000     SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/2018/MC_QCD_HT700to1000_madgraph_PFandGENcandidates.xml">
+<!ENTITY QCDHT1000to1500    SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/2018/MC_QCD_HT1000to1500_madgraph_PFandGENcandidates.xml">
+<!ENTITY QCDHT1500to2000    SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/2018/MC_QCD_HT1500to2000_DiJetZoo.xml">
+<!ENTITY QCDHT2000toInf     SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/2018/MC_QCD_HT2000toInf_DiJetZoo.xml">
 
-<!ENTITY QCD_Flat2018       SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/2018/MC_QCD_Flat2018_TMP.xml">
+<!ENTITY QCD_Flat2018       SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/2018/MC_QCD_Flat2018.xml">
+<!ENTITY QCD_Flat           SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/2018/MC_QCD_Flat.xml">
 
 <!-- Data Samples -->
-<!ENTITY DATA_RunA          SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/2018/DATA_JetHT2018A_TMP.xml">
+<!ENTITY DATA_RunA          SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/2018/DATA_JetHT2018A.xml">
 <!ENTITY DATA_RunB          SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/2018/DATA_JetHT2018B.xml">
-<!ENTITY DATA_RunD          SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/DATA_Run2018D_JetHT_TEST.xml">
+<!ENTITY DATA_RunC          SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/2018/DATA_JetHT2018C.xml">
+<!ENTITY DATA_RunD          SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/2018/DATA_JetHT2018D.xml">
 
 
 
@@ -86,14 +89,27 @@
   <Library Name="libSUHH2JER2017"/>
   <Package Name="SUHH2JER2017.par" />
 
-  <Cycle Name="uhh2::AnalysisModuleRunner" OutputDirectory="&OUTDIR;/" PostFix="" TargetLumi="31930" >
+  <Cycle Name="uhh2::AnalysisModuleRunner" OutputDirectory="&OUTDIR;/" PostFix="" TargetLumi="59740" >
 
     <!-- MC -->
-    <InputData Type="MC" Version="QCD_Flat2018"       Lumi="19942995"       NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &QCD_Flat2018;        <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
+    <!-- <InputData Type="MC" Version="QCD_Flat2018"       Lumi="19942995"       NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &QCD_Flat2018;        <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData> -->
+    <InputData Type="MC" Version="QCD_Flat"           Lumi="19942995"       NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &QCD_Flat;            <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
 
-    <!-- DATA -->
+    <InputData Type="MC" Version="QCDHT50to100"       Lumi="0.2295696738"   NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &QCDHT50to100;        <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
+    <InputData Type="MC" Version="QCDHT100to200"      Lumi="0.2603776172"   NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &QCDHT100to200;       <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
+    <InputData Type="MC" Version="QCDHT200to300"      Lumi="36.66404928"    NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &QCDHT200to300;       <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
+    <InputData Type="MC" Version="QCDHT300to500"      Lumi="137.9106508"    NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &QCDHT300to500;       <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
+    <InputData Type="MC" Version="QCDHT500to700"      Lumi="1601.576333"    NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &QCDHT500to700;       <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
+    <InputData Type="MC" Version="QCDHT700to1000"     Lumi="81.09392821"    NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &QCDHT700to1000;      <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
+    <InputData Type="MC" Version="QCDHT1000to1500"    Lumi="14633.33333"    NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &QCDHT1000to1500;     <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
+    <InputData Type="MC" Version="QCDHT1500to2000"    Lumi="105501.7289"    NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &QCDHT1500to2000;     <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
+    <InputData Type="MC" Version="QCDHT2000toInf"     Lumi="265648.9776"    NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &QCDHT2000toInf;      <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
+
+
+<!-- DATA -->
     <InputData Type="DATA" Version="DATA_RunA"        Lumi="1"              NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &DATA_RunA;           <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
     <InputData Type="DATA" Version="DATA_RunB"        Lumi="1"              NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &DATA_RunB;           <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
+    <InputData Type="DATA" Version="DATA_RunC"        Lumi="1"              NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &DATA_RunC;           <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
     <InputData Type="DATA" Version="DATA_RunD"        Lumi="1"              NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &DATA_RunD;           <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
 
     <UserConfig>

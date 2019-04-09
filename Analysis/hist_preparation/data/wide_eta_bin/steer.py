@@ -57,6 +57,8 @@ def main_program(path="", list_path="", out_path="", JECVersions=[], JetLabels=[
             temp_time=time.time()
             # cmd = "cp MySelector_full_Single.C MySelector.C"
             cmd = "cp MySelector_full_DiJet.C MySelector.C"
+            # if "D"==sample:
+            #     cmd = "cp MySelector_full_DiJet_RunD.C MySelector.C"
             a = os.system(cmd)
             cmd = 'sed -i -e """s/jet_threshold=15/jet_threshold=%s/g" MySelector.C' % (alpha_cut)
             a = os.system(cmd)
@@ -115,8 +117,9 @@ list_logfiles = []
 for el in [""]:
   path = sframe_+inputdir+el+"_DATA/"
   # samples = ["ABCD"]
-  samples = ["A", "B", "AB"]
-  JECVersions = ["Autumn18_V5"]
+  samples = ["A", "B", "C", "D", "ABC", "ABCD"]
+  JECVersions = ["Autumn18_V4","Autumn18_V5","Autumn18_V7"]
+  JECVersions = ["Autumn18_V8"]
   # JetLabels = ["AK8PUPPI"]
   JetLabels = ["AK4CHS"]
   systematics = ["", "alpha","PU", "JEC", "JER"]

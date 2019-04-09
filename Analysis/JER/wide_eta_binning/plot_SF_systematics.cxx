@@ -9,7 +9,7 @@
 #include "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/PersonalCode/tdrstyle_all.C"
 
 
-int shift_SM = 5;
+int shift_SM = 8;
 int shift_FE = 3;
 int shift_barrel = 1;
 
@@ -42,7 +42,7 @@ void LoadSF(std::vector<std::vector<std::vector<double>>> &SFs, TString filename
   std::string line;
   getline(file, line);
 
-  if (gSystem->AccessPathName(filename)) { std::cout << filename << '\n'; return false;}
+  if (gSystem->AccessPathName(filename)) { std::cout << "check: " << filename << '\n'; return false;}
 
   while (!file.eof()) {
     getline(file, line);
@@ -58,7 +58,7 @@ void LoadSF(std::vector<std::vector<std::vector<double>>> &SFs, TString filename
 
 void Load_all_SF(std::vector<std::vector<std::vector<double>>> & SFs, TString path, TString central_SF_txt, std::vector<TString> systematics_name) {
   TString filename = path+central_SF_txt;
-  std::cout << filename << '\n';
+  //std::cout << filename << '\n';
   LoadSF(SFs, filename);
   for (unsigned int i = 0; i < systematics_name.size(); i++) {
     TString temp = central_SF_txt.Copy();
@@ -68,7 +68,8 @@ void Load_all_SF(std::vector<std::vector<std::vector<double>>> & SFs, TString pa
     else if (sys.Contains("_")) filename = path+temp.ReplaceAll("standard",sys(0,sys.First("_"))+"/"+sys(sys.First("_")+1,sys.Length()));
     else if (sys.Contains("pTdep")) filename = path+central_SF_txt;
     else filename = path+temp.ReplaceAll("standard",sys);
-    std::cout << filename << '\n';
+    //std::cout << filename << '\n';
+    std::cout << filename  << " " << sys << '\n';
     LoadSF(SFs, filename);
   }
 }
@@ -203,7 +204,7 @@ void plot_SF_systematics_(TString path = "/nfs/dust/cms/user/amalara/WorkingArea
   gErrorIgnoreLevel = kFatal;
 
   extraText  = "Preliminary";  // default extra text is "Preliminary"
-  lumi_13TeV = "[MC 102X] Run2018A 41.53 fb^{-1}";
+  lumi_13TeV = "[MC 102X] Run2018 41.53 fb^{-1}";
   lumi_sqrtS = "13 TeV";       // used with iPeriod = 0, e.g. for simulation-only plots (default is an empty string)
 
   if (QCD_DATA.Contains("RunA"))     lumi_13TeV = "[MC 102X] Run2018A     14.00 fb^{-1}";
@@ -211,9 +212,10 @@ void plot_SF_systematics_(TString path = "/nfs/dust/cms/user/amalara/WorkingArea
   if (QCD_DATA.Contains("RunC"))     lumi_13TeV = "[MC 102X] Run2018C      6.94 fb^{-1}";
   if (QCD_DATA.Contains("RunD"))     lumi_13TeV = "[MC 102X] Run2018D     31.93 fb^{-1}";
   if (QCD_DATA.Contains("RunAB"))    lumi_13TeV = "[MC 102X] Run2018AB    14.10 fb^{-1}";
-  if (QCD_DATA.Contains("RunBCDEF")) lumi_13TeV = "[MC 102X] Run2018ABCD  41.53 fb^{-1}";
+  if (QCD_DATA.Contains("RunABC"))   lumi_13TeV = "[MC 102X] Run2018ABC   28.04 fb^{-1}";
+  if (QCD_DATA.Contains("RunABCD"))  lumi_13TeV = "[MC 102X] Run2018ABCD  59.97 fb^{-1}";
 
-  lumi_13TeV = "[MC Pythia8] RunII";
+  //lumi_13TeV = "[MC Pythia8] RunII";
 
 
   std::vector<double> eta_bins_all(eta_bins, eta_bins + sizeof(eta_bins)/sizeof(double));
@@ -250,6 +252,7 @@ void plot_SF_systematics_(TString path = "/nfs/dust/cms/user/amalara/WorkingArea
 
   if (SFs_SM.size() != systematics_name.size()+1) {
     std::cout << "ERROR SM" << '\n';
+    std::cout << SFs_SM.size() << '\n';
     return false;
   }
 
@@ -371,7 +374,7 @@ void plot_SF_systematics_(TString path = "/nfs/dust/cms/user/amalara/WorkingArea
   leg_final->AddEntry(gr_SFSummer16_25nsV1, "Summer16_25nsV1","f");
   leg_final->AddEntry(gr_SFSpring16_25nsV10, "Spring16_25nsV10","f");
   leg_final->AddEntry(gr_SFFall17_V3, "Fall17_V3","f");
-  leg_final->AddEntry(gr_final,  "Autumn18_V1_RunA","f");
+  leg_final->AddEntry(gr_final,  "Autumn18_V1_"+QCD_DATA(QCD_DATA.Index("Run"), QCD_DATA.Length()-QCD_DATA.Index("Run")-1),"f");
   // leg_final->AddEntry(gr_SFSummer16_25nsV1, "RunF_ECAL","f");
   // leg_final->AddEntry(gr_final,  "RunF","f");
   leg_final->Draw("same");
@@ -400,19 +403,43 @@ void plot_SF_systematics_(TString path = "/nfs/dust/cms/user/amalara/WorkingArea
     std::cout << Form("[ %.2f-%.2f] \t %.2f +- %.2f \% \t %.2f +- %.2f \% ", eta_bin_all_center[i]-eta_bin_all_error[i], eta_bin_all_center[i]+eta_bin_all_error[i], SFFall17_V3[i], SFFall17_V3_Err[i]/SFFall17_V3[i]*100, SF_final[i], SF_final_error[i]/SF_final[i]*100 ) << std::endl;
   }
 
+
+  ofstream SF_file_twiki;
+  SF_file_twiki.open (path+"standard/"+QCD_DATA+"SF_final_twiki.txt");
+
   std::cout << '\n' << "|  *abs(eta) region* |";
-  for (size_t i = 0; i < eta_bin_all_center.size(); i++) { std::cout << Form("|%.3f-%.3f|", eta_bin_all_center[i]-eta_bin_all_error[i], eta_bin_all_center[i]+eta_bin_all_error[i]); }
+  SF_file_twiki << "|  *abs(eta) region* |";
+  for (size_t i = 0; i < eta_bin_all_center.size(); i++) {
+    std::cout << Form("|%.3f-%.3f|", eta_bin_all_center[i]-eta_bin_all_error[i], eta_bin_all_center[i]+eta_bin_all_error[i]);
+    SF_file_twiki << Form("|%.3f-%.3f|", eta_bin_all_center[i]-eta_bin_all_error[i], eta_bin_all_center[i]+eta_bin_all_error[i]);
+  }
 
   std::cout << '\n' << "|  *Data/MC SF*      |";
-  for (size_t i = 0; i < eta_bin_all_center.size(); i++) { std::cout << Form("|%.4f|", SF_final[i]); }
+  SF_file_twiki << '\n' << "|  *Data/MC SF*      |";
+  for (size_t i = 0; i < eta_bin_all_center.size(); i++) {
+    std::cout << Form("|%.4f|", SF_final[i]);
+    SF_file_twiki << Form("|%.4f|", SF_final[i]);
+  }
   std::cout << '\n' << "|  *Stat.Unc*        |";
-  for (size_t i = 0; i < eta_bin_all_center.size(); i++) { std::cout << Form("|%.4f|", SF_final_error_stat[i]); }
+  SF_file_twiki << '\n' << "|  *Stat.Unc*        |";
+  for (size_t i = 0; i < eta_bin_all_center.size(); i++) {
+    std::cout << Form("|%.4f|", SF_final_error_stat[i]);
+    SF_file_twiki << Form("|%.4f|", SF_final_error_stat[i]);
+  }
   std::cout << '\n' << "|  *Syst.Unc*        |";
-  for (size_t i = 0; i < eta_bin_all_center.size(); i++) { std::cout << Form("|%.4f|", SF_final_error_syst[i]); }
+  SF_file_twiki << '\n' << "|  *Syst.Unc*        |";
+  for (size_t i = 0; i < eta_bin_all_center.size(); i++) {
+    std::cout << Form("|%.4f|", SF_final_error_syst[i]);
+    SF_file_twiki << Form("|%.4f|", SF_final_error_syst[i]);
+  }
   std::cout << '\n' << "|  *Total.Unc*       |";
-  for (size_t i = 0; i < eta_bin_all_center.size(); i++) { std::cout << Form("|%.4f|", SF_final_error[i]); }
+  SF_file_twiki << '\n' << "|  *Total.Unc*       |";
+  for (size_t i = 0; i < eta_bin_all_center.size(); i++) {
+    std::cout << Form("|%.4f|", SF_final_error[i]);
+    SF_file_twiki << Form("|%.4f|", SF_final_error[i]);
+  }
 
-
+  SF_file_twiki.close();
 
 
   std::cout << '\n' << "{1 JetEta 0 None ScaleFactor}" << '\n';
@@ -433,39 +460,29 @@ void plot_SF_systematics() {
   TString path_ = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/JERSF/Analysis/JER/wide_eta_binning/file/";
 
   std::vector<TString> studies;
-  // studies.push_back("Single");
-  // studies.push_back("Single_MB");
-  // studies.push_back("LowPtJets");
-  // studies.push_back("LowPtJets_MB");
   studies.push_back("StandardPtBins");
-  // studies.push_back("StandardPtBins_weightcut");
-  // studies.push_back("StandardPtBins_allweights");
-  // studies.push_back("StandardPtBins_CrossCheck");
-  // studies.push_back("StandardPtBins_CrossCheck_1");
-  // studies.push_back("StandardPtBins_L1Seed");
 
   std::vector<TString> JECs;
-  // JECs.push_back("Fall17_17Nov2017_V10");
-  // JECs.push_back("Fall17_17Nov2017_V24");
-  // JECs.push_back("Fall17_17Nov2017_V27");
-  // JECs.push_back("Autumn18_V4");
-  JECs.push_back("Autumn18_V5");
+  //JECs.push_back("Autumn18_V4");
+  //JECs.push_back("Autumn18_V5");
+  JECs.push_back("Autumn18_V8");
 
   std::vector<TString> JETs;
   JETs.push_back("AK4CHS");
   // JETs.push_back("AK8PUPPI");
 
   std::vector<TString> QCDS;
-  QCDS.push_back("QCD_Flat2018");
-  // QCDS.push_back("QCDHT");
+  //QCDS.push_back("QCD_Flat2018");
+  //QCDS.push_back("QCD_Flat");
+  QCDS.push_back("QCDHT");
 
   std::vector<TString> DATAS;
   DATAS.push_back("RunA");
   DATAS.push_back("RunB");
-  // DATAS.push_back("RunC");
-  // DATAS.push_back("RunD");
-  DATAS.push_back("RunAB");
-  // DATAS.push_back("RunABCD");
+  DATAS.push_back("RunC");
+  DATAS.push_back("RunD");
+  DATAS.push_back("RunABC");
+  DATAS.push_back("RunABCD");
 
 
 
@@ -478,8 +495,9 @@ void plot_SF_systematics() {
           for(TString QCD : QCDS){
             for(TString DATA : DATAS){
               TString QCD_DATA = QCD+"/"+DATA+"/";
-              std::cout << QCD_DATA << '\n';
+              std::cout << "start: " << QCD_DATA << '\n';
               plot_SF_systematics_(path, QCD_DATA);
+              std::cout << "end: " << QCD_DATA << '\n';
               sleep(5);
             }
           }
