@@ -34,10 +34,14 @@
 #include "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/JER2017/include/constants.hpp"
 
 #define FILL_HISTOS(region,method)                                                                        \
+if (TMath::Abs(weight/asy)>5*1e06) continue;\
+asymmetries_##region.at(r).at(k).at(m) -> Fill( asy , weight );                                           \
 asymmetries_##region.at(r).at(k).at(m) -> Fill( asy , weight );                                           \
 asymmetries_pt_##region.at(r).at(k).at(m) -> Fill( pt_ave, weight );                                      \
 asymmetries_rho_##region.at(r).at(k).at(m) -> Fill( rho, weight );                                        \
 asymmetries_pt3_##region.at(r).at(k).at(m) -> Fill( jet3_pt, weight );                                    \
+asymmetries_dR1_##region.at(r).at(k).at(m) -> Fill( DR1, weight );                                        \
+asymmetries_dR2_##region.at(r).at(k).at(m) -> Fill( DR2, weight );                                        \
 dR_##region.at(r).at(k).at(m) -> Fill( Delta_R_radiation_barrel, Delta_R_radiation_probe, weight );       \
 dR_probe_##region.at(r).at(k).at(m) -> Fill( Delta_R_radiation_probe, asy, weight );                      \
 dR_barrel_##region.at(r).at(k).at(m) -> Fill( Delta_R_radiation_barrel, asy, weight );                    \
@@ -51,6 +55,7 @@ if ( m == AlphaBins-1 ) {                                                       
   h_Jet2Pt_##method -> Fill( jet2_pt, weight );                                                           \
   h_Jet3Pt_##method -> Fill( jet3_pt, weight );                                                           \
   h_rho_##method -> Fill( rho, weight );                                                                  \
+  if (asy!=0) h_relerr_##method -> Fill(TMath::Abs(weight/asy), 1. );                                                \
 }                                                                                                         \
 
 
@@ -144,6 +149,8 @@ for( int m = 0; m < EtaBins_##region; m++ ) {                 \
   f1->cd();                                                   \
   asymmetries_rho_##region.at(m).at(p).at(r) -> Write();      \
   asymmetries_pt3_##region.at(m).at(p).at(r) -> Write();      \
+  asymmetries_dR1_##region.at(m).at(p).at(r) -> Write();      \
+  asymmetries_dR2_##region.at(m).at(p).at(r) -> Write();      \
   gen_asymmetries_pt3_##region.at(m).at(p).at(r) -> Write();  \
   f2->cd();                                                   \
   dR_##region.at(m).at(p).at(r) -> Write();                   \
@@ -159,15 +166,15 @@ for( int m = 0; m < EtaBins_##region; m++ ) {                 \
   alpha2D_##region.at(m).at(p) -> Write();                    \
 }                                                             \
 
-void MakeHistograms(std::vector< std::vector< std::vector< TH1F* > > > &asymmetries, std::vector< std::vector< std::vector< TH1F* > > > &asymmetries_pt, std::vector< std::vector< std::vector< TH1F* > > > &asymmetries_rho, std::vector< std::vector< std::vector< TH1F* > > > &asymmetries_pt3, std::vector< std::vector< TH1F* > > &alpha_spectrum, std::vector< std::vector< std::vector< TH1F* > > > &gen_asymmetries, std::vector< std::vector< std::vector< TH1F* > > > &gen_asymmetries_pt, std::vector< std::vector< std::vector< TH1F* > > > &gen_asymmetries_rho, std::vector< std::vector< std::vector< TH1F* > > > &gen_asymmetries_pt3, std::vector< std::vector< std::vector< TH1F* > > > &MC_Truth_asymmetries, std::vector< std::vector< std::vector< TH2F* > > > &MC_Truth_asymmetries_2D, std::vector< std::vector< std::vector< TH2F* > > > &dR, std::vector< std::vector< std::vector< TH2F* > > > &gen_dR, std::vector< std::vector< std::vector< TH2F* > > > &dR_probe, std::vector< std::vector< std::vector< TH2F* > > > &gen_dR_probe, std::vector< std::vector< std::vector< TH2F* > > > &dR_barrel, std::vector< std::vector< std::vector< TH2F* > > > &gen_dR_barrel, std::vector< std::vector< std::vector< TH3F* > > > &dR3, std::vector< std::vector< std::vector< TH3F* > > > &gen_dR3, std::vector< std::vector< TH2F* > > &alpha2D, TString text, TString extraText, int etaBins, int ptBins, int AlphaBins, int etaShift, int ptShift, int alphaShift) {
+void MakeHistograms(std::vector< std::vector< std::vector< TH1F* > > > &asymmetries, std::vector< std::vector< std::vector< TH1F* > > > &asymmetries_pt, std::vector< std::vector< std::vector< TH1F* > > > &asymmetries_rho, std::vector< std::vector< std::vector< TH1F* > > > &asymmetries_pt3, std::vector< std::vector< std::vector< TH1F* > > > &asymmetries_dR1, std::vector< std::vector< std::vector< TH1F* > > > &asymmetries_dR2, std::vector< std::vector< TH1F* > > &alpha_spectrum, std::vector< std::vector< std::vector< TH1F* > > > &gen_asymmetries, std::vector< std::vector< std::vector< TH1F* > > > &gen_asymmetries_pt, std::vector< std::vector< std::vector< TH1F* > > > &gen_asymmetries_rho, std::vector< std::vector< std::vector< TH1F* > > > &gen_asymmetries_pt3, std::vector< std::vector< std::vector< TH1F* > > > &MC_Truth_asymmetries, std::vector< std::vector< std::vector< TH2F* > > > &MC_Truth_asymmetries_2D, std::vector< std::vector< std::vector< TH2F* > > > &dR, std::vector< std::vector< std::vector< TH2F* > > > &gen_dR, std::vector< std::vector< std::vector< TH2F* > > > &dR_probe, std::vector< std::vector< std::vector< TH2F* > > > &gen_dR_probe, std::vector< std::vector< std::vector< TH2F* > > > &dR_barrel, std::vector< std::vector< std::vector< TH2F* > > > &gen_dR_barrel, std::vector< std::vector< std::vector< TH3F* > > > &dR3, std::vector< std::vector< std::vector< TH3F* > > > &gen_dR3, std::vector< std::vector< TH2F* > > &alpha2D, TString text, TString extraText, int etaBins, int ptBins, int AlphaBins, int etaShift, int ptShift, int alphaShift) {
   for( int m = etaShift; m < etaBins+etaShift; m++ ) {
-    std::vector< std::vector< TH1F* > > temp2, temp2pt, temp2rho, temp2pt3, gen_temp2rho, gen_temp2pt3, gen_temp2, gen_temp2pt, temp2_MCTruth;
+    std::vector< std::vector< TH1F* > > temp2, temp2pt, temp2rho, temp2pt3, temp2dR1, temp2dR2, gen_temp2rho, gen_temp2pt3, gen_temp2, gen_temp2pt, temp2_MCTruth;
     std::vector< std::vector< TH2F* > > temp2_dR, gen_temp2_dR, temp2_dR_probe, gen_temp2_dR_probe, temp2_dR_barrel, gen_temp2_dR_barrel, temp2_MCTruth2D;
     std::vector< TH1F* > alpha_temp2;
     std::vector< std::vector< TH3F* > > temp2_dR3, gen_temp2_dR3 ;
     std::vector< TH2F* > alpha2D_temp2;
     for( int p = 0; p < ptBins; p++ ) {
-      std::vector< TH1F* > temp1, temp1pt, temp1rho, temp1pt3, gen_temp1rho, gen_temp1pt3, gen_temp1, gen_temp1pt, temp1_MCTruth;
+      std::vector< TH1F* > temp1, temp1pt, temp1rho, temp1pt3, temp1dR1, temp1dR2, gen_temp1rho, gen_temp1pt3, gen_temp1, gen_temp1pt, temp1_MCTruth;
       std::vector< TH2F* > temp1_dR, gen_temp1_dR, temp1_dR_probe, gen_temp1_dR_probe, temp1_dR_barrel, gen_temp1_dR_barrel, temp1_MCTruth2D;
       std::vector< TH3F* > temp1_dR3, gen_temp1_dR3 ;
       TString name_alpha   = "alpha";   name_alpha  += extraText; name_alpha  += "_eta"; name_alpha  += m+1; name_alpha  += "_pt"; name_alpha  += p+1;
@@ -184,6 +191,8 @@ void MakeHistograms(std::vector< std::vector< std::vector< TH1F* > > > &asymmetr
         TString name_pt  = text+"pt";   name_pt  += extraText; name_pt  += "_eta"; name_pt  += m+1; name_pt  += "_pt"; name_pt  += p+1; name_pt  += "_alpha"; name_pt  += r+1;
         TString name_rho = text+"rho";  name_rho += extraText; name_rho += "_eta"; name_rho += m+1; name_rho += "_pt"; name_rho += p+1; name_rho += "_alpha"; name_rho += r+1;
         TString name_pt3 = text+"pt3";  name_pt3 += extraText; name_pt3 += "_eta"; name_pt3 += m+1; name_pt3 += "_pt"; name_pt3 += p+1; name_pt3 += "_alpha"; name_pt3 += r+1;
+        TString name_dR1 = text+"dR1";  name_dR1 += extraText; name_dR1 += "_eta"; name_dR1 += m+1; name_dR1 += "_pt"; name_dR1 += p+1; name_dR1 += "_alpha"; name_dR1 += r+1;
+        TString name_dR2 = text+"dR2";  name_dR2 += extraText; name_dR2 += "_eta"; name_dR2 += m+1; name_dR2 += "_pt"; name_dR2 += p+1; name_dR2 += "_alpha"; name_dR2 += r+1;
 
         TString gen_name     = "gen_"+text;        gen_name     += extraText; gen_name     += "_eta"; gen_name     += m+1; gen_name     += "_pt"; gen_name     += p+1; gen_name     += "_alpha"; gen_name     += r+1;
         TString gen_name_pt  = "gen_"+text+"pt";   gen_name_pt  += extraText; gen_name_pt  += "_eta"; gen_name_pt  += m+1; gen_name_pt  += "_pt"; gen_name_pt  += p+1; gen_name_pt  += "_alpha"; gen_name_pt  += r+1;
@@ -213,6 +222,12 @@ void MakeHistograms(std::vector< std::vector< std::vector< TH1F* > > > &asymmetr
         TH1F *h4 = new TH1F( name_pt3, name_pt3, 50, 0, 1500 );
         h4 ->GetYaxis()->SetTitle("a.u.");    h4 ->GetXaxis()->SetTitle("Pt[GeV]");
         h4 -> Sumw2(); temp1pt3.push_back(h4);
+        TH1F *h5 = new TH1F( name_dR1, name_dR1, 60, 0, 6.0 );
+        h5 ->GetYaxis()->SetTitle("a.u.");    h5 ->GetXaxis()->SetTitle("dR");
+        h5 -> Sumw2(); temp1dR1.push_back(h5);
+        TH1F *h6 = new TH1F( name_dR2, name_dR2, 60, 0, 6.0 );
+        h6 ->GetYaxis()->SetTitle("a.u.");    h6 ->GetXaxis()->SetTitle("dR");
+        h6 -> Sumw2(); temp1dR2.push_back(h6);
         TH1F *gen_h1 = new TH1F( gen_name, gen_name, 160, -0.8, 0.8 );
         gen_h1 ->GetYaxis()->SetTitle("a.u.");    gen_h1 ->GetXaxis()->SetTitle("Asymmetry");
         gen_h1 -> Sumw2(); gen_temp1.push_back(gen_h1);
@@ -256,12 +271,12 @@ void MakeHistograms(std::vector< std::vector< std::vector< TH1F* > > > &asymmetr
         gen_h3_dR3 ->GetXaxis()->SetTitle("Asymmetry");    gen_h3_dR3 ->GetYaxis()->SetTitle("#Delta R (jet_{barrel}, jet_{3})");    gen_h3_dR3 ->GetZaxis()->SetTitle("#Delta R (jet_{probe}, jet_{3})");
         gen_h3_dR3 -> Sumw2(); gen_temp1_dR3.push_back(gen_h3_dR3);
       }
-      temp2.push_back(temp1); temp2pt.push_back(temp1pt); temp2rho.push_back(temp1rho);  temp2pt3.push_back(temp1pt3);
+      temp2.push_back(temp1); temp2pt.push_back(temp1pt); temp2rho.push_back(temp1rho);  temp2pt3.push_back(temp1pt3);  temp2dR1.push_back(temp1dR1);  temp2dR2.push_back(temp1dR2);
       gen_temp2.push_back(gen_temp1); gen_temp2pt.push_back(gen_temp1pt); gen_temp2rho.push_back(gen_temp1rho); gen_temp2pt3.push_back(gen_temp1pt3);
       temp2_MCTruth.push_back(temp1_MCTruth); temp2_MCTruth2D.push_back(temp1_MCTruth2D); temp2_dR.push_back(temp1_dR); gen_temp2_dR.push_back(gen_temp1_dR); temp2_dR_probe.push_back(temp1_dR_probe); gen_temp2_dR_probe.push_back(gen_temp1_dR_probe); temp2_dR_barrel.push_back(temp1_dR_barrel); gen_temp2_dR_barrel.push_back(gen_temp1_dR_barrel);
       temp2_dR3.push_back(temp1_dR3); gen_temp2_dR3.push_back(gen_temp1_dR3);
     }
-    asymmetries.push_back(temp2); asymmetries_pt.push_back(temp2pt); asymmetries_rho.push_back(temp2rho); asymmetries_pt3.push_back(temp2pt3);
+    asymmetries.push_back(temp2); asymmetries_pt.push_back(temp2pt); asymmetries_rho.push_back(temp2rho); asymmetries_pt3.push_back(temp2pt3); asymmetries_dR1.push_back(temp2dR1); asymmetries_dR2.push_back(temp2dR2);
     gen_asymmetries.push_back(gen_temp2); gen_asymmetries_pt.push_back(gen_temp2pt); gen_asymmetries_rho.push_back(gen_temp2rho); gen_asymmetries_pt3.push_back(gen_temp2pt3);
     MC_Truth_asymmetries.push_back(temp2_MCTruth); MC_Truth_asymmetries_2D.push_back(temp2_MCTruth2D); dR.push_back(temp2_dR); gen_dR.push_back(gen_temp2_dR); dR_probe.push_back(temp2_dR_probe); gen_dR_probe.push_back(gen_temp2_dR_probe); dR_barrel.push_back(temp2_dR_barrel); gen_dR_barrel.push_back(gen_temp2_dR_barrel);
     dR3.push_back(temp2_dR3); gen_dR3.push_back(gen_temp2_dR3);
@@ -335,6 +350,12 @@ void MySelector::SlaveBegin(TTree * /*tree*/) {
   h_PU -> Sumw2();
   // histograms.push_back(h_PU);
 
+
+  h_PUweight = new TH1F( "WeightedPileUp" , "wieghtes PU distribution" , 60 , 0 , 60 );
+  h_PUweight -> SetXTitle( "PU" );
+  h_PUweight -> Sumw2();
+  // histograms.push_back(h_PUweight);
+
   h_rho_SM = new TH1F( "Rho" , "Rho distribution" , 60 , 0 , 30 );
   h_rho_SM -> SetXTitle( "Rho" );
   h_rho_SM -> Sumw2();
@@ -344,6 +365,17 @@ void MySelector::SlaveBegin(TTree * /*tree*/) {
   h_rho_FE -> SetXTitle( "RhoFWD" );
   h_rho_FE -> Sumw2();
   histograms.push_back(h_rho_FE);
+
+
+  h_relerr_SM = new TH1F( "RelerrSM" , "Relerr SM" , 1e07 , 0 , 1e07 );
+  h_relerr_SM -> SetXTitle( "relerr" );
+  h_relerr_SM -> Sumw2();
+  histograms.push_back(h_relerr_SM);
+
+  h_relerr_FE = new TH1F( "RelerrFE" , "Relerr FE" , 1e07 , 0 , 1e07 );
+  h_relerr_FE -> SetXTitle( "relerr" );
+  h_relerr_FE -> Sumw2();
+  histograms.push_back(h_relerr_FE);
 
   EtaBins_SM            = 10; // st method bins
   EtaBins_SM_control    =  3; // st method bins control
@@ -361,11 +393,11 @@ void MySelector::SlaveBegin(TTree * /*tree*/) {
   PtBins_HF = n_pt_bins_Di_HF;
   AlphaBins = 6;
 
-  MakeHistograms(asymmetries_SM,             asymmetries_pt_SM,           asymmetries_rho_SM,           asymmetries_pt3_SM,           alpha_spectrum_SM,            gen_asymmetries_SM,           gen_asymmetries_pt_SM,            gen_asymmetries_rho_SM,           gen_asymmetries_pt3_SM,           MC_Truth_asymmetries_SM,            MC_Truth_asymmetries_2D_SM,            dR_SM,            gen_dR_SM,            dR_probe_SM,            gen_dR_probe_SM,            dR_barrel_SM,           gen_dR_barrel_SM,           dR3_SM,           gen_dR3_SM,           alpha2D_SM,           "asymm",  "_SM",            EtaBins_SM,           PtBins_Central,  AlphaBins,   etaShift_SM,            0, 0);
-  MakeHistograms(asymmetries_SM_control,     asymmetries_pt_SM_control,   asymmetries_rho_SM_control,   asymmetries_pt3_SM_control,   alpha_spectrum_SM_control,    gen_asymmetries_SM_control,   gen_asymmetries_pt_SM_control,    gen_asymmetries_rho_SM_control,   gen_asymmetries_pt3_SM_control,   MC_Truth_asymmetries_SM_control,    MC_Truth_asymmetries_2D_SM_control,    dR_SM_control,    gen_dR_SM_control,    dR_probe_SM_control,    gen_dR_probe_SM_control,    dR_barrel_SM_control,   gen_dR_barrel_SM_control,   dR3_SM_control,   gen_dR3_SM_control,   alpha2D_SM_control,   "asymm",  "_SM_control",    EtaBins_SM_control,   PtBins_Central,  AlphaBins,   etaShift_SM_control,    0, 0);
-  MakeHistograms(asymmetries_FE_reference,  asymmetries_pt_FE_reference,  asymmetries_rho_FE_reference, asymmetries_pt3_FE_reference, alpha_spectrum_FE_reference,  gen_asymmetries_FE_reference, gen_asymmetries_pt_FE_reference,  gen_asymmetries_rho_FE_reference, gen_asymmetries_pt3_FE_reference, MC_Truth_asymmetries_FE_reference,  MC_Truth_asymmetries_2D_FE_reference,  dR_FE_reference,  gen_dR_FE_reference,  dR_probe_FE_reference,  gen_dR_probe_FE_reference,  dR_barrel_FE_reference, gen_dR_barrel_FE_reference, dR3_FE_reference, gen_dR3_FE_reference, alpha2D_FE_reference, "asymm",  "_FE_reference",  EtaBins_FE_reference, PtBins_Central, AlphaBins,    etaShift_FE_reference,  0, 0);
-  MakeHistograms(asymmetries_FE_control,     asymmetries_pt_FE_control,   asymmetries_rho_FE_control,   asymmetries_pt3_FE_control,   alpha_spectrum_FE_control,    gen_asymmetries_FE_control,   gen_asymmetries_pt_FE_control,    gen_asymmetries_rho_FE_control,   gen_asymmetries_pt3_FE_control,   MC_Truth_asymmetries_FE_control,    MC_Truth_asymmetries_2D_FE_control,    dR_FE_control,    gen_dR_FE_control,    dR_probe_FE_control,    gen_dR_probe_FE_control,    dR_barrel_FE_control,   gen_dR_barrel_FE_control,   dR3_FE_control,   gen_dR3_FE_control,   alpha2D_FE_control,  "asymm",  "_FE_control",    EtaBins_FE_control,   PtBins_Central, AlphaBins,    etaShift_FE_control,    0, 0);
-  MakeHistograms(asymmetries_FE,             asymmetries_pt_FE,           asymmetries_rho_FE,           asymmetries_pt3_FE,           alpha_spectrum_FE,            gen_asymmetries_FE,           gen_asymmetries_pt_FE,            gen_asymmetries_rho_FE,           gen_asymmetries_pt3_FE,           MC_Truth_asymmetries_FE,            MC_Truth_asymmetries_2D_FE,            dR_FE,            gen_dR_FE,            dR_probe_FE,            gen_dR_probe_FE,            dR_barrel_FE,           gen_dR_barrel_FE,           dR3_FE,           gen_dR3_FE,           alpha2D_FE,           "asymm",  "_FE",            EtaBins_FE,           PtBins_Central,  AlphaBins,   etaShift_FE,            0, 0);
+  MakeHistograms(asymmetries_SM,             asymmetries_pt_SM,           asymmetries_rho_SM,           asymmetries_pt3_SM,           asymmetries_dR1_SM,           asymmetries_dR2_SM,           alpha_spectrum_SM,            gen_asymmetries_SM,           gen_asymmetries_pt_SM,            gen_asymmetries_rho_SM,           gen_asymmetries_pt3_SM,           MC_Truth_asymmetries_SM,            MC_Truth_asymmetries_2D_SM,            dR_SM,            gen_dR_SM,            dR_probe_SM,            gen_dR_probe_SM,            dR_barrel_SM,           gen_dR_barrel_SM,           dR3_SM,           gen_dR3_SM,           alpha2D_SM,           "asymm",  "_SM",            EtaBins_SM,           PtBins_Central,  AlphaBins,   etaShift_SM,            0, 0);
+  MakeHistograms(asymmetries_SM_control,     asymmetries_pt_SM_control,   asymmetries_rho_SM_control,   asymmetries_pt3_SM_control,   asymmetries_dR1_SM_control,   asymmetries_dR2_SM_control,   alpha_spectrum_SM_control,    gen_asymmetries_SM_control,   gen_asymmetries_pt_SM_control,    gen_asymmetries_rho_SM_control,   gen_asymmetries_pt3_SM_control,   MC_Truth_asymmetries_SM_control,    MC_Truth_asymmetries_2D_SM_control,    dR_SM_control,    gen_dR_SM_control,    dR_probe_SM_control,    gen_dR_probe_SM_control,    dR_barrel_SM_control,   gen_dR_barrel_SM_control,   dR3_SM_control,   gen_dR3_SM_control,   alpha2D_SM_control,   "asymm",  "_SM_control",    EtaBins_SM_control,   PtBins_Central,  AlphaBins,   etaShift_SM_control,    0, 0);
+  MakeHistograms(asymmetries_FE_reference,  asymmetries_pt_FE_reference,  asymmetries_rho_FE_reference, asymmetries_pt3_FE_reference, asymmetries_dR1_FE_reference, asymmetries_dR2_FE_reference, alpha_spectrum_FE_reference,  gen_asymmetries_FE_reference, gen_asymmetries_pt_FE_reference,  gen_asymmetries_rho_FE_reference, gen_asymmetries_pt3_FE_reference, MC_Truth_asymmetries_FE_reference,  MC_Truth_asymmetries_2D_FE_reference,  dR_FE_reference,  gen_dR_FE_reference,  dR_probe_FE_reference,  gen_dR_probe_FE_reference,  dR_barrel_FE_reference, gen_dR_barrel_FE_reference, dR3_FE_reference, gen_dR3_FE_reference, alpha2D_FE_reference, "asymm",  "_FE_reference",  EtaBins_FE_reference, PtBins_Central, AlphaBins,    etaShift_FE_reference,  0, 0);
+  MakeHistograms(asymmetries_FE_control,     asymmetries_pt_FE_control,   asymmetries_rho_FE_control,   asymmetries_pt3_FE_control,   asymmetries_dR1_FE_control,   asymmetries_dR2_FE_control,   alpha_spectrum_FE_control,    gen_asymmetries_FE_control,   gen_asymmetries_pt_FE_control,    gen_asymmetries_rho_FE_control,   gen_asymmetries_pt3_FE_control,   MC_Truth_asymmetries_FE_control,    MC_Truth_asymmetries_2D_FE_control,    dR_FE_control,    gen_dR_FE_control,    dR_probe_FE_control,    gen_dR_probe_FE_control,    dR_barrel_FE_control,   gen_dR_barrel_FE_control,   dR3_FE_control,   gen_dR3_FE_control,   alpha2D_FE_control,  "asymm",  "_FE_control",    EtaBins_FE_control,   PtBins_Central, AlphaBins,    etaShift_FE_control,    0, 0);
+  MakeHistograms(asymmetries_FE,             asymmetries_pt_FE,           asymmetries_rho_FE,           asymmetries_pt3_FE,           asymmetries_dR1_FE,           asymmetries_dR2_FE,           alpha_spectrum_FE,            gen_asymmetries_FE,           gen_asymmetries_pt_FE,            gen_asymmetries_rho_FE,           gen_asymmetries_pt3_FE,           MC_Truth_asymmetries_FE,            MC_Truth_asymmetries_2D_FE,            dR_FE,            gen_dR_FE,            dR_probe_FE,            gen_dR_probe_FE,            dR_barrel_FE,           gen_dR_barrel_FE,           dR3_FE,           gen_dR3_FE,           alpha2D_FE,           "asymm",  "_FE",            EtaBins_FE,           PtBins_Central,  AlphaBins,   etaShift_FE,            0, 0);
 
   dR_bins.push_back(0.0); dR_bins.push_back(0.4); dR_bins.push_back(0.8); dR_bins.push_back(1.2); dR_bins.push_back(1.6);
   dR_bins.push_back(2.0); dR_bins.push_back(2.4); dR_bins.push_back(2.8); dR_bins.push_back(3.2); dR_bins.push_back(3.6);
@@ -432,14 +464,14 @@ Bool_t MySelector::Process(Long64_t entry) {
   GetEntry( entry );
   BuildEvent();
 
-  if (weight <= 0 || weight > 50) {
-    TString filename = fChain->GetDirectory()->GetPath();
-    std::cout << "WARNING: weight was very small/large " << weight << std::endl;
-    std::cout << "Filename is " << filename << std::endl;
-    std::cout << "leading jet eta is " << probejet_eta << std::endl;
-    weight = 0;
-    return kFALSE;
-  }
+  // if (weight <= 0 || weight > 50) {
+  //   TString filename = fChain->GetDirectory()->GetPath();
+  //   std::cout << "WARNING: weight was very small/large " << weight << std::endl;
+  //   std::cout << "Filename is " << filename << std::endl;
+  //   std::cout << "leading jet eta is " << probejet_eta << std::endl;
+  //   weight = 0;
+  //   return kFALSE;
+  // }
 
   //2017
   std::vector<double> Eta_bins_SM(            eta_bins + etaShift_SM,            eta_bins + etaShift_SM + EtaBins_SM + 1);
@@ -461,6 +493,7 @@ Bool_t MySelector::Process(Long64_t entry) {
     return kFALSE;
   }
   h_PU -> Fill( npuIT, 1 ); //weight );
+  h_PUweight-> Fill( npuIT, weight );
 
   double gen_threshold = 10;
   double jet_threshold = 15;
@@ -695,6 +728,7 @@ void MySelector::SlaveTerminate() {
   TFile *fprim = new TFile(outdir+"PU_incl_full.root","RECREATE"); ;
   fprim->cd();
   h_PU -> Write();
+  h_PUweight->Write();
   fprim -> Close();
 
   TFile *f  = new TFile(outdir+"histograms_mc_incl_full.root","RECREATE");
@@ -725,6 +759,8 @@ void MySelector::SlaveTerminate() {
   f->cd();
   h_rho_SM -> Write();
   h_rho_FE -> Write();
+  h_relerr_SM -> Write();
+  h_relerr_FE -> Write();
   f -> Close();
   f1-> Close();
   f2-> Close();

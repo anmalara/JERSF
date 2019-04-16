@@ -149,11 +149,11 @@ public:
 
   TString whichRun;
 
-  std::vector< std::vector< std::vector< TH1F* > > > asymmetries_SM, 						asymmetries_pt_SM,						asymmetries_rho_SM,						asymmetries_pt3_SM;
-  std::vector< std::vector< std::vector< TH1F* > > > asymmetries_SM_control, 		asymmetries_pt_SM_control,		asymmetries_rho_SM_control,		asymmetries_pt3_SM_control;
-  std::vector< std::vector< std::vector< TH1F* > > > asymmetries_FE_reference, 	asymmetries_pt_FE_reference,	asymmetries_rho_FE_reference,	asymmetries_pt3_FE_reference;
-  std::vector< std::vector< std::vector< TH1F* > > > asymmetries_FE_control, 		asymmetries_pt_FE_control,		asymmetries_rho_FE_control,		asymmetries_pt3_FE_control;
-  std::vector< std::vector< std::vector< TH1F* > > > asymmetries_FE, 						asymmetries_pt_FE,						asymmetries_rho_FE,						asymmetries_pt3_FE;
+  std::vector< std::vector< std::vector< TH1F* > > > asymmetries_SM, 						asymmetries_pt_SM,						asymmetries_rho_SM,						asymmetries_pt3_SM,						asymmetries_dR1_SM,						asymmetries_dR2_SM;
+  std::vector< std::vector< std::vector< TH1F* > > > asymmetries_SM_control, 		asymmetries_pt_SM_control,		asymmetries_rho_SM_control,		asymmetries_pt3_SM_control,		asymmetries_dR1_SM_control,		asymmetries_dR2_SM_control;
+  std::vector< std::vector< std::vector< TH1F* > > > asymmetries_FE_reference, 	asymmetries_pt_FE_reference,	asymmetries_rho_FE_reference,	asymmetries_pt3_FE_reference,	asymmetries_dR1_FE_reference,	asymmetries_dR2_FE_reference;
+  std::vector< std::vector< std::vector< TH1F* > > > asymmetries_FE_control, 		asymmetries_pt_FE_control,		asymmetries_rho_FE_control,		asymmetries_pt3_FE_control,		asymmetries_dR1_FE_control,		asymmetries_dR2_FE_control;
+  std::vector< std::vector< std::vector< TH1F* > > > asymmetries_FE, 						asymmetries_pt_FE,						asymmetries_rho_FE,						asymmetries_pt3_FE,						asymmetries_dR1_FE,						asymmetries_dR2_FE;
 
 
   std::vector< std::vector< std::vector< TH1F* > > > gen_asymmetries_SM, 						gen_asymmetries_pt_SM,						gen_asymmetries_rho_SM,						gen_asymmetries_pt3_SM;
@@ -187,6 +187,11 @@ public:
 
   TH1F *h_JetPt;
   TH1F *h_PU;
+
+  TH1F *h_PUweight;
+
+  TH1F *h_relerr_SM;
+  TH1F *h_relerr_FE;
 
   TH1F *h_rho_SM;
   TH1F *h_rho_FE;

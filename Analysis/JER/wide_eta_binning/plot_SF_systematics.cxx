@@ -325,7 +325,7 @@ void plot_SF_systematics_(TString path = "/nfs/dust/cms/user/amalara/WorkingArea
   TCanvas* canv_SF_final = tdrCanvas("SF_final", eta_bins_all.at(0)-0.1, eta_bins_all.at(eta_bins_all.size()-1)+0.5, 0., 3.0, "#eta", "JER SF");
   canv_SF_final->SetTickx(0);
   canv_SF_final->SetTicky(0);
-  TLegend *leg_final = tdrLeg(0.65,0.67,0.80,0.92, 0.040, 42, kBlack);
+  TLegend *leg_final = tdrLeg(0.64,0.67,0.79,0.92, 0.040, 42, kBlack);
   tdrHeader(leg_final,"", 12);
 
   double etaSummer16_25nsV1[] = {0, 0.522, 0.783, 1.131, 1.305, 1.740, 1.930, 2.043, 2.322, 2.5, 2.853, 2.964, 3.139, 5.191};
@@ -334,14 +334,14 @@ void plot_SF_systematics_(TString path = "/nfs/dust/cms/user/amalara/WorkingArea
   // double jerSummer16_25nsV1[13][2] = {{1.17716, 0.04438},{1.21224, 0.04054},{1.14975, 0.082},{1.1395, 0.06360},{1.15978, 0.1112},{1.20805, 0.089},{1.39324, 0.302},{1.32341, 0.183},{1.58005, 0.598},{2.26888, 0.261},{2.65, 0.337},{1.27321, 0.103},{1.20094, 0.105}};
 
   // double etaSpring16_25nsV10[] = {0, 0.5, 0.8, 1.11, 1.3, 1.7, 1.9, 2.1, 2.3, 2.5, 2.8, 3.0, 3.2, 5.0};
-  double etaSpring16_25nsV10[] = {0, 0.522, 0.783, 1.131, 1.305, 1.740, 1.930, 2.043, 2.322, 2.5, 2.853, 2.964, 3.139, 5.191};
-  double jerSpring16_25nsV10[13][2] = {{1.109,0.008},{1.138,0.013},{1.114,0.013},{1.123,0.024},{1.084,0.011},{1.082,0.035},{1.140,0.047},{1.067,0.053},{1.177,0.041},{1.364,0.039},{1.857,0.071},{1.328,0.022},{1.16,0.029}};
+  // double etaSpring16_25nsV10[] = {0, 0.522, 0.783, 1.131, 1.305, 1.740, 1.930, 2.043, 2.322, 2.5, 2.853, 2.964, 3.139, 5.191};
+  // double jerSpring16_25nsV10[13][2] = {{1.109,0.008},{1.138,0.013},{1.114,0.013},{1.123,0.024},{1.084,0.011},{1.082,0.035},{1.140,0.047},{1.067,0.053},{1.177,0.041},{1.364,0.039},{1.857,0.071},{1.328,0.022},{1.16,0.029}};
 
   double etaFall17_V3[] = {0, 0.522, 0.783, 1.131, 1.305, 1.740, 1.930, 2.043, 2.322, 2.5, 2.853, 2.964, 3.139, 5.191};
   double jerFall17_V3[13][2] = {{1.1432,0.0222},{1.1815,0.0484},{1.0989,0.0456},{1.1137,0.1397},{1.1307,0.1470},{1.1600,0.0976},{1.2393,0.1909},{1.2604,0.1501},{1.4085,0.2020},{1.9909,0.5684},{2.2923,0.3743},{1.2696,0.1089},{1.1542,0.1524}};
 
   std::vector<double> etaSummer16_25nsV1_center, etaSummer16_25nsV1_err, SFSummer16_25nsV1, SFSummer16_25nsV1_Err;
-  std::vector<double> etaSpring16_25nsV10_center, etaSpring16_25nsV10_err, SFSpring16_25nsV10, SFSpring16_25nsV10_Err;
+  // std::vector<double> etaSpring16_25nsV10_center, etaSpring16_25nsV10_err, SFSpring16_25nsV10, SFSpring16_25nsV10_Err;
   std::vector<double> etaFall17_V3_center, etaFall17_V3_err, SFFall17_V3, SFFall17_V3_Err;
 
   for (unsigned int i = 0; i < 13; i++) {
@@ -350,10 +350,10 @@ void plot_SF_systematics_(TString path = "/nfs/dust/cms/user/amalara/WorkingArea
     SFSummer16_25nsV1.push_back(jerSummer16_25nsV1[i][0]);
     SFSummer16_25nsV1_Err.push_back(jerSummer16_25nsV1[i][1]);
 
-    etaSpring16_25nsV10_center.push_back((etaSpring16_25nsV10[i+1]+etaSpring16_25nsV10[i])/2);
-    etaSpring16_25nsV10_err.push_back((etaSpring16_25nsV10[i+1]-etaSpring16_25nsV10[i])/2);
-    SFSpring16_25nsV10.push_back(jerSpring16_25nsV10[i][0]);
-    SFSpring16_25nsV10_Err.push_back(jerSpring16_25nsV10[i][1]);
+    // etaSpring16_25nsV10_center.push_back((etaSpring16_25nsV10[i+1]+etaSpring16_25nsV10[i])/2);
+    // etaSpring16_25nsV10_err.push_back((etaSpring16_25nsV10[i+1]-etaSpring16_25nsV10[i])/2);
+    // SFSpring16_25nsV10.push_back(jerSpring16_25nsV10[i][0]);
+    // SFSpring16_25nsV10_Err.push_back(jerSpring16_25nsV10[i][1]);
 
     etaFall17_V3_center.push_back((etaFall17_V3[i+1]+etaFall17_V3[i])/2);
     etaFall17_V3_err.push_back((etaFall17_V3[i+1]-etaFall17_V3[i])/2);
@@ -363,16 +363,16 @@ void plot_SF_systematics_(TString path = "/nfs/dust/cms/user/amalara/WorkingArea
 
 
   TGraphErrors* gr_SFSummer16_25nsV1 = new TGraphErrors(SFSummer16_25nsV1.size(), &(etaSummer16_25nsV1_center[0]), &SFSummer16_25nsV1[0], &(etaSummer16_25nsV1_err[0]), &SFSummer16_25nsV1_Err[0]);
-  TGraphErrors* gr_SFSpring16_25nsV10 = new TGraphErrors(SFSpring16_25nsV10.size(), &(etaSpring16_25nsV10_center[0]), &SFSpring16_25nsV10[0], &(etaSpring16_25nsV10_err[0]), &SFSpring16_25nsV10_Err[0]);
+  // TGraphErrors* gr_SFSpring16_25nsV10 = new TGraphErrors(SFSpring16_25nsV10.size(), &(etaSpring16_25nsV10_center[0]), &SFSpring16_25nsV10[0], &(etaSpring16_25nsV10_err[0]), &SFSpring16_25nsV10_Err[0]);
   TGraphErrors* gr_SFFall17_V3 = new TGraphErrors(SFFall17_V3.size(), &(etaFall17_V3_center[0]), &SFFall17_V3[0], &(etaFall17_V3_err[0]), &SFFall17_V3_Err[0]);
   TGraphErrors* gr_final = new TGraphErrors(SF_final.size(), &(eta_bin_all_center[0]), &SF_final[0], &(eta_bin_all_error[0]), &SF_final_error[0]);
   // tdrDraw(gr_SFSummer16_25nsV1, "P5", kFullDotLarge, kCyan+2, kSolid, kCyan+2, 3001, kCyan+2);
   tdrDraw(gr_SFSummer16_25nsV1, "P5", kFullDotLarge, kRed+1, kSolid, kRed+1, 3005, kRed+1);
   tdrDraw(gr_final, "P5", kFullDotLarge, kBlue-4, kSolid, kBlue-4, 3005, kBlue-4);
-  tdrDraw(gr_SFSpring16_25nsV10, "P5", kFullDotLarge, kGreen-1, kSolid, kGreen-1, 3004, kGreen-1);
-  tdrDraw(gr_SFFall17_V3, "P5", kFullDotLarge, kOrange-1, kSolid, kOrange-1, 3004, kOrange-1);
+  // tdrDraw(gr_SFSpring16_25nsV10, "P5", kFullDotLarge, kOrange-1, kSolid, kOrange-1, 3004, kOrange-1);
+  tdrDraw(gr_SFFall17_V3, "P5", kFullDotLarge, kGreen-1, kSolid, kGreen-1, 3004, kGreen-1);
   leg_final->AddEntry(gr_SFSummer16_25nsV1, "Summer16_25nsV1","f");
-  leg_final->AddEntry(gr_SFSpring16_25nsV10, "Spring16_25nsV10","f");
+  // leg_final->AddEntry(gr_SFSpring16_25nsV10, "Spring16_25nsV10","f");
   leg_final->AddEntry(gr_SFFall17_V3, "Fall17_V3","f");
   leg_final->AddEntry(gr_final,  "Autumn18_V1_"+QCD_DATA(QCD_DATA.Index("Run"), QCD_DATA.Length()-QCD_DATA.Index("Run")-1),"f");
   // leg_final->AddEntry(gr_SFSummer16_25nsV1, "RunF_ECAL","f");
@@ -464,8 +464,9 @@ void plot_SF_systematics() {
 
   std::vector<TString> JECs;
   //JECs.push_back("Autumn18_V4");
-  //JECs.push_back("Autumn18_V5");
-  JECs.push_back("Autumn18_V8");
+  //JECs.push_back("Autumn18_V8");
+  //JECs.push_back("Autumn18_V8_test");
+  JECs.push_back("Autumn18_V10");
 
   std::vector<TString> JETs;
   JETs.push_back("AK4CHS");
@@ -473,16 +474,16 @@ void plot_SF_systematics() {
 
   std::vector<TString> QCDS;
   //QCDS.push_back("QCD_Flat2018");
-  //QCDS.push_back("QCD_Flat");
+  QCDS.push_back("QCD_Flat");
   QCDS.push_back("QCDHT");
 
   std::vector<TString> DATAS;
-  DATAS.push_back("RunA");
-  DATAS.push_back("RunB");
-  DATAS.push_back("RunC");
+  //DATAS.push_back("RunA");
+  //DATAS.push_back("RunB");
+  //DATAS.push_back("RunC");
   DATAS.push_back("RunD");
   DATAS.push_back("RunABC");
-  DATAS.push_back("RunABCD");
+  //DATAS.push_back("RunABCD");
 
 
 

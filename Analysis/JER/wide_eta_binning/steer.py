@@ -94,20 +94,22 @@ samples = ["A", "B", "C", "ABC"]
 samples = ["D"]
 samples = ["A", "B", "C", "D", "ABC", "ABCD"]
 samples = ["ABC"]
+#samples = ["D"]
 # QCDSamples = ["QCDPt","QCDHT"]
 QCDSamples = ["QCD_Flat2018"]
 QCDSamples = ["QCD_Flat", "QCD_Flat2018"]
 QCDSamples = ["QCDHT"]
-#QCDSamples = ["QCD_Flat"]
+QCDSamples = ["QCDHT", "QCD_Flat"]
+# QCDSamples = ["QCD_Flat"]
 JetLabels=["AK4CHS"]
 # JetLabels=["AK8PUPPI"]
-JECVersions=["Autumn18_V8"]
+JECVersions=["Autumn18_V10"]
 dirs = ["", "up", "down"]
 # studies = ["StandardPtBins/", "StandardPtBins_L1Seed/"]
 studies = ["StandardPtBins/", "StandardPtBins_allweights/", "StandardPtBins_weightcut/"]
 studies = ["StandardPtBins/"]
 systematics=["", "PU", "JEC", "alpha", "JER"]
-systematics=[""]
+# systematics=[""]
 # systematics=["", "JEC"]
 
 list_processes = []
@@ -146,11 +148,11 @@ for extraText in [""]:
                                     continue
                                 # print MC_file, Data_file
                                 main_function(gaustails=False)
-                                # if syst == "":
-                                #     main_function(gaustails=False, shiftForPLI="up")
-                                #     main_function(gaustails=False, shiftForPLI="down")
-                                #     main_function(gaustails=True, shiftForPLI="central")
-                                #     main_function(gaustails=True, shiftForPLI="central", gaustail_num = 0.95)
+                                if syst == "":
+                                    main_function(gaustails=False, shiftForPLI="up")
+                                    main_function(gaustails=False, shiftForPLI="down")
+                                    main_function(gaustails=True, shiftForPLI="central")
+                                    main_function(gaustails=True, shiftForPLI="central", gaustail_num = 0.95)
                                     # for gaustail_num in np.arange(0.8,1.0,0.005):
                                     #    main_function(gaustails=True, shiftForPLI="central", gaustail_num=gaustail_num)
 
@@ -160,4 +162,4 @@ for extraText in [""]:
 #     print i
 #
 # print len(list_processes)
-# parallelise(list_processes, 10, list_logfiles)
+#parallelise(list_processes, 10, list_logfiles)

@@ -113,12 +113,20 @@ for el in [""]:
   samples = ["_Flat2018"]
   samples = ["_Flat"]
   samples = ["HT"]
+  samples = ["HT","_Flat"]
+  # samples = ["HT","_Flat"]
+  # samples = ["HT1000to1500", "HT100to200"]
+  # samples = ["HT1500to2000", "HT300to500"]
+  # samples = ["HT2000toInf", "HT200to300"]
+  # samples = ["HT500to700", "HT50to100"]
+  # samples = ["HT700to1000"]
+
   JECVersions = ["Autumn18_V4","Autumn18_V5","Autumn18_V7"]
-  JECVersions = ["Autumn18_V8"]
+  JECVersions = ["Autumn18_V10"]
   # JetLabels = ["AK8PUPPI"]
   JetLabels = ["AK4CHS"]
   systematics = ["", "alpha","PU", "JEC", "JER"]
-  # systematics = [""]
+  #systematics = [""]
   main_program(path, list_path, out_path, JECVersions, JetLabels, systematics, samples)
 
 print len(list_processes)

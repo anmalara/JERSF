@@ -119,7 +119,7 @@ for el in [""]:
   # samples = ["ABCD"]
   samples = ["A", "B", "C", "D", "ABC", "ABCD"]
   JECVersions = ["Autumn18_V4","Autumn18_V5","Autumn18_V7"]
-  JECVersions = ["Autumn18_V8"]
+  JECVersions = ["Autumn18_V10"]
   # JetLabels = ["AK8PUPPI"]
   JetLabels = ["AK4CHS"]
   systematics = ["", "alpha","PU", "JEC", "JER"]

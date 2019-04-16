@@ -65,7 +65,7 @@
 <!ENTITY QCDHT1500to2000    SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/2018/MC_QCD_HT1500to2000_DiJetZoo.xml">
 <!ENTITY QCDHT2000toInf     SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/2018/MC_QCD_HT2000toInf_DiJetZoo.xml">
 
-<!ENTITY QCD_Flat2018       SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/2018/MC_QCD_Flat2018.xml">
+<!ENTITY QCD_Flat2018       SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/2018/MC_QCD_Flat2018_TMP.xml">
 <!ENTITY QCD_Flat           SYSTEM "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/2018/MC_QCD_Flat.xml">
 
 <!-- Data Samples -->
@@ -80,7 +80,7 @@
 
 
 <!--
-<ConfigParse NEventsBreak="0" FileSplit="60" AutoResubmit="5"/>
+<ConfigParse NEventsBreak="0" FileSplit="100" AutoResubmit="5"/>
 <ConfigSGE RAM ="2" DISK ="2" Mail="andrea.malara@desy.de" Notification="as" Workdir="workdir_JER2018"/>
 -->
 
@@ -93,7 +93,8 @@
 
     <!-- MC -->
     <!-- <InputData Type="MC" Version="QCD_Flat2018"       Lumi="19942995"       NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &QCD_Flat2018;        <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData> -->
-    <InputData Type="MC" Version="QCD_Flat"           Lumi="19942995"       NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &QCD_Flat;            <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
+    <InputData Type="MC" Version="QCD_Flat"           Lumi="1.9882"         NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &QCD_Flat;            <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
+    <InputData Type="MC" Version="QCD_Flat2018"       Lumi="1.5130995"      NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &QCD_Flat2018;        <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
 
     <InputData Type="MC" Version="QCDHT50to100"       Lumi="0.2295696738"   NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &QCDHT50to100;        <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
     <InputData Type="MC" Version="QCDHT100to200"      Lumi="0.2603776172"   NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &QCDHT100to200;       <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
@@ -106,7 +107,7 @@
     <InputData Type="MC" Version="QCDHT2000toInf"     Lumi="265648.9776"    NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &QCDHT2000toInf;      <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
 
 
-<!-- DATA -->
+    <!-- DATA -->
     <InputData Type="DATA" Version="DATA_RunA"        Lumi="1"              NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &DATA_RunA;           <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
     <InputData Type="DATA" Version="DATA_RunB"        Lumi="1"              NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &DATA_RunB;           <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
     <InputData Type="DATA" Version="DATA_RunC"        Lumi="1"              NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &DATA_RunC;           <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>

@@ -1,0 +1,4 @@
+/nfs/dust/cms/user/amalara/sframe_all/JER2018_DATA/Autumn18_V10/AK4CHS/PU/down/uhh2.AnalysisModuleRunner.DATA.DATA_RunA.root
+/nfs/dust/cms/user/amalara/sframe_all/JER2018_DATA/Autumn18_V10/AK4CHS/PU/down/uhh2.AnalysisModuleRunner.DATA.DATA_RunB.root
+/nfs/dust/cms/user/amalara/sframe_all/JER2018_DATA/Autumn18_V10/AK4CHS/PU/down/uhh2.AnalysisModuleRunner.DATA.DATA_RunC.root
+/nfs/dust/cms/user/amalara/sframe_all/JER2018_DATA/Autumn18_V10/AK4CHS/PU/down/uhh2.AnalysisModuleRunner.DATA.DATA_RunD.root

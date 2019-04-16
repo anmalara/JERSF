@@ -125,7 +125,7 @@ else:
 
 
 QCD_process= []
-# QCD_process.append("QCD_Flat2018")
+QCD_process.append("QCD_Flat2018")
 QCD_process.append("QCD_Flat")
 # QCD_process.append("QCDPt15to30")
 # QCD_process.append("QCDPt30to50")
@@ -170,8 +170,8 @@ original_file = "JER2018.xml"
 outdir = "JER2018"
 original_dir_ = os.getcwd()
 
-JECVersions_Data = ["Autumn18_V8"]
-JECVersions_MC = ["Autumn18_V8"]
+JECVersions_Data = ["Autumn18_V10"]
+JECVersions_MC = ["Autumn18_V10"]
 JetLabels = ["AK4CHS"]
 # JetLabels = ["AK8PUPPI"]
 systematics = ["", "PU", "JEC", "JER"]
