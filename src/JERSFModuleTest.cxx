@@ -398,7 +398,6 @@ JERSFModuleTest::JERSFModuleTest(uhh2::Context & ctx) {
       MAKE_JEC_MC(Autumn18_V4, AK4PFchs)
       else MAKE_JEC_MC(Autumn18_V7, AK4PFchs)
       else MAKE_JEC_MC(Autumn18_V8, AK4PFchs)
-      else MAKE_JEC_MC(Autumn18_V9, AK4PFchs)
       else MAKE_JEC_MC(Autumn18_V10, AK4PFchs)
       else throw runtime_error("In JERSFModuleTest.cxx: Invalid JEC_Version for deriving residuals on AK4CHS, MC specified ("+JEC_Version+") ");
     }
@@ -414,7 +413,6 @@ JERSFModuleTest::JERSFModuleTest(uhh2::Context & ctx) {
       MAKE_JEC2(Autumn18_V4, AK4PFchs)
       else MAKE_JEC(Autumn18_V7, AK4PFchs)
       else MAKE_JEC(Autumn18_V8, AK4PFchs)
-      else MAKE_JEC(Autumn18_V9, AK4PFchs)
       else MAKE_JEC(Autumn18_V10, AK4PFchs)
       else throw runtime_error("In JERSFModuleTest.cxx: Invalid JEC_Version for deriving residuals on AK4CHS "+JEC_Version+", DATA specified.");
     }

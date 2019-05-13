@@ -149,6 +149,8 @@ public:
 
   TString whichRun;
 
+  std::vector< std::vector< std::vector< double > > > nevents_central,nevents_HF,nevents_COMB;
+
   std::vector< std::vector< std::vector< TH1F* > > > asymmetries_SM, 						asymmetries_pt_SM,						asymmetries_rho_SM,						asymmetries_pt3_SM,						asymmetries_dR1_SM,						asymmetries_dR2_SM;
   std::vector< std::vector< std::vector< TH1F* > > > asymmetries_SM_control, 		asymmetries_pt_SM_control,		asymmetries_rho_SM_control,		asymmetries_pt3_SM_control,		asymmetries_dR1_SM_control,		asymmetries_dR2_SM_control;
   std::vector< std::vector< std::vector< TH1F* > > > asymmetries_FE_reference, 	asymmetries_pt_FE_reference,	asymmetries_rho_FE_reference,	asymmetries_pt3_FE_reference,	asymmetries_dR1_FE_reference,	asymmetries_dR2_FE_reference;

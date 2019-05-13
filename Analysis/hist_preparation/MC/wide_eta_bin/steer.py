@@ -37,8 +37,8 @@ def main_program(path="", list_path="", out_path="", JECVersions=[], JetLabels=[
             run_list = list_path_+pattern+"file_QCD"+sample+".txt"
             with open(run_list, "w") as outputfile:
               for writable in sorted(os.listdir(source_path)):
-                if "15to30" in writable:
-                  continue
+                # if "15to30" in writable:
+                #   continue
                 if not os.path.isfile(source_path+writable):
                   continue
                 if sample in writable and ".root" in writable:

@@ -93,13 +93,14 @@ samples = ["A", "B", "C", "ABC"]
 #samples = ["A", "B", "C"]
 samples = ["D"]
 samples = ["A", "B", "C", "D", "ABC", "ABCD"]
-samples = ["ABC"]
+#samples = ["ABC"]
 #samples = ["D"]
+samples = ["ABCD"]
 # QCDSamples = ["QCDPt","QCDHT"]
-QCDSamples = ["QCD_Flat2018"]
-QCDSamples = ["QCD_Flat", "QCD_Flat2018"]
+#QCDSamples = ["QCD_Flat2018"]
+#QCDSamples = ["QCD_Flat", "QCD_Flat2018"]
 QCDSamples = ["QCDHT"]
-QCDSamples = ["QCDHT", "QCD_Flat"]
+# QCDSamples = ["QCDHT", "QCD_Flat"]
 # QCDSamples = ["QCD_Flat"]
 JetLabels=["AK4CHS"]
 # JetLabels=["AK8PUPPI"]
@@ -149,12 +150,12 @@ for extraText in [""]:
                                 # print MC_file, Data_file
                                 main_function(gaustails=False)
                                 if syst == "":
-                                    main_function(gaustails=False, shiftForPLI="up")
-                                    main_function(gaustails=False, shiftForPLI="down")
-                                    main_function(gaustails=True, shiftForPLI="central")
-                                    main_function(gaustails=True, shiftForPLI="central", gaustail_num = 0.95)
-                                    # for gaustail_num in np.arange(0.8,1.0,0.005):
-                                    #    main_function(gaustails=True, shiftForPLI="central", gaustail_num=gaustail_num)
+                                   main_function(gaustails=False, shiftForPLI="up")
+                                   main_function(gaustails=False, shiftForPLI="down")
+                                   main_function(gaustails=True, shiftForPLI="central")
+                                   main_function(gaustails=True, shiftForPLI="central", gaustail_num = 0.95)
+                                    ## for gaustail_num in np.arange(0.8,1.0,0.005):
+                                    ##    main_function(gaustails=True, shiftForPLI="central", gaustail_num=gaustail_num)
 
 
 

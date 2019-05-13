@@ -575,8 +575,8 @@ void fill_hist( TString name1, std::vector< TH1F* > &output, std::vector< std::v
     name += m+1;
     TH1F *h1 = new TH1F( name, name, 1100, 0, 1100 );
     //std::cout << name1 << std::endl;;
-    if (name1.Contains("SF_")) h1 ->GetYaxis()->SetTitle("#sigma_{JER}");
-    else                      h1 ->GetYaxis()->SetTitle("Scale factor");
+    if (name1.Contains("SF_")) h1 ->GetYaxis()->SetTitle("Scale factor");
+    else                       h1 ->GetYaxis()->SetTitle("#sigma_{JER}");
     h1 ->GetXaxis()->SetTitle("p_{T}");	h1 -> Sumw2();
 
     for( unsigned int p = 0; p <  Widths.at(m).size(); p++ ) {
@@ -896,6 +896,7 @@ bool removePointsforFit(bool isFE, int m, int p) {
   if (  isFE && m==6  && p==8 ) check = true;
   if (  isFE && m==7  && p==7 ) check = true;
   if (  isFE && m==8  && p==2 ) check = true;
+  if (  isFE && m==8  && p==7 ) check = true;
   if (  isFE && m==10 && p==6 ) check = true;
   if (  isFE && m==10 && p>=8 ) check = true;
   if (  isFE && m==11 && p>=7 ) check = true;

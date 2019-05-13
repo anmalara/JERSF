@@ -54,6 +54,7 @@ protected:
   // cleaners
   std::unique_ptr<JetLeptonCleaner> jetleptoncleaner, JLC_A, JLC_B, JLC_C, JLC_D;
   std::unique_ptr<JetCleaner> jetcleaner;
+  std::unique_ptr<JetCleaner> jetPUid;
   //std::unique_ptr<JetResolutionSmearer> jet_resolution_smearer;
   std::unique_ptr<GenericJetResolutionSmearer> jet_resolution_smearer;
   std::unique_ptr<MuonCleaner>     muoSR_cleaner;
@@ -188,6 +189,7 @@ protected:
   JetId Jet_PFID;
   int n_evt;
   bool test_trigger, isThreshold;
+  bool apply_PUid = true;
   std::unique_ptr<TFile> f_weights;
 
   std::map<run_lumi, double> rl2lumi;
@@ -243,6 +245,7 @@ JERSFModule::JERSFModule(uhh2::Context & ctx) {
   //Jet cleaner
   Jet_PFID = JetPFID(JetPFID::WP_TIGHT_CHS);
   jetcleaner.reset(new JetCleaner(ctx, AndId<Jet>(Jet_PFID, PtEtaCut(10,5))));
+  jetPUid.reset(new JetCleaner(ctx, JetPUid(JetPUid::WP_TIGHT)));
 
   //Lepton cleaner
   const     MuonId muoSR(AndId<Muon>    (MuonID(Muon::CutBasedIdTight),PtEtaCut  (15, 2.4)));
@@ -390,7 +393,6 @@ JERSFModule::JERSFModule(uhh2::Context & ctx) {
       MAKE_JEC_MC(Autumn18_V4, AK4PFchs)
       else MAKE_JEC_MC(Autumn18_V7, AK4PFchs)
       else MAKE_JEC_MC(Autumn18_V8, AK4PFchs)
-      else MAKE_JEC_MC(Autumn18_V9, AK4PFchs)
       else MAKE_JEC_MC(Autumn18_V10, AK4PFchs)
       else throw runtime_error("In JERSFModule.cxx: Invalid JEC_Version for deriving residuals on AK4CHS, MC specified ("+JEC_Version+") ");
     }
@@ -406,7 +408,6 @@ JERSFModule::JERSFModule(uhh2::Context & ctx) {
       MAKE_JEC2(Autumn18_V4, AK4PFchs)
       else MAKE_JEC(Autumn18_V7, AK4PFchs)
       else MAKE_JEC(Autumn18_V8, AK4PFchs)
-      else MAKE_JEC(Autumn18_V9, AK4PFchs)
       else MAKE_JEC(Autumn18_V10, AK4PFchs)
       else throw runtime_error("In JERSFModule.cxx: Invalid JEC_Version for deriving residuals on AK4CHS "+JEC_Version+", DATA specified.");
     }
@@ -440,7 +441,7 @@ JERSFModule::JERSFModule(uhh2::Context & ctx) {
 
   // JER Smearing for corresponding JEC-Version
   if(closure && isMC) {
-    jet_resolution_smearer.reset(new GenericJetResolutionSmearer(ctx, "jets", "genjets", JERSmearing::SF_13TeV_Autumn18_RunABC_V1, "2018/Autumn18_V1_MC_PtResolution_AK4PFchs.txt"));
+    jet_resolution_smearer.reset(new GenericJetResolutionSmearer(ctx, "jets", "genjets", JERSmearing::SF_13TeV_Autumn18_RunABCD_V4, "2018/Autumn18_V4_MC_PtResolution_AK4PFchs.txt"));
   }
 
   //output
@@ -774,6 +775,7 @@ bool JERSFModule::process(Event & event) {
   int n_jets_beforeCleaner = ak4jets->size();
   //JetID
   jetcleaner->process(event);
+  if(apply_PUid) jetPUid->process(event);
   int n_jets_afterCleaner = ak4jets->size();
   //discard events if not all jets fulfill JetID instead of just discarding single jets
   if (debug) std::cout << "n_jets_beforeCleaner vs n_jets_afterCleaner " << n_jets_beforeCleaner << " " << n_jets_afterCleaner << '\n';

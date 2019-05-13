@@ -26,10 +26,10 @@ import ROOT
 n_events = {"RunA":137792959.0, "RunB":78225208, "RunC":70007804, "RunD":139850752.0, "RunABC":286025971.0}
 lumi = {"RunD":31.93, "RunABC":28.04}
 
-path = "file/StandardPtBins/Autumn18_V8/AK4CHS/standard/QCD_Flat2018/"
+path = "file/StandardPtBins/Autumn18_V10/AK4CHS/standard/QCDHT/"
 
-run = "RunD"
-file_ = "SF_final_tex.txt"
+# run = "RunD"
+# file_ = "SF_final_tex.txt"
 file_ = "SF_final_twiki.txt"
 
 SFs = {}

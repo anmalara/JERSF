@@ -4,7 +4,7 @@
 <!-- Generic Value -->
 <!ENTITY NEVT                       "-1">
 <!ENTITY CACHEABLE                  "False">
-<!ENTITY OUTDIR                     "/nfs/dust/cms/user/amalara/sframe_all/JER2018">
+<!ENTITY OUTDIR                     "/nfs/dust/cms/user/amalara/sframe_all/JER2018test">
 
 <!-- Jet Variables -->
 <!ENTITY JEC_VERSION                "Autumn18_V4">
@@ -81,7 +81,7 @@
 
 <!--
 <ConfigParse NEventsBreak="0" FileSplit="100" AutoResubmit="5"/>
-<ConfigSGE RAM ="2" DISK ="2" Mail="andrea.malara@desy.de" Notification="as" Workdir="workdir_JER2018"/>
+<ConfigSGE RAM ="2" DISK ="2" Mail="andrea.malara@desy.de" Notification="as" Workdir="workdir_JER2018test"/>
 -->
 
 <!-- OutputLevel controls which messages are printed; set to VERBOSE or DEBUG for more verbosity, to WARNING or ERROR for less -->
@@ -206,7 +206,7 @@
       <Item Name="Cut_dir"                    Value="&CUT_DIR;"/>
 
       <!-- the class name of the AnalysisModule subclasses to run: -->
-      <Item Name="AnalysisModule"             Value="JERSFModule" />
+      <Item Name="AnalysisModule"             Value="JERSFModuleTest" />
 
     </UserConfig>
   </Cycle>

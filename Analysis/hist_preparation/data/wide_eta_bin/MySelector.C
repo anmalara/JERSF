@@ -74,6 +74,7 @@ for( int m = 0; m < EtaBins_##region; m++ ) {                 \
 }                                                             \
 
 void MakeHistograms(std::vector< std::vector< std::vector< TH1F* > > > &asymmetries, std::vector< std::vector< std::vector< TH1F* > > > &asymmetries_pt, std::vector< std::vector< std::vector< TH1F* > > > &asymmetries_rho, std::vector< std::vector< std::vector< TH1F* > > > &asymmetries_pt3, std::vector< std::vector< TH1F* > > &alpha_spectrum, TString text, TString extraText, int etaBins, int ptBins, int AlphaBins, int etaShift, int ptShift, int alphaShift) {
+  std::cout << "MakeHistograms: " << text << extraText << std::endl;
   for( int m = etaShift; m < etaBins+etaShift; m++ ) {
     std::vector< std::vector< TH1F* > > temp2, temp2pt, temp2rho, temp2pt3;
     std::vector< TH1F* > alpha_temp2;
@@ -84,6 +85,7 @@ void MakeHistograms(std::vector< std::vector< std::vector< TH1F* > > > &asymmetr
       h1_alpha ->GetYaxis()->SetTitle("a.u.");    h1_alpha ->GetXaxis()->SetTitle("Alpha");
       h1_alpha -> Sumw2(); alpha_temp2.push_back(h1_alpha);
       for( int r = 0; r < AlphaBins; r++ ) {
+        std::cout << m << " " << p << " " << r << std::endl;
         TString name     = text;        name      += extraText; name     += "_eta"; name     += m+1; name     += "_pt"; name     += p+1; name     += "_alpha"; name     += r+1;
         TString name_pt  = text+"pt";   name_pt  += extraText; name_pt  += "_eta"; name_pt  += m+1; name_pt  += "_pt"; name_pt  += p+1; name_pt  += "_alpha"; name_pt  += r+1;
         TString name_rho = text+"rho";  name_rho += extraText; name_rho += "_eta"; name_rho += m+1; name_rho += "_pt"; name_rho += p+1; name_rho += "_alpha"; name_rho += r+1;
@@ -197,6 +199,8 @@ void MySelector::SlaveBegin(TTree * /*tree*/) {
   PtBins_HF = n_pt_bins_Di_HF;
   AlphaBins = 6;
 
+  std::cout << "Constructor: " << PtBins_Central << " " << PtBins_HF << std::endl;
+
   MakeHistograms(asymmetries_SM,            asymmetries_pt_SM,            asymmetries_rho_SM,            asymmetries_pt3_SM,            alpha_spectrum_SM,            "asymm", "_SM",            EtaBins_SM,            PtBins_Central, AlphaBins, etaShift_SM,            0, 0);
   MakeHistograms(asymmetries_SM_control,    asymmetries_pt_SM_control,    asymmetries_rho_SM_control,    asymmetries_pt3_SM_control,    alpha_spectrum_SM_control,    "asymm", "_SM_control",    EtaBins_SM_control,    PtBins_HF,      AlphaBins, etaShift_SM_control,    0, 0);
   MakeHistograms(asymmetries_FE_reference,  asymmetries_pt_FE_reference,  asymmetries_rho_FE_reference,  asymmetries_pt3_FE_reference,  alpha_spectrum_FE_reference,  "asymm", "_FE_reference",  EtaBins_FE_reference,  PtBins_Central, AlphaBins, etaShift_FE_reference,  0, 0);
@@ -241,6 +245,13 @@ Bool_t MySelector::Process(Long64_t entry) {
   std::vector<int> Pt_bins_HF(pt_bins_Di_HF, pt_bins_Di_HF + sizeof(pt_bins_Di_HF)/sizeof(double));
   Pt_bins_Central.push_back(1500);
   Pt_bins_HF.push_back(1500);
+
+  std::cout << "Process: " << std::endl;
+  std::cout << "Pt_bins_Central: " << Pt_bins_Central.size();
+  for (size_t i = 0; i < Pt_bins_Central.size(); i++) std::cout << " " << Pt_bins_Central[i];
+
+  std::cout << "Pt_bins_HF: " << Pt_bins_HF.size();
+for (size_t i = 0; i < Pt_bins_HF.size(); i++) std::cout << " " << Pt_bins_HF[i];
 
   std::vector<double> Alpha_bins;
   Alpha_bins.push_back(0.05); Alpha_bins.push_back(0.1);  Alpha_bins.push_back(0.15); Alpha_bins.push_back(0.20); Alpha_bins.push_back(0.25); Alpha_bins.push_back(0.3);
