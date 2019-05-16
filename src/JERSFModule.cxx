@@ -189,7 +189,8 @@ protected:
   JetId Jet_PFID;
   int n_evt;
   bool test_trigger, isThreshold;
-  bool apply_PUid = true;
+  // bool apply_PUid = true;
+  bool apply_PUid = false;
   std::unique_ptr<TFile> f_weights;
 
   std::map<run_lumi, double> rl2lumi;
@@ -772,14 +773,16 @@ bool JERSFModule::process(Event & event) {
     event_in_lumibin = distance(upper_binborders_runnrs.begin(), it); //find how many elements of the vector of binborders are smaller than 'it', this is the bin to be filled
     fill_event_integrated_lumi = lumi_in_bins.at(event_in_lumibin);
   }
-  int n_jets_beforeCleaner = ak4jets->size();
+  // int n_jets_beforeCleaner = ak4jets->size();
   //JetID
   jetcleaner->process(event);
+  // if (ak4jets->size()>0) for (size_t i = 0; i < ak4jets->size(); i++) std::cout << "HELP1 " << ak4jets->at(i).pileupID() << '\n';
   if(apply_PUid) jetPUid->process(event);
-  int n_jets_afterCleaner = ak4jets->size();
+  // if (ak4jets->size()>0) for (size_t i = 0; i < ak4jets->size(); i++) std::cout << "HELP2 " << ak4jets->at(i).pileupID() << '\n';
+  // int n_jets_afterCleaner = ak4jets->size();
   //discard events if not all jets fulfill JetID instead of just discarding single jets
-  if (debug) std::cout << "n_jets_beforeCleaner vs n_jets_afterCleaner " << n_jets_beforeCleaner << " " << n_jets_afterCleaner << '\n';
-  if (n_jets_beforeCleaner != n_jets_afterCleaner) return false;
+  // if (debug) std::cout << "n_jets_beforeCleaner vs n_jets_afterCleaner " << n_jets_beforeCleaner << " " << n_jets_afterCleaner << '\n';
+  // if (n_jets_beforeCleaner != n_jets_afterCleaner) return false;
   sort_by_pt<Jet>(*ak4jets);
 
   const int jet_n = ak4jets->size();

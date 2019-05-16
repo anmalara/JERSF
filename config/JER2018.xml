@@ -80,7 +80,7 @@
 
 
 <!--
-<ConfigParse NEventsBreak="0" FileSplit="100" AutoResubmit="5"/>
+<ConfigParse NEventsBreak="0" FileSplit="25" AutoResubmit="5"/>
 <ConfigSGE RAM ="2" DISK ="2" Mail="andrea.malara@desy.de" Notification="as" Workdir="workdir_JER2018"/>
 -->
 

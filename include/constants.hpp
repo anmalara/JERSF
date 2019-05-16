@@ -28,9 +28,14 @@ const double pt_bins_MB_HF[n_pt_bins_MB_HF] = { 5, 10, 15, 20, 25, 30, 35, 40, 7
 /* //DiJet central triggers highest ------------- */
 const int n_pt_bins_Di = 9;
 const double pt_bins_Di[n_pt_bins_Di]       = { 66, 92, 118, 188, 257, 325, 391, 477, 585};
+
+const int n_pt_bins_Di_ext = 9;
+const double pt_bins_Di_ext[n_pt_bins_Di_ext]       = { 66, 92, 118, 188, 257, 325, 391, 477, 585};
 /* //DiJet HF triggers highest ------------- */
 const int n_pt_bins_Di_HF = 6;
 const double pt_bins_Di_HF[n_pt_bins_Di_HF] = { 93, 116, 141, 210, 278, 378 };
+const int n_pt_bins_Di_HF_ext = 6;
+const double pt_bins_Di_HF_ext[n_pt_bins_Di_HF_ext] = { 93, 116, 141, 210, 278, 378 };
 
 /* //Eta bins ------------- */
 const int n_eta_bins = 14;
