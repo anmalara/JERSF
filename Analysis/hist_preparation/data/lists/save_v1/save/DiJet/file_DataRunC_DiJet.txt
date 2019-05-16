@@ -1,1 +1,0 @@
-/nfs/dust/cms/user/amalara/sframe_all/JER2017_Data/DiJet/uhh2.AnalysisModuleRunner.DATA.DATA_RunC_promptReco_2017.root
