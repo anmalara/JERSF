@@ -26,11 +26,29 @@ const int n_pt_bins_MB_HF = 17;
 const double pt_bins_MB_HF[n_pt_bins_MB_HF] = { 5, 10, 15, 20, 25, 30, 35, 40, 72, 95, 160, 226, 283, 344, 443, 577, 606};
 
 /* //DiJet central triggers highest ------------- */
+/* const int n_pt_bins_Di = 9;
+const double pt_bins_Di[n_pt_bins_Di]       = { 66, 92, 118, 188, 257, 325, 391, 477, 585};
+
+const int n_pt_bins_Di_ext = 13;
+const double pt_bins_Di_ext[n_pt_bins_Di_ext]       = { 66, 92, 118, 188, 257, 291, 325, 358, 391, 434, 477, 531, 585}; */
+/* //DiJet HF triggers highest ------------- */
+/* const int n_pt_bins_Di_HF = 6;
+const double pt_bins_Di_HF[n_pt_bins_Di_HF] = { 93, 116, 141, 210, 278, 378 };
+const int n_pt_bins_Di_HF_ext = 6;
+const double pt_bins_Di_HF_ext[n_pt_bins_Di_HF_ext] = { 93, 116, 141, 210, 278, 378 };
+*/
+
+
+// 2018 JER
+
+/* //DiJet central triggers highest ------------- */
 const int n_pt_bins_Di = 9;
 const double pt_bins_Di[n_pt_bins_Di]       = { 66, 92, 118, 188, 257, 325, 391, 477, 585};
 
-const int n_pt_bins_Di_ext = 9;
-const double pt_bins_Di_ext[n_pt_bins_Di_ext]       = { 66, 92, 118, 188, 257, 325, 391, 477, 585};
+
+const int n_pt_bins_Di_ext = 13;
+const double pt_bins_Di_ext[n_pt_bins_Di_ext]       = { 66, 92, 118, 188, 257, 291, 325, 358, 391, 434, 477, 531, 585};
+
 /* //DiJet HF triggers highest ------------- */
 const int n_pt_bins_Di_HF = 6;
 const double pt_bins_Di_HF[n_pt_bins_Di_HF] = { 93, 116, 141, 210, 278, 378 };
@@ -38,8 +56,8 @@ const int n_pt_bins_Di_HF_ext = 6;
 const double pt_bins_Di_HF_ext[n_pt_bins_Di_HF_ext] = { 93, 116, 141, 210, 278, 378 };
 
 /* //Eta bins ------------- */
-const int n_eta_bins = 14;
-const double eta_bins[n_eta_bins] = { 0, 0.522, 0.783, 1.131, 1.305, 1.740, 1.930, 2.043, 2.322, 2.5, 2.853, 2.964, 3.139, 5.191 };
+const int n_eta_bins = 15;
+const double eta_bins[n_eta_bins] = { 0, 0.522, 0.783, 1.131, 1.305, 1.740, 1.930, 2.043, 2.322, 2.5, 2.65, 2.853, 2.964, 3.139, 5.191 };
 
 // taken from https://twiki.cern.ch/twiki/bin/view/CMS/PdmV2018Analysis
 constexpr static int s_runnr_A = 316995; //up to this one, including this one

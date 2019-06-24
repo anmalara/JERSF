@@ -185,7 +185,7 @@ protected:
   std::unique_ptr<LuminosityHists> h_lumi_Trig40, h_lumi_Trig60, h_lumi_Trig80, h_lumi_Trig140, h_lumi_Trig200, h_lumi_Trig260, h_lumi_Trig320, h_lumi_Trig400, h_lumi_Trig450, h_lumi_Trig500;
   std::unique_ptr<LuminosityHists> h_lumi_TrigHF60, h_lumi_TrigHF80, h_lumi_TrigHF100, h_lumi_TrigHF160, h_lumi_TrigHF220, h_lumi_TrigHF300;
   std::unique_ptr<JECRunnumberHists> h_runnr_input;
-  std::unique_ptr<uhh2bacon::Selection> sel;
+  std::unique_ptr<uhh2jersf::Selection> sel;
   // uhh2bacon::Selection sel;
 
   bool debug, no_genp;
@@ -212,7 +212,7 @@ protected:
 
 JERSFModuleTest::JERSFModuleTest(uhh2::Context & ctx) {
 
-  sel.reset(new uhh2bacon::Selection(ctx));
+  sel.reset(new uhh2jersf::Selection(ctx));
   // for(auto & kv : ctx.get_all()){
   //  cout << " " << kv.first << " = " << kv.second << endl;
   // }
