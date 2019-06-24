@@ -12,7 +12,7 @@
 #include <TH2D.h>
 //#include "UHH2/BaconTrans/baconheaders/TEventInfo.hh"
 
-namespace uhh2bacon {
+namespace uhh2jersf {
 
   class Selection {
 
@@ -76,8 +76,11 @@ namespace uhh2bacon {
     bool DiJetAdvanced(uhh2::Event& evt);
 
     bool PUpthat(uhh2::Event& evt);
+    bool PtaveVsQScale(double cutValue=2.);
+
     bool EtaPhiCleaning(uhh2::Event& evt);
     bool ApplyHotMap(uhh2::Event& evt);
+    bool EnergyEtaCut();// cut away events with jets containing energy more than sqrt(s)/2
 
     //  bool FullSelection();
     // bool PtMC(uhh2::Event& evt); //apply lowest Pt cut on MC

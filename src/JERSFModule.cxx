@@ -52,7 +52,7 @@ protected:
   // std::unique_ptr<GenericJetResolutionSmearer> jetER_smearer;
 
   // cleaners
-  std::unique_ptr<JetLeptonCleaner> jetleptoncleaner, JLC_A, JLC_B, JLC_C, JLC_D;
+  //  std::unique_ptr<JetLeptonCleaner> jetleptoncleaner, JLC_A, JLC_B, JLC_C, JLC_D;
   std::unique_ptr<JetCleaner> jetcleaner;
   std::unique_ptr<JetCleaner> jetPUid;
   //std::unique_ptr<JetResolutionSmearer> jet_resolution_smearer;
@@ -101,8 +101,11 @@ protected:
   Event::Handle<float> tt_gen_pthat; Event::Handle<float> tt_gen_weight;
   Event::Handle<float> tt_PU_pt_hat;//number of jets
   Event::Handle<float> tt_jet1_pt;     Event::Handle<float> tt_jet2_pt;     Event::Handle<float> tt_jet3_pt;
+  Event::Handle<float> tt_jet4_pt;     Event::Handle<float> tt_jet5_pt;     Event::Handle<float> tt_jet6_pt;
   Event::Handle<float> tt_jet1_eta;     Event::Handle<float> tt_jet2_eta;     Event::Handle<float> tt_jet3_eta;
+  Event::Handle<float> tt_jet4_eta;     Event::Handle<float> tt_jet5_eta;     Event::Handle<float> tt_jet6_eta;
   Event::Handle<float> tt_jet1_phi;     Event::Handle<float> tt_jet2_phi;     Event::Handle<float> tt_jet3_phi;
+  Event::Handle<float> tt_jet4_phi;     Event::Handle<float> tt_jet5_phi;     Event::Handle<float> tt_jet6_phi;
   Event::Handle<float> tt_jet1_ptRaw;  Event::Handle<float> tt_jet2_ptRaw;  Event::Handle<float> tt_jet3_ptRaw;
   Event::Handle<float> tt_jet1_ptGen;  Event::Handle<float> tt_jet2_ptGen;  Event::Handle<float> tt_jet3_ptGen;
   Event::Handle<float> tt_jet1_etaGen;  Event::Handle<float> tt_jet2_etaGen;  Event::Handle<float> tt_jet3_etaGen;
@@ -150,6 +153,10 @@ protected:
   Event::Handle<int> tt_trigger220_HFJEC;
   Event::Handle<int> tt_trigger300_HFJEC;
 
+  Event::Handle<int> tt_run; 
+  Event::Handle<long long> tt_evID;
+  Event::Handle<int> tt_lumiSec;
+
   // MC
   Event::Handle<float> tt_genjet1_pt;     Event::Handle<float> tt_genjet2_pt;     Event::Handle<float> tt_genjet3_pt;
   Event::Handle<float> tt_genjet1_eta;     Event::Handle<float> tt_genjet2_eta;     Event::Handle<float> tt_genjet3_eta;
@@ -178,7 +185,7 @@ protected:
   std::unique_ptr<LuminosityHists> h_lumi_Trig40, h_lumi_Trig60, h_lumi_Trig80, h_lumi_Trig140, h_lumi_Trig200, h_lumi_Trig260, h_lumi_Trig320, h_lumi_Trig400, h_lumi_Trig450, h_lumi_Trig500;
   std::unique_ptr<LuminosityHists> h_lumi_TrigHF60, h_lumi_TrigHF80, h_lumi_TrigHF100, h_lumi_TrigHF160, h_lumi_TrigHF220, h_lumi_TrigHF300;
   std::unique_ptr<JECRunnumberHists> h_runnr_input;
-  std::unique_ptr<uhh2bacon::Selection> sel;
+  std::unique_ptr<uhh2jersf::Selection> sel;
   // uhh2bacon::Selection sel;
 
   bool debug, no_genp;
@@ -189,7 +196,8 @@ protected:
   JetId Jet_PFID;
   int n_evt;
   bool test_trigger, isThreshold;
-  bool apply_PUid = true;
+  //  bool apply_PUid = true;
+  bool apply_PUid = false;
   std::unique_ptr<TFile> f_weights;
 
   std::map<run_lumi, double> rl2lumi;
@@ -206,7 +214,7 @@ protected:
 
 JERSFModule::JERSFModule(uhh2::Context & ctx) {
 
-  sel.reset(new uhh2bacon::Selection(ctx));
+  sel.reset(new uhh2jersf::Selection(ctx));
   // for(auto & kv : ctx.get_all()){
   //  cout << " " << kv.first << " = " << kv.second << endl;
   // }
@@ -245,6 +253,7 @@ JERSFModule::JERSFModule(uhh2::Context & ctx) {
   //Jet cleaner
   Jet_PFID = JetPFID(JetPFID::WP_TIGHT_CHS);
   jetcleaner.reset(new JetCleaner(ctx, AndId<Jet>(Jet_PFID, PtEtaCut(10,5))));
+  //  jetcleaner.reset(new JetCleaner(ctx, AndId<Jet>(Jet_PFID, PtEtaCut(25,5)))); //TEST
   jetPUid.reset(new JetCleaner(ctx, JetPUid(JetPUid::WP_TIGHT)));
 
   //Lepton cleaner
@@ -341,11 +350,11 @@ JERSFModule::JERSFModule(uhh2::Context & ctx) {
 
   #define MAKE_JEC(jecv,jetLabel)         					                    \
   if(JEC_Version == #jecv){                                             \
-    JEC_corr_A      = JERFiles::jecv##_B_L123_##jetLabel##_DATA;        \
+    JEC_corr_A      = JERFiles::jecv##_A_L123_##jetLabel##_DATA;        \
     JEC_corr_B      = JERFiles::jecv##_B_L123_##jetLabel##_DATA;        \
     JEC_corr_C      = JERFiles::jecv##_C_L123_##jetLabel##_DATA;        \
     JEC_corr_D      = JERFiles::jecv##_D_L123_##jetLabel##_DATA;        \
-    JEC_corr_A_L1RC = JERFiles::jecv##_B_L1RC_##jetLabel##_DATA;        \
+    JEC_corr_A_L1RC = JERFiles::jecv##_A_L1RC_##jetLabel##_DATA;        \
     JEC_corr_B_L1RC = JERFiles::jecv##_B_L1RC_##jetLabel##_DATA;        \
     JEC_corr_C_L1RC = JERFiles::jecv##_C_L1RC_##jetLabel##_DATA;        \
     JEC_corr_D_L1RC = JERFiles::jecv##_D_L1RC_##jetLabel##_DATA;        \
@@ -365,11 +374,11 @@ JERSFModule::JERSFModule(uhh2::Context & ctx) {
 
   #define MAKE_JEC2017(jecv,jetLabel)         					                \
   if(JEC_Version == #jecv){                                             \
-    JEC_corr_A      = JERFiles::jecv##_B_L123_##jetLabel##_DATA;        \
+    JEC_corr_A      = JERFiles::jecv##_A_L123_##jetLabel##_DATA;        \
     JEC_corr_B      = JERFiles::jecv##_B_L123_##jetLabel##_DATA;        \
     JEC_corr_C      = JERFiles::jecv##_C_L123_##jetLabel##_DATA;        \
     JEC_corr_D      = JERFiles::jecv##_D_L123_##jetLabel##_DATA;        \
-    JEC_corr_A_L1RC = JERFiles::jecv##_B_L1RC_##jetLabel##_DATA;        \
+    JEC_corr_A_L1RC = JERFiles::jecv##_A_L1RC_##jetLabel##_DATA;        \
     JEC_corr_B_L1RC = JERFiles::jecv##_B_L1RC_##jetLabel##_DATA;        \
     JEC_corr_C_L1RC = JERFiles::jecv##_C_L1RC_##jetLabel##_DATA;        \
     JEC_corr_D_L1RC = JERFiles::jecv##_D_L1RC_##jetLabel##_DATA;        \
@@ -394,6 +403,7 @@ JERSFModule::JERSFModule(uhh2::Context & ctx) {
       else MAKE_JEC_MC(Autumn18_V7, AK4PFchs)
       else MAKE_JEC_MC(Autumn18_V8, AK4PFchs)
       else MAKE_JEC_MC(Autumn18_V10, AK4PFchs)
+      else MAKE_JEC_MC(Autumn18_V13h, AK4PFchs)
       else throw runtime_error("In JERSFModule.cxx: Invalid JEC_Version for deriving residuals on AK4CHS, MC specified ("+JEC_Version+") ");
     }
     else if (jetLabel == "AK8PUPPI") {
@@ -409,6 +419,7 @@ JERSFModule::JERSFModule(uhh2::Context & ctx) {
       else MAKE_JEC(Autumn18_V7, AK4PFchs)
       else MAKE_JEC(Autumn18_V8, AK4PFchs)
       else MAKE_JEC(Autumn18_V10, AK4PFchs)
+      else MAKE_JEC(Autumn18_V13h, AK4PFchs)
       else throw runtime_error("In JERSFModule.cxx: Invalid JEC_Version for deriving residuals on AK4CHS "+JEC_Version+", DATA specified.");
     }
     else if (jetLabel == "AK8PUPPI") {
@@ -428,14 +439,14 @@ JERSFModule::JERSFModule(uhh2::Context & ctx) {
       jet_corrector_B.reset(new JetCorrector(ctx, JEC_corr_B));
       jet_corrector_C.reset(new JetCorrector(ctx, JEC_corr_C));
       jet_corrector_D.reset(new JetCorrector(ctx, JEC_corr_D));
-      JLC_A.reset(new JetLeptonCleaner(ctx, JEC_corr_A));
-      JLC_B.reset(new JetLeptonCleaner(ctx, JEC_corr_B));
-      JLC_C.reset(new JetLeptonCleaner(ctx, JEC_corr_C));
-      JLC_D.reset(new JetLeptonCleaner(ctx, JEC_corr_D));
+      // JLC_A.reset(new JetLeptonCleaner(ctx, JEC_corr_A));
+      // JLC_B.reset(new JetLeptonCleaner(ctx, JEC_corr_B));
+      // JLC_C.reset(new JetLeptonCleaner(ctx, JEC_corr_C));
+      // JLC_D.reset(new JetLeptonCleaner(ctx, JEC_corr_D));
     }
     else if(isMC){//MC : only one version of JECs exists
       jet_corrector.reset(new JetCorrector(ctx, JEC_corr));
-      jetleptoncleaner.reset(new JetLeptonCleaner(ctx, JEC_corr));
+      //      jetleptoncleaner.reset(new JetLeptonCleaner(ctx, JEC_corr));
     }
   }
 
@@ -468,12 +479,23 @@ JERSFModule::JERSFModule(uhh2::Context & ctx) {
   tt_jet1_pt = ctx.declare_event_output<float>("jet1_pt");
   tt_jet2_pt = ctx.declare_event_output<float>("jet2_pt");
   tt_jet3_pt = ctx.declare_event_output<float>("jet3_pt");
+  tt_jet4_pt = ctx.declare_event_output<float>("jet4_pt");
+  tt_jet5_pt = ctx.declare_event_output<float>("jet5_pt");
+  tt_jet6_pt = ctx.declare_event_output<float>("jet6_pt");
+
   tt_jet1_eta = ctx.declare_event_output<float>("jet1_eta");
   tt_jet2_eta = ctx.declare_event_output<float>("jet2_eta");
   tt_jet3_eta = ctx.declare_event_output<float>("jet3_eta");
+  tt_jet4_eta = ctx.declare_event_output<float>("jet4_eta");
+  tt_jet5_eta = ctx.declare_event_output<float>("jet5_eta");
+  tt_jet6_eta = ctx.declare_event_output<float>("jet6_eta");
+
   tt_jet1_phi = ctx.declare_event_output<float>("jet1_phi");
   tt_jet2_phi = ctx.declare_event_output<float>("jet2_phi");
   tt_jet3_phi = ctx.declare_event_output<float>("jet3_phi");
+  tt_jet4_phi = ctx.declare_event_output<float>("jet4_phi");
+  tt_jet5_phi = ctx.declare_event_output<float>("jet5_phi");
+  tt_jet6_phi = ctx.declare_event_output<float>("jet6_phi");
   tt_jet1_ptRaw = ctx.declare_event_output<float>("jet1_ptRaw");
   tt_jet2_ptRaw = ctx.declare_event_output<float>("jet2_ptRaw");
   tt_jet3_ptRaw = ctx.declare_event_output<float>("jet3_ptRaw");
@@ -543,6 +565,9 @@ JERSFModule::JERSFModule(uhh2::Context & ctx) {
   tt_trigger160_HFJEC = ctx.declare_event_output<int>("trigger160_HFJEC");
   tt_trigger220_HFJEC = ctx.declare_event_output<int>("trigger220_HFJEC");
   tt_trigger300_HFJEC = ctx.declare_event_output<int>("trigger300_HFJEC");
+  tt_run = ctx.declare_event_output<int>("run");
+  tt_evID = ctx.declare_event_output<long long>("eventID");
+  tt_lumiSec = ctx.declare_event_output<int>("lumi_sec");
 
   // MC:
   tt_genjet1_pt = ctx.declare_event_output<float>("genjet1_pt");
@@ -636,7 +661,7 @@ JERSFModule::JERSFModule(uhh2::Context & ctx) {
   GenParticles_printer.reset(new GenParticlesPrinter(ctx));
 
   debug = false;
-  // debug = true;
+  //  debug = true;
   n_evt = 0;
 
   string lumifile = ctx.get("lumi_file");
@@ -705,6 +730,7 @@ bool JERSFModule::process(Event & event) {
 
   h_nocuts->fill(event);
 
+  if(debug) cout<<"Start Event: "<<event.event<<" Run: "<<event.run<<" Njet="<<event.jets->size()<<endl;
   //Dump Input
   // h_input->fill(event);
 
@@ -752,6 +778,9 @@ bool JERSFModule::process(Event & event) {
     if(!metfilters_sel->passes(event)) return false;
     // std::cout << "after metfilters" << '\n';
   }
+  event.set(tt_run,event.run);
+  event.set(tt_evID,event.event);
+  event.set(tt_lumiSec,event.luminosityBlock);
 
   int event_in_lumibin = -1;
   double fill_event_integrated_lumi = 0;
@@ -773,18 +802,40 @@ bool JERSFModule::process(Event & event) {
     fill_event_integrated_lumi = lumi_in_bins.at(event_in_lumibin);
   }
   int n_jets_beforeCleaner = ak4jets->size();
+  const int jet_nb = ak4jets->size();
+  if(jet_nb<2) return false;
+
+
+
+  Jet jet1_b = ak4jets->at(0);// leading jet
+  Jet jet2_b = ak4jets->at(1);// sub-leading jet
+  //  Jet jet3_b = ak4jets->at(1);// 3rd jet
+
   //JetID
+
   jetcleaner->process(event);
+
+
+  // if (ak4jets->size()>0) for (size_t i = 0; i < ak4jets->size(); i++) std::cout << "HELP1 " << ak4jets->at(i).pileupID() << '\n';
   if(apply_PUid) jetPUid->process(event);
+  // if (ak4jets->size()>0) for (size_t i = 0; i < ak4jets->size(); i++) std::cout << "HELP2 " << ak4jets->at(i).pileupID() << '\n';
   int n_jets_afterCleaner = ak4jets->size();
   //discard events if not all jets fulfill JetID instead of just discarding single jets
   if (debug) std::cout << "n_jets_beforeCleaner vs n_jets_afterCleaner " << n_jets_beforeCleaner << " " << n_jets_afterCleaner << '\n';
-  if (n_jets_beforeCleaner != n_jets_afterCleaner) return false;
-  sort_by_pt<Jet>(*ak4jets);
+  // if (n_jets_beforeCleaner != n_jets_afterCleaner) return false;
 
   const int jet_n = ak4jets->size();
-  if (debug) std::cout << "jet_n " << jet_n << '\n';
   if(jet_n<2) return false;
+  sort_by_pt<Jet>(*ak4jets);
+
+  
+
+  if (debug) std::cout << "jet_n " << jet_n << '\n';
+
+  // if(jet1_a->pt()!=jet1_b->pt() && jet2_a->pt()!=jet2_b->pt() && jet3_a->pt()!=jet3_b->pt()) return false; //make sure 3 leading jets don't change after JetID
+  //  cout<<"jet1_a.pt() = "<<jet1_a.pt()<<" jet1_b.pt() =  "<<jet1_b.pt()<<endl;
+  // cout<<"jet2_a.pt() = "<<jet2_a.pt()<<" jet2_b.pt() =  "<<jet2_b.pt()<<endl;
+
 
   h_postjetcleaning->fill(event);
 
@@ -809,23 +860,23 @@ bool JERSFModule::process(Event & event) {
 
   //apply proper JECs
   if(apply_A){
-    JLC_A->process(event);
+    //    JLC_A->process(event);
     jet_corrector_A->process(event);
   }
   if(apply_B){
-    JLC_B->process(event);
+    //    JLC_B->process(event);
     jet_corrector_B->process(event);
   }
   if(apply_C){
-    JLC_C->process(event);
+    //    JLC_C->process(event);
     jet_corrector_C->process(event);
   }
   if(apply_D){
-    JLC_D->process(event);
+    //    JLC_D->process(event);
     jet_corrector_D->process(event);
   }
   if(apply_global){
-    jetleptoncleaner->process(event);
+    //    jetleptoncleaner->process(event);
     jet_corrector->process(event);
   }
   //Apply JER to all jet collections
@@ -833,12 +884,18 @@ bool JERSFModule::process(Event & event) {
   //   jetER_smearer->process(event);
   //   std::cout << "ERROR JER" << '\n';
   // }
-
+  
   h_postleptoncleaning->fill(event);
-
   if(closure && isMC) jet_resolution_smearer->process(event);
+  sort_by_pt<Jet>(*ak4jets);
 
   h_postjer->fill(event);
+  //FixME: use matching to trigger object instead
+  // Jet jet1_a = ak4jets->at(0);// leading jet
+  // Jet jet2_a = ak4jets->at(1);// sub-leading jet
+  // //  Jet jet3_a = ak4jets->at(1);// 3rd jet
+  // if(jet1_a.eta()!=jet1_b.eta() || jet2_a.eta()!=jet2_b.eta() || jet1_a.phi()!=jet1_b.phi() || jet2_a.phi()!=jet2_b.phi()) 
+  //   return false; //make sure 2 leading jets don't change after JetID, important because trigger selection is based on the first 2 jets
 
   //correct MET only AFTER smearing the jets
   // if(apply_A){
@@ -857,10 +914,11 @@ bool JERSFModule::process(Event & event) {
   //   jet_corrector->correct_met(event,true);
   // }
 
-  sort_by_pt<Jet>(*ak4jets);
+  //  sort_by_pt<Jet>(*ak4jets);
 
   Jet* jet1 = &ak4jets->at(0);// leading jet
   Jet* jet2 = &ak4jets->at(1);// sub-leading jet
+
   float jet1_pt = jet1->pt(); float jet2_pt = jet2->pt();
   float jet1_eta = jet1->eta(); float jet2_eta = jet2->eta();
   float jet1_phi = jet1->phi(); float jet2_phi = jet2->phi();
@@ -1136,6 +1194,9 @@ bool JERSFModule::process(Event & event) {
   float barreljet_ptRaw = barreljet_pt*factor_raw_barrel;
   float jet3_pt = 0; float jet3_ptRaw = 0;
   float jet3_eta = 0; float jet3_phi = 0;
+  float jet4_pt = 0; float jet4_eta = 0; float jet4_phi = 0;
+  float jet5_pt = 0; float jet5_eta = 0; float jet5_phi = 0;
+  float jet6_pt = 0; float jet6_eta = 0; float jet6_phi = 0;
   Jet* jet3;
   TVector3 jet1_2Dv, jet2_2Dv, jet3_2Dv;
 
@@ -1143,6 +1204,7 @@ bool JERSFModule::process(Event & event) {
   jet2_2Dv.SetPtEtaPhi( jet2->pt(), 0.0, jet2->phi());
 
   float alpha_p = 0;
+ 
 
   if(jet_n>2){
     jet3 = &ak4jets->at(2);
@@ -1155,9 +1217,32 @@ bool JERSFModule::process(Event & event) {
 
     alpha_p = fabs(((jet1_2Dv - jet2_2Dv)*jet3_2Dv)/(pt_ave*(jet1_2Dv - jet2_2Dv).Pt()));
   }
+
+  if(jet_n>3){
+    Jet* jet4 = &ak4jets->at(3);
+    jet4_pt = jet4->pt(); jet4_eta = jet4->eta(); jet4_phi = jet4->phi();
+  }
+  if(jet_n>4){
+    Jet* jet5 = &ak4jets->at(4);
+    jet5_pt = jet5->pt(); jet5_eta = jet5->eta(); jet5_phi = jet5->phi();
+  }
+  if(jet_n>5){
+    Jet* jet6 = &ak4jets->at(5);
+    jet6_pt = jet6->pt(); jet6_eta = jet6->eta(); jet6_phi = jet6->phi();
+  }
+
+  // float alpha_sum = (jet4_pt+jet5_pt+jet6_pt)/pt_ave;
+  // if(alpha_sum>0.3) return false; //TEST: remove multijet events
+
   float alpha = jet3_pt/pt_ave;
   //std::cout << jet3_pt << " = " << jet3tlv.Pt() << std::endl;
   //std::cout << "alpha, alpha_p = " << alpha << ", " << alpha_p << std::endl;
+
+  // //Check 3rd jet pt -----------------
+  // double ratio3rd = jet3_pt/(jet1_pt - jet2_pt);
+  // if(ratio3rd<0.5) return false; //remove events, where 3rd jet pt can't compensate the balance
+  // //[END] Check 3rd jet pt -----------
+
   float asymmetry = (barreljet_pt - probejet_pt)/(barreljet_pt + probejet_pt);
   float rel_r = (1+asymmetry)/(1-asymmetry);
   TVector2 pt, met;
@@ -1167,6 +1252,7 @@ bool JERSFModule::process(Event & event) {
   float B = (met.Px()*pt.Px() + met.Py()*pt.Py())/((probejet_pt + barreljet_pt) * sqrt(pt.Px()*pt.Px() + pt.Py()*pt.Py())); //vec_MET*vec_ptbarr/(2ptave*ptbarr)
   float jets_pt = 0;
   for(int i=2;i<jet_n;i++){
+  //  for(int i=3;i<jet_n;i++){//Start from jet #4
     jets_pt += ((Jet*)&ak4jets->at(i))->pt();
   }
   // int flavor = 0;
@@ -1194,6 +1280,15 @@ bool JERSFModule::process(Event & event) {
   event.set(tt_jet1_phi,jet1_phi);
   event.set(tt_jet2_phi,jet2_phi);
   event.set(tt_jet3_phi,jet3_phi);
+  event.set(tt_jet4_pt,jet4_pt);
+  event.set(tt_jet4_eta,jet4_eta);
+  event.set(tt_jet4_phi,jet4_phi);
+  event.set(tt_jet5_pt,jet5_pt);
+  event.set(tt_jet5_eta,jet5_eta);
+  event.set(tt_jet5_phi,jet5_phi);
+  event.set(tt_jet6_pt,jet6_pt);
+  event.set(tt_jet6_eta,jet6_eta);
+  event.set(tt_jet6_phi,jet6_phi);
   event.set(tt_jet1_ptRaw,jet1_ptRaw);
   event.set(tt_jet2_ptRaw,jet2_ptRaw);
   event.set(tt_jet3_ptRaw,jet3_ptRaw);
@@ -1396,8 +1491,8 @@ bool JERSFModule::process(Event & event) {
     //cout << "Checking PUpthat..." << endl;
 
     if(!event.isRealData){
-
       if(!sel->PUpthat(event)) return false;
+      if(!sel->PtaveVsQScale(1.5)) return false;//MadGraph 1.5, 1.2 Pythia8 1.2, Herwig++ ?
     }
 
     // cout << "Passed PUpthat";
@@ -1442,6 +1537,7 @@ bool JERSFModule::process(Event & event) {
   }
 
   if(!sel->DiJetAdvanced(event)) return false;
+  if(!sel->EnergyEtaCut()) return false;//Assuming dijet event make sure jet energy does not exeeds beam energy
 
   h_dijet->fill(event);
   h_lumi_dijet->fill(event);
@@ -1587,7 +1683,9 @@ bool JERSFModule::process(Event & event) {
       cout << " GenJet[" << i << "]: pt=" << jet.pt() << "; eta=" << jet.eta() << "; phi=" << jet.phi() <<  endl;
     }
   }
-
+  if(debug && !isMC){
+    Jet_printer->process(event);
+  }
   if(isMC){
     double flavor_barreljet = 0;
     double flavor_probejet = 0;
@@ -1715,6 +1813,7 @@ bool JERSFModule::process(Event & event) {
     event.set(tt_response_leadingjet,-1.);
   }
 
+  if (debug) cout<<"Event: "<<event.event<<" Run: "<<event.run<<" Njet="<<jet_n<<endl;
   if (debug) std::cout << "END reached" << '\n';
 
   return true;
