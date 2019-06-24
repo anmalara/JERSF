@@ -24,131 +24,6 @@
 double min_fit = 100.;
 double max_fit = 1200.;
 
-
-void print1(std::vector< double > a) {
-  std::cout << a.size() << '\n';
-}
-
-void print1H(std::vector< TH1F* > a) {
-  std::cout << a.size() << '\n';
-}
-
-void print2(std::vector< std::vector< double > > a) {
-  std::cout << a.size() << " " << a.at(0).size() << '\n';
-}
-
-void print2H(std::vector< std::vector< TH1F* > > a) {
-  std::cout << a.size() << " " << a.at(0).size() << '\n';
-}
-
-void print2G(std::vector< std::vector< TGraphErrors* > > a) {
-  std::cout << a.size() << " " << a.at(0).size() << '\n';
-}
-
-void print3(std::vector< std::vector< std::vector< double > > > a) {
-  std::cout << a.size() << " " << a.at(0).size() << " " << a.at(0).at(0).size() << '\n';
-}
-
-void print3H(std::vector< std::vector< std::vector< TH1F* > > > a) {
-  std::cout << a.size() << " " << a.at(0).size() << " " << a.at(0).at(0).size() << '\n';
-}
-
-void asdf(std::vector< std::vector< std::vector< double > > > a) {
-  std::cout << "start" << '\n';
-  for (size_t i = 0; i < a.size(); i++) {
-    std::cout << "m " << i << '\n';
-    for (size_t j = 0; j < a.at(i).size(); j++) {
-      std::cout << "p " << j << '\n';
-      for (size_t k = 0; k < a.at(i).at(j).size(); k++) {
-        std::cout << a.at(i).at(j).at(k) << " ";
-        // std::cout << *std::max_element(a.at(i).at(j).begin(),a.at(i).at(j).end()) << " ";
-      }
-      std::cout << '\n';
-    }
-  }
-}
-
-void asdff(std::vector< std::vector< std::vector< double > > > a) {
-  std::cout << "start" << '\n';
-  for (size_t i = 0; i < a.size(); i++) {
-    for (size_t j = 0; j < a.at(i).size(); j++) {
-      std::cout << a.size() << " " << a.at(i).size() << " " << a.at(i).at(j).size() << '\n';
-    }
-  }
-}
-
-void asdf1(std::vector< std::vector< std::vector< double > > > a) {
-  for (size_t i = 0; i < a.size(); i++) {
-    for (size_t j = 0; j < a.at(i).size(); j++) {
-      std::cout << i << " " << j << " " << *std::max_element(a.at(i).at(j).begin(),a.at(i).at(j).end()) << " ";
-      std::cout << '\n';
-    }
-  }
-}
-
-
-void asdf2(std::vector< std::vector< std::vector< double > > > a, std::vector< std::vector< std::vector< double > > > b) {
-  for (size_t i = 0; i < a.size(); i++) {
-    for (size_t j = 0; j < a.at(i).size(); j++) {
-      std::cout << i << " " << j << " " << *std::max_element(a.at(i).at(j).begin(),a.at(i).at(j).end()) << " " << *std::max_element(b.at(i).at(j).begin(),b.at(i).at(j).end()) << " ";
-      std::cout << '\n';
-    }
-  }
-}
-
-
-void asdf23(std::vector< std::vector< std::vector< double > > > a, std::vector< std::vector< std::vector< double > > > b) {
-  for (size_t i = 0; i < a.size(); i++) {
-    for (size_t j = 0; j < a.at(i).size(); j++) {
-      double diff = TMath::Abs(*std::max_element(a.at(i).at(j).begin(),a.at(i).at(j).end()) - *std::max_element(b.at(i).at(j).begin(),b.at(i).at(j).end()));
-      if (diff>5) {
-        std::cout << i << " " << j << " " << diff << " ";
-        std::cout << '\n';
-      }
-    }
-  }
-}
-
-
-void asdf21(std::vector< std::vector< std::vector< double > > > a, std::vector< std::vector< std::vector< double > > > b) {
-  for (size_t i = 0; i < a.size(); i++) {
-    for (size_t j = 0; j < a.at(i).size(); j++) {
-      double diff = TMath::Abs(*std::max_element(a.at(i).at(j).begin(),a.at(i).at(j).end()) - *std::max_element(b.at(i).at(j).begin(),b.at(i).at(j).end()));
-      if (diff>5) {
-        std::cout << i << " " << j << " " << *std::max_element(a.at(i).at(j).begin(),a.at(i).at(j).end()) << " " << *std::max_element(b.at(i).at(j).begin(),b.at(i).at(j).end()) << " ";
-        std::cout << '\n';
-      }
-    }
-  }
-}
-
-
-void asdfasdf2(std::vector< std::vector< double > > a, std::vector< std::vector< double > > b, std::vector< std::vector< double > > c){
-  for (size_t i = 0; i < a.size(); i++) {
-    for (size_t j = 0; j < a.at(i).size(); j++) {
-      double temp = TMath::Sqrt(2)*TMath::Sqrt( a.at(i).at(j) * a.at(i).at(j) - b.at(i).at(j) * b.at(i).at(j) );
-      if (TMath::Abs(temp-c.at(i).at(j))>0.0001) {
-        std::cout << i << " " << j << " " << temp << " " << c.at(i).at(j) << '\n';
-      }
-    }
-  }
-}
-
-
-void asdf_2(std::vector< std::vector< std::vector< TH1F* > > > a) {
-  for (size_t i = 0; i < a.size(); i++) {
-    std::cout << i << '\n';
-    for (size_t j = 0; j < a.at(i).size(); j++) {
-      std::cout << j << '\n';
-      for (size_t k = 0; k < a.at(i).at(j).size(); k++) {
-        std::cout << a.at(i).at(j).at(k) << "";
-        // std::cout << *std::max_element(a.at(i).at(j).begin(),a.at(i).at(j).end()) << " ";
-      }
-      std::cout << '\n';
-    }
-  }
-}
-
 // Code by Andrea Malara
 // Based on code by Marek Niedziela, Matthias Schröder, Kristin Goebel
 
@@ -274,11 +149,14 @@ void PLOT_MCT(std::vector< TH1F* > h_MCTruth, std::vector< TH1F* > h_uncor, std:
   }
 }
 
-void PLOT_ASY(std::vector< std::vector< std::vector< TH1F* > > > h_data, std::vector< std::vector< std::vector< TH1F* > > > h_MC, std::vector< std::vector< std::vector< TH1F* > > > h_gen, std::vector< std::vector< std::vector< double > > > h_data_width, std::vector< std::vector< std::vector< double > > > h_MC_width, std::vector< std::vector< std::vector< double > > > h_gen_width, std::vector< std::vector< std::vector< double > > > h_data_width_err, std::vector< std::vector< std::vector< double > > > h_MC_width_err, std::vector< std::vector< std::vector< double > > > h_gen_width_err, TString outdir, std::vector<double> eta_bins, std::vector<double> Pt_bins, std::vector<double> alpha, std::vector< std::vector< std::vector< double > > > lower_x_data, std::vector< std::vector< std::vector< double > > > upper_x_data, std::vector< std::vector< std::vector< double > > > lower_x, std::vector< std::vector< std::vector< double > > > upper_x, std::vector< std::vector< std::vector< double > > > gen_lower_x, std::vector< std::vector< std::vector< double > > > gen_upper_x) {
+void PLOT_ASY(std::vector< std::vector< std::vector< TH1F* > > > h_data, std::vector< std::vector< std::vector< TH1F* > > > h_MC, std::vector< std::vector< std::vector< TH1F* > > > h_gen, std::vector< std::vector< std::vector< double > > > h_data_width, std::vector< std::vector< std::vector< double > > > h_MC_width, std::vector< std::vector< std::vector< double > > > h_gen_width, std::vector< std::vector< std::vector< double > > > h_data_width_err, std::vector< std::vector< std::vector< double > > > h_MC_width_err, std::vector< std::vector< std::vector< double > > > h_gen_width_err, TString outdir, std::vector<double> eta_bins, std::vector<double> Pt_bins_Central, std::vector<double> Pt_bins_HF, std::vector<double> alpha, std::vector< std::vector< std::vector< double > > > lower_x_data, std::vector< std::vector< std::vector< double > > > upper_x_data, std::vector< std::vector< std::vector< double > > > lower_x, std::vector< std::vector< std::vector< double > > > upper_x, std::vector< std::vector< std::vector< double > > > gen_lower_x, std::vector< std::vector< std::vector< double > > > gen_upper_x) {
   int color_data = kBlue;
   int color_MC = kRed;
   int color_gen = kGreen+2;
   for( unsigned int m = 0; m < h_data.size(); m++ ){
+    std::vector<double> Pt_bins;
+    if (eta_bins[m]< eta_cut) for (size_t i = 0; i <= h_data.at(m).size(); i++) { Pt_bins.push_back(Pt_bins_Central[i]); }
+    else for (size_t i = 0; i <= h_data.at(m).size(); i++) { Pt_bins.push_back(Pt_bins_HF[i]); }
     for( unsigned int p = 0; p < h_data.at(m).size(); p++ ){
       for( unsigned int r = 0; r < h_data.at(m).at(p).size(); r++ ){
         h_data.at(m).at(p).at(r)-> Scale(1./h_data.at(m).at(p).at(r) -> Integral());
@@ -333,11 +211,14 @@ void PLOT_ASY(std::vector< std::vector< std::vector< TH1F* > > > h_data, std::ve
   }
 }
 
-void PLOT_WIDTH(std::vector< std::vector< TH1F* > > h_data, std::vector< std::vector< TH1F* > > h_MC, std::vector< std::vector< TH1F* > > h_gen, TString outdir, std::vector<double> eta_bins, std::vector<double> Pt_bins) {
+void PLOT_WIDTH(std::vector< std::vector< TH1F* > > h_data, std::vector< std::vector< TH1F* > > h_MC, std::vector< std::vector< TH1F* > > h_gen, TString outdir, std::vector<double> eta_bins, std::vector<double> Pt_bins_Central, std::vector<double> Pt_bins_HF) {
   int color_data = kBlue;
   int color_MC = kRed;
   int color_gen = kGreen+2;
   for( unsigned int m = 0; m < h_data.size(); m++ ){
+    std::vector<double> Pt_bins;
+    if (eta_bins[m]< eta_cut) for (size_t i = 0; i <= h_data.at(m).size(); i++) { Pt_bins.push_back(Pt_bins_Central[i]); }
+    else for (size_t i = 0; i <= h_data.at(m).size(); i++) { Pt_bins.push_back(Pt_bins_HF[i]); }
     for( unsigned int p = 0; p < h_data.at(m).size(); p++ ){
       TString canvName  = h_data.at(m).at(p)->GetTitle();
       TString nameXaxis = h_data.at(m).at(p)->GetXaxis()->GetTitle();
@@ -406,12 +287,16 @@ void PLOT_WIDTH(std::vector< std::vector< TH1F* > > h_data, std::vector< std::ve
 
 
 
-void PLOT_WIDTH_gr(std::vector< std::vector< TGraphErrors* > > h_data, std::vector< std::vector< TGraphErrors* > > h_MC, std::vector< std::vector< TGraphErrors* > > h_gen, TString outdir, std::vector<double> eta_bins, std::vector<double> Pt_bins, bool isFE) {
+void PLOT_WIDTH_gr(std::vector< std::vector< TGraphErrors* > > h_data, std::vector< std::vector< TGraphErrors* > > h_MC, std::vector< std::vector< TGraphErrors* > > h_gen, TString outdir, std::vector<double> eta_bins, std::vector<double> Pt_bins_Central, std::vector<double> Pt_bins_HF, bool isFE) {
   int color_data = kBlue;
   int color_MC = kRed;
   int color_gen = kGreen+2;
   for( unsigned int m = 0; m < h_data.size(); m++ ){
+    std::vector<double> Pt_bins;
+    if (eta_bins[m]< eta_cut) for (size_t i = 0; i <= h_data.at(m).size(); i++) { Pt_bins.push_back(Pt_bins_Central[i]); }
+    else for (size_t i = 0; i <= h_data.at(m).size(); i++) { Pt_bins.push_back(Pt_bins_HF[i]); }
     for( unsigned int p = 0; p < h_data.at(m).size(); p++ ){
+
 
       double range = 0.05;
       if ( p == 0) range = 0.25;
@@ -519,7 +404,7 @@ void SFtoTXT(std::ofstream& texfile, std::vector< TH1F* > h_JER, std::vector< st
     TF1 * NSC_ratio = h_JER.at(m) -> GetFunction("NSC_ratio");
     h_JER.at(m)->GetFunction("NSC_ratio")->SetBit(TF1::kNotDraw);
     if (constfit==0)  continue;
-    std::cout << findMinMax(h_JER.at(m), width_pt.at(m), NSC_ratio, constfit, 1) << " " <<  findMinMax(h_JER.at(m), width_pt.at(m), NSC_ratio, constfit, 0) << '\n';
+    // std::cout << findMinMax(h_JER.at(m), width_pt.at(m), NSC_ratio, constfit, 1) << " " <<  findMinMax(h_JER.at(m), width_pt.at(m), NSC_ratio, constfit, 0) << '\n';
     SF_ptdep_min.push_back(findMinMax(h_JER.at(m), width_pt.at(m), NSC_ratio, constfit, 1));
     SF_ptdep_max.push_back(findMinMax(h_JER.at(m), width_pt.at(m), NSC_ratio, constfit, 0));
     h_JER.at(m) -> Write();
@@ -568,7 +453,7 @@ void PLOT_SF(std::vector< TH1F* > h_uncor, std::vector< TH1F* > h_cor, std::vect
       sprintf(line, "#chi^{2}/ndf = %.2f/%d", f->GetChisquare(), f->GetNDF());        legend->AddEntry((TObject*)0, line, "");
       sprintf(line, "p0 = %.5f #pm %.5f",     f->GetParameter(0), f->GetParError(0)); legend->AddEntry((TObject*)0, line, "");
       legend->Draw("same");
-    } else { std::cout << "Fit function at bin " << m << " was not found" << std::endl; }
+    } else { std::cout << "Fit uncor function at bin " << m << " was not found" << std::endl; }
 
     if(h_cor.at(m)->GetFunction("constfit")){
       f = h_cor.at(m) -> GetFunction("constfit"); f->SetLineColor(color_cor);
@@ -577,7 +462,7 @@ void PLOT_SF(std::vector< TH1F* > h_uncor, std::vector< TH1F* > h_cor, std::vect
       sprintf(line, "#chi^{2}/ndf = %.2f/%d", f->GetChisquare(), f->GetNDF());        legend->AddEntry((TObject*)0, line, "");
       sprintf(line, "p0 = %.5f #pm %.5f",     f->GetParameter(0), f->GetParError(0)); legend->AddEntry((TObject*)0, line, "");
       legend->Draw("same");
-    } else { std::cout << "Fit function at bin " << m << " was not found" << std::endl; }
+    } else { std::cout << "Fit cor function at bin " << m << " was not found" << std::endl; }
 
     if(h_015.at(m)->GetFunction("constfit")){
       f = h_015.at(m) -> GetFunction("constfit"); f->SetLineColor(color_015);
@@ -586,7 +471,7 @@ void PLOT_SF(std::vector< TH1F* > h_uncor, std::vector< TH1F* > h_cor, std::vect
       sprintf(line, "#chi^{2}/ndf = %.2f/%d", f->GetChisquare(), f->GetNDF());        legend->AddEntry((TObject*)0, line, "");
       sprintf(line, "p0 = %.5f #pm %.5f",     f->GetParameter(0), f->GetParError(0)); legend->AddEntry((TObject*)0, line, "");
       legend->Draw("same");
-    } else { std::cout << "Fit function at bin " << m << " was not found" << std::endl; }
+    } else { std::cout << "Fit 015 function at bin " << m << " was not found" << std::endl; }
 
 
     TLegend *leg = tdrLeg(0.6,0.15,0.9,0.35, 0.04, 42, kBlack);
@@ -784,21 +669,16 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
   Pt_bins_Central.push_back(1500);
   Pt_bins_HF.push_back(1500);
 
-  std::cout << "Trigger " << Trigger << '\n';
-  print1(Pt_bins_Central);
-  for (size_t i = 0; i < Pt_bins_Central.size(); i++) std::cout << Pt_bins_Central[i] << '\t'; std::cout << '\n';
-
-  print1(Pt_bins_HF);
-  for (size_t i = 0; i < Pt_bins_HF.size(); i++) std::cout << Pt_bins_HF[i] << '\t'; std::cout << '\n';
+  std::cout << "Trigger " << Trigger << " " << Pt_bins_Central.size() << " " << Pt_bins_HF.size() << '\n';
+  std::cout << "Pt_bins_Central\t"; for (size_t i = 0; i < Pt_bins_Central.size(); i++) std::cout << Pt_bins_Central[i] << '\t'; std::cout << '\n';
+  std::cout << "Pt_bins_HF\t";  for (size_t i = 0; i < Pt_bins_HF.size(); i++) std::cout << Pt_bins_HF[i] << '\t'; std::cout << '\n';
 
   std::vector<double> eta_bins_edge_SM(eta_bins, eta_bins + sizeof(eta_bins)/sizeof(double));
   std::vector<double> eta_bins_edge_FE(eta_bins+1, eta_bins + sizeof(eta_bins)/sizeof(double));
 
 
-  std::cout << "Eta bins " << Trigger << '\n';
-  print1(eta_bins_edge_SM);
+  std::cout << "Eta bins " << Trigger << " " << eta_bins_edge_SM.size() << " " << eta_bins_edge_FE.size() << '\n';
   for (size_t i = 0; i < eta_bins_edge_SM.size(); i++) std::cout << eta_bins_edge_SM[i] << '\t'; std::cout << '\n';
-  print1(eta_bins_edge_FE);
   for (size_t i = 0; i < eta_bins_edge_FE.size(); i++) std::cout << eta_bins_edge_FE[i] << '\t'; std::cout << '\n';
 
   // EtaBins_FE   = 3;
@@ -856,12 +736,6 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
   histLoadAsym( *f,       data_,       "mctruth_FE_control",   MC_Truth_asymmetries_FE,  dummy_hists,       EtaBins_FE_control,   PtBins_Central, AlphaBins, etaShift_FE_control);
   histLoadAsym( *f,       data_,       "mctruth_FE",           MC_Truth_asymmetries_FE,  dummy_hists,       EtaBins_FE,           PtBins_HF,      AlphaBins, etaShift_FE);
 
-  print3H(asymmetries_SM);
-  print3H(asymmetries_data_SM);
-  print3H(asymmetries_SM);
-  print3H(asymmetries_data_FE);
-  std::cout << "1 Done" << '\n';
-
   // std::vector < TH2F* > Map_mean_data;
   //
   // Fill_Map3D(asymmetries_data_SM, Map_mean_data, eta_bins_edge_SM, Pt_bins_Central);
@@ -902,9 +776,6 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
 
   // gen_all_data is for running a cross check with smeared MC.
 
-  print3(width_pt_SM);
-  print3(width_pt_FE);
-  std::cout << "2 Done" << '\n';
   ////////////////////////////////////////////////////////////////////////////
   //    I calculate width of asymmetry distributions only for               //
   //    alpha bins above 10 GeV thresholds (too soft contriubtions)         //
@@ -925,10 +796,6 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
   histWidthAsym( gen_asymmetries_FE , gen_asymmetries_width_FE, gen_asymmetries_width_FE_error, false, gaustails, 1, gen_lower_x_FE, gen_upper_x_FE);
   histWidthAsym( asymmetries_data_FE , asymmetries_width_data_FE, asymmetries_width_data_FE_error, false, gaustails, 1, lower_x_data_FE, upper_x_data_FE);
   histWidthAsym( gen_asymmetries_data_FE , gen_asymmetries_width_data_FE, gen_asymmetries_width_data_FE_error, false, gaustails, 1, gen_lower_x_data_FE, gen_upper_x_data_FE);
-
-  // asdf_2(asymmetries_SM);
-  // asdf(asymmetries_width_SM);
-  // asdff(lower_x_SM);
 
   ////////////////////////////////////////////////////////////////////////////
   //    I calculate widths, this time also including                        //
@@ -952,12 +819,6 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
   histWidthAsym( asymmetries_data_FE , soft_asymmetries_width_data_FE, soft_asymmetries_width_data_FE_error, true, gaustails, 1, dummy_vec_x, dummy_vec_y);
   histWidthAsym( gen_asymmetries_data_FE , gen_soft_asymmetries_width_data_FE, gen_soft_asymmetries_width_data_FE_error, true, gaustails, 1, dummy_vec_x, dummy_vec_y);
 
-  print3(asymmetries_width_SM);
-  print3(asymmetries_width_FE);
-  print3(soft_asymmetries_width_SM);
-  print3(soft_asymmetries_width_FE);
-  std::cout << "3 Done" << '\n';
-
   ////////////////////////////////////////////////////////////////////////////
   //    Calculate mcTruth resolution for cross check with dijet calculation //
   ////////////////////////////////////////////////////////////////////////////
@@ -967,10 +828,6 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
 
   histWidthMCTruth( MC_Truth_asymmetries_SM, mcTruth_res_SM, mcTruth_res_SM_error);
   histWidthMCTruth( MC_Truth_asymmetries_FE, mcTruth_res_FE, mcTruth_res_FE_error);
-
-  print3(mcTruth_res_SM);
-  print3(mcTruth_res_FE);
-  std::cout << "4 Done" << '\n';
 
   ////////////////////////////////////////////////////////////////////////////
   //     I fill width(alpha_max) histograms                                 //
@@ -1007,12 +864,6 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
   fill_widths_hists( "all_widths_data_fe", soft_widths_hist_data_FE, soft_asymmetries_width_data_FE, soft_asymmetries_width_data_FE_error );
   fill_widths_hists( "all_widths_gen_data_fe", soft_gen_widths_hist_data_FE, gen_soft_asymmetries_width_data_FE, gen_soft_asymmetries_width_data_FE_error );
 
-  print2H(widths_hist_SM);
-  print2H(widths_hist_FE);
-  print2H(soft_widths_hist_SM);
-  print2H(soft_widths_hist_FE);
-  std::cout << "5 Done" << '\n';
-
   ////////////////////////////////////////////////////////////////////////////
   //    I fit line or const to width(alpha_max)                             //
   ////////////////////////////////////////////////////////////////////////////
@@ -1032,10 +883,6 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
   histLinFit( gen_widths_hist_FE , extrapolated_gen_widths_FE, extrapolated_gen_widths_FE_error, true );
   histLinFit( widths_hist_data_FE , extrapolated_widths_data_FE, extrapolated_widths_data_FE_error, true );
   histLinFit( gen_widths_hist_data_FE , extrapolated_gen_widths_data_FE, extrapolated_gen_widths_data_FE_error, true );
-
-  print2(extrapolated_widths_SM);
-  print2(extrapolated_widths_FE);
-  std::cout << "6 Done" << '\n';
 
   ////////////////////////////////////////////////////////////////////////////
   //    Correlated fit                                                      //
@@ -1061,27 +908,14 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
   histLinCorFit(gen_asymmetries_width_FE, gen_asymmetries_width_FE_error, gen_correlated_graphs_FE, extrapolated_gen_widths_correlated_FE, extrapolated_gen_widths_correlated_FE_error, true, false, h_chi2_tot);
   histLinCorFit(gen_asymmetries_width_data_FE, gen_asymmetries_width_data_FE_error, gen_data_correlated_graphs_FE, extrapolated_gen_widths_correlated_data_FE, extrapolated_gen_widths_correlated_data_FE_error, true, false, h_chi2_tot);
 
-  print2(extrapolated_widths_correlated_SM);
-  print2(extrapolated_widths_correlated_FE);
-  print2G(MC_correlated_graphs_SM);
-  print2G(MC_correlated_graphs_FE);
-  std::cout << "7 Done" << '\n';
-
   ////////////////////////////////////////////////////////////////////////////
   //    I make histograms ratio of widths(alpha=0.15)                       //
   ////////////////////////////////////////////////////////////////////////////
 
   std::vector< TH1F* > widths_015_ratios_SM, widths_015_ratios_FE;
 
-  for (size_t i = 0; i < widths_015_ratios_SM.size(); i++) {
-    std::cout << widths_015_ratios_SM.at(i)->GetEntries() << '\n';
-  }
-
   widths_015_ratios( "widths_015_SM_ratios", widths_015_ratios_SM, asymmetries_width_data_SM, asymmetries_width_data_SM_error, asymmetries_width_SM, asymmetries_width_SM_error, width_pt_SM );
   widths_015_ratios( "widths_015_FE_ratios", widths_015_ratios_FE, asymmetries_width_data_FE, asymmetries_width_data_FE_error, asymmetries_width_FE, asymmetries_width_FE_error, width_pt_FE );
-  print1H(widths_015_ratios_SM);
-  print1H(widths_015_ratios_FE);
-  std::cout << "8 Done" << '\n';
 
   ////////////////////////////////////////////////////////////////////////////
   //    I correct for PLI using b parameter from line fit to sigma_A(alpha) //
@@ -1168,9 +1002,6 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
     correctJERwithPLI015(JER015_data_FE_ref, JER015_data_FE_ref_error, asymmetries_width_data_FE, asymmetries_width_data_FE_error, gen_asymmetries_width_data_FE, gen_asymmetries_width_data_FE_error, shiftForPLI);
   }
 
-  print2(JER_uncorrelated_corrected_MC_SM);
-  print2(JER_uncorrelated_corrected_data_FE_ref);
-  std::cout << "9 Done" << '\n';
 
   ////////////////////////////////////////////////////////////////////////////
   //    I corrected alpha = 0.15 widhs for PLI correct way                  //
@@ -1220,14 +1051,6 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
   makeScales( scales_uncorrelated_SM,         scales_uncorrelated_SM_error,         JER_uncorrelated_corrected_data_SM,     JER_uncorrelated_corrected_data_SM_error,     JER_uncorrelated_corrected_MC_SM,     JER_uncorrelated_corrected_MC_SM_error );
   makeScales( scales_uncorrelated_FE,         scales_uncorrelated_FE_error,         JER_uncorrelated_corrected_data_FE,     JER_uncorrelated_corrected_data_FE_error,     JER_uncorrelated_corrected_MC_FE,     JER_uncorrelated_corrected_MC_FE_error );
   makeScales( scales_uncorrelated_FE_control, scales_uncorrelated_FE_control_error, JER_uncorrelated_corrected_data_FE_ref, JER_uncorrelated_corrected_data_FE_ref_error, JER_uncorrelated_corrected_MC_FE_ref, JER_uncorrelated_corrected_MC_FE_ref_error );
-
-  print2(scales_uncorrelated_SM);
-  print2(scales_uncorrelated_FE);
-  print2(scales_uncorrelated_FE_control);
-
-  print2(JER_uncorrelated_corrected_data_SM);
-  print2(JER_uncorrelated_corrected_data_FE);
-  print2(JER_uncorrelated_corrected_data_FE_ref);
 
   // same thing for correlated fit results
   std::vector< std::vector< double > > scales_correlated_SM, scales_correlated_FE, scales_correlated_FE_control;
@@ -1297,13 +1120,6 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
   fill_hist( "data_JER_correlated_FE_control", JER_correlated_data_hist_FE_control,  JER_correlated_corrected_data_FE_ref, JER_correlated_corrected_data_FE_ref_error, width_pt_FE, hist_max_value);
   fill_hist( "SF_correlated_FE_control",       JER_correlated_scale_hist_FE_control, scales_correlated_FE_control, scales_correlated_FE_control_error, width_pt_FE, hist_max_value_SF);
 
-  std::cout << "TROVATO" << '\n';
-  print1H(JER_uncorrelated_data_hist_SM);
-  std::cout << "TROVATO1" << '\n';
-  print1H(JER_correlated_MC_hist_SM);
-  print1H(JER_correlated_MC_hist_FE);
-  print1H(JER_correlated_MC_hist_FE_control);
-
   //////////////////////////////////////////////////////////////////////////////////////////
   //    resolution cross check with mcTruth                                               //
   //////////////////////////////////////////////////////////////////////////////////////////
@@ -1315,19 +1131,21 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
   gStyle->SetOptTitle(0);
   gStyle->SetOptStat(0);
 
+  std::cout << "START PLOTTING" << '\n';
+
   TFile fMCTruth("output/MCTruth.root","RECREATE");
   PLOT_MCT(JER_MC_Truth_SM,JER_uncorrelated_MC_hist_SM,JER_correlated_MC_hist_SM,JER015_uncorrelated_MC_hist_SM,outdir+"pdfy/MCTruth/",eta_bins_edge_SM, false);
   PLOT_MCT(JER_MC_Truth_FE,JER_uncorrelated_MC_hist_FE,JER_correlated_MC_hist_FE,JER015_uncorrelated_MC_hist_FE,outdir+"pdfy/MCTruth/",eta_bins_edge_FE, true);
   fMCTruth.Close();
 
-  //bool plot_all = true;
+  // bool plot_all = true;
   bool plot_all = false;
   if (plot_all) {
     ////////////////////////////////////////////////////////////////////////////
     //  Plots Asymmetries                                                     //
     ////////////////////////////////////////////////////////////////////////////
-    PLOT_ASY(asymmetries_data_SM,  asymmetries_SM, gen_asymmetries_SM,  asymmetries_width_data_SM, asymmetries_width_SM, gen_asymmetries_width_SM, asymmetries_width_data_SM_error, asymmetries_width_SM_error, gen_asymmetries_width_SM_error, outdir+"output/asymmetries/", eta_bins_edge_SM, Pt_bins_Central, alpha, lower_x_data_SM, upper_x_data_SM, lower_x_SM, upper_x_SM, gen_lower_x_SM, gen_upper_x_SM);
-    PLOT_ASY(asymmetries_data_FE,  asymmetries_FE, gen_asymmetries_FE,  asymmetries_width_data_FE, asymmetries_width_FE, gen_asymmetries_width_FE, asymmetries_width_data_FE_error, asymmetries_width_FE_error, gen_asymmetries_width_FE_error, outdir+"output/asymmetries/", eta_bins_edge_SM, Pt_bins_HF, alpha, lower_x_data_FE, upper_x_data_FE, lower_x_FE, upper_x_FE, gen_lower_x_FE, gen_upper_x_FE);
+    PLOT_ASY(asymmetries_data_SM,  asymmetries_SM, gen_asymmetries_SM,  asymmetries_width_data_SM, asymmetries_width_SM, gen_asymmetries_width_SM, asymmetries_width_data_SM_error, asymmetries_width_SM_error, gen_asymmetries_width_SM_error, outdir+"output/asymmetries/", eta_bins_edge_SM, Pt_bins_Central, Pt_bins_HF, alpha, lower_x_data_SM, upper_x_data_SM, lower_x_SM, upper_x_SM, gen_lower_x_SM, gen_upper_x_SM);
+    PLOT_ASY(asymmetries_data_FE,  asymmetries_FE, gen_asymmetries_FE,  asymmetries_width_data_FE, asymmetries_width_FE, gen_asymmetries_width_FE, asymmetries_width_data_FE_error, asymmetries_width_FE_error, gen_asymmetries_width_FE_error, outdir+"output/asymmetries/", eta_bins_edge_SM, Pt_bins_Central, Pt_bins_HF, alpha, lower_x_data_FE, upper_x_data_FE, lower_x_FE, upper_x_FE, gen_lower_x_FE, gen_upper_x_FE);
 
     TFile asyroot(outdir+"output/asymmetries.root","RECREATE");
     for( unsigned int m = 0; m < asymmetries_SM.size(); m++){
@@ -1356,11 +1174,11 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
     //  Plots with widths(alpha)                                              //
     ////////////////////////////////////////////////////////////////////////////
 
-    PLOT_WIDTH(widths_hist_data_SM, widths_hist_SM, gen_widths_hist_SM, outdir+"pdfy/widths/", eta_bins_edge_SM,Pt_bins_Central);
-    PLOT_WIDTH(widths_hist_data_FE, widths_hist_FE, gen_widths_hist_FE, outdir+"pdfy/widths/", eta_bins_edge_SM,Pt_bins_HF);
+    PLOT_WIDTH(widths_hist_data_SM, widths_hist_SM, gen_widths_hist_SM, outdir+"pdfy/widths/", eta_bins_edge_SM,Pt_bins_Central,Pt_bins_HF);
+    PLOT_WIDTH(widths_hist_data_FE, widths_hist_FE, gen_widths_hist_FE, outdir+"pdfy/widths/", eta_bins_edge_SM,Pt_bins_Central,Pt_bins_HF);
 
-    PLOT_WIDTH_gr(data_correlated_graphs_SM, MC_correlated_graphs_SM, gen_correlated_graphs_SM, outdir+"ClosureTest/", eta_bins_edge_SM, Pt_bins_Central, false);
-    PLOT_WIDTH_gr(data_correlated_graphs_FE, MC_correlated_graphs_FE, gen_correlated_graphs_FE, outdir+"ClosureTest/", eta_bins_edge_SM, Pt_bins_HF, true);
+    PLOT_WIDTH_gr(data_correlated_graphs_SM, MC_correlated_graphs_SM, gen_correlated_graphs_SM, outdir+"ClosureTest/", eta_bins_edge_SM, Pt_bins_Central, Pt_bins_HF, false);
+    PLOT_WIDTH_gr(data_correlated_graphs_FE, MC_correlated_graphs_FE, gen_correlated_graphs_FE, outdir+"ClosureTest/", eta_bins_edge_SM, Pt_bins_Central, Pt_bins_HF, true);
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //  Plots with all points of widths(alpha)                                                                                               //
@@ -1387,6 +1205,8 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
     widthroot.Close();
 
   }
+
+  std::cout << "plot_all : " << plot_all << '\n';
   /////////////////////////////////////////////////////////////////////////////////////////
   // plot with JERs with NSC fit
   /////////////////////////////////////////////////////////////////////////////////////////
@@ -1447,11 +1267,11 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
   ofstream txt_ST, txt_FE;
   txt_ST.open ("output/scalefactors_ST.txt");
   txt_FE.open ("output/scalefactors_FE.txt");
-  std::cout << "#eta_bin_SM_center" << " " << "eta_bin_SM_error" << " " << "SF_uncorrelated_SM" << " " << "SF_uncorrelated_SM_error" << " " << "SF_correlated_SM" << " " << "SF_correlated_SM_error" << "\n";
+  // std::cout << "#eta_bin_SM_center" << " " << "eta_bin_SM_error" << " " << "SF_uncorrelated_SM" << " " << "SF_uncorrelated_SM_error" << " " << "SF_correlated_SM" << " " << "SF_correlated_SM_error" << "\n";
   txt_ST << "#eta_bin_SM_center" << " " << "eta_bin_SM_error" << " " << "SF_uncorrelated_SM" << " " << "SF_uncorrelated_SM_error" << " " << "SF_correlated_SM" << " " << "SF_correlated_SM_error" << "\n";
   txt_FE << "#eta_bin_FE_center" << " " << "eta_bin_FE_error" << " " << "SF_uncorrelated_FE" << " " << "SF_uncorrelated_FE_error" << " " << "SF_correlated_FE" << " " << "SF_correlated_FE_error" << "\n";
 
-  std::cout << eta_bin_SM_center.size() << " " << eta_bin_SM_error.size() << " " << SF_uncorrelated_SM.size() << " " << SF_uncorrelated_SM_error.size() << " " << SF_correlated_SM.size() << " " << SF_correlated_SM_error.size() << " " << SF_uncorrelated_SM_ptdep_min.size() << " " << SF_uncorrelated_SM_ptdep_max.size() << " " << SF_correlated_SM_ptdep_min.size() << " " << SF_correlated_SM_ptdep_max.size() << "\n";
+  // std::cout << eta_bin_SM_center.size() << " " << eta_bin_SM_error.size() << " " << SF_uncorrelated_SM.size() << " " << SF_uncorrelated_SM_error.size() << " " << SF_correlated_SM.size() << " " << SF_correlated_SM_error.size() << " " << SF_uncorrelated_SM_ptdep_min.size() << " " << SF_uncorrelated_SM_ptdep_max.size() << " " << SF_correlated_SM_ptdep_min.size() << " " << SF_correlated_SM_ptdep_max.size() << "\n";
   for (unsigned int i = 0; i < JER_uncorrelated_scale_hist_SM.size(); i++) {
     txt_ST << eta_bin_SM_center[i] << " " << eta_bin_SM_error[i] << " " << SF_uncorrelated_SM[i] << " " << SF_uncorrelated_SM_error[i] << " " << SF_correlated_SM[i] << " " << SF_correlated_SM_error[i] << " " << SF_uncorrelated_SM_ptdep_min[i] << " " << SF_uncorrelated_SM_ptdep_max[i] << " " << SF_correlated_SM_ptdep_min[i] << " " << SF_correlated_SM_ptdep_max[i] << "\n";
   }

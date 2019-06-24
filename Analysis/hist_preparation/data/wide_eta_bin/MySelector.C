@@ -31,7 +31,7 @@
 #include <TLorentzVector.h>
 #include <TRandom3.h>
 #include "MySelector.h"
-#include "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/JER2017/include/constants.hpp"
+#include "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/JERSF/include/constants.hpp"
 
 #define FILL_HISTOS(region,method)                                     \
 asymmetries_##region.at(r).at(k).at(m) -> Fill( asy , weight );        \
@@ -50,6 +50,8 @@ if (cond1 || cond2) {                                         \
   h_alpha_select -> Fill( alpha, 1 );                         \
   for ( int m = 0 ; m < AlphaBins ; m++ ) {                   \
     if ( alpha < Alpha_bins[m] ) {                            \
+      if (dofill) nevents_central[k][r][m] +=1; \
+      else nevents_HF[k][r][m] +=1; \
       double asy = asymmetry;                                 \
       if (cond3) {                                            \
         asy = - asymmetry;                                    \
@@ -74,7 +76,7 @@ for( int m = 0; m < EtaBins_##region; m++ ) {                 \
 }                                                             \
 
 void MakeHistograms(std::vector< std::vector< std::vector< TH1F* > > > &asymmetries, std::vector< std::vector< std::vector< TH1F* > > > &asymmetries_pt, std::vector< std::vector< std::vector< TH1F* > > > &asymmetries_rho, std::vector< std::vector< std::vector< TH1F* > > > &asymmetries_pt3, std::vector< std::vector< TH1F* > > &alpha_spectrum, TString text, TString extraText, int etaBins, int ptBins, int AlphaBins, int etaShift, int ptShift, int alphaShift) {
-  std::cout << "MakeHistograms: " << text << extraText << std::endl;
+  // std::cout << "MakeHistograms: " << text << extraText << std::endl;
   for( int m = etaShift; m < etaBins+etaShift; m++ ) {
     std::vector< std::vector< TH1F* > > temp2, temp2pt, temp2rho, temp2pt3;
     std::vector< TH1F* > alpha_temp2;
@@ -85,7 +87,7 @@ void MakeHistograms(std::vector< std::vector< std::vector< TH1F* > > > &asymmetr
       h1_alpha ->GetYaxis()->SetTitle("a.u.");    h1_alpha ->GetXaxis()->SetTitle("Alpha");
       h1_alpha -> Sumw2(); alpha_temp2.push_back(h1_alpha);
       for( int r = 0; r < AlphaBins; r++ ) {
-        std::cout << m << " " << p << " " << r << std::endl;
+        // std::cout << m << " " << p << " " << r << std::endl;
         TString name     = text;        name      += extraText; name     += "_eta"; name     += m+1; name     += "_pt"; name     += p+1; name     += "_alpha"; name     += r+1;
         TString name_pt  = text+"pt";   name_pt  += extraText; name_pt  += "_eta"; name_pt  += m+1; name_pt  += "_pt"; name_pt  += p+1; name_pt  += "_alpha"; name_pt  += r+1;
         TString name_rho = text+"rho";  name_rho += extraText; name_rho += "_eta"; name_rho += m+1; name_rho += "_pt"; name_rho += p+1; name_rho += "_alpha"; name_rho += r+1;
@@ -195,11 +197,35 @@ void MySelector::SlaveBegin(TTree * /*tree*/) {
   etaShift_FE_control   = EtaBins_FE_reference;
   etaShift_FE           = EtaBins_FE_reference + EtaBins_FE_control;
 
-  PtBins_Central = n_pt_bins_Di;
-  PtBins_HF = n_pt_bins_Di_HF;
+  PtBins_Central = n_pt_bins_Di_ext;
+  PtBins_HF = n_pt_bins_Di_HF_ext;
   AlphaBins = 6;
 
   std::cout << "Constructor: " << PtBins_Central << " " << PtBins_HF << std::endl;
+
+  for ( int k = 0 ; k < PtBins_Central ; k++ ) {
+    std::vector< std::vector< double > >  temp;
+    for (int r = 0; r < 13; r++) {
+      std::vector< double >  temp2;
+      for (int m = 0; m < AlphaBins; m++) temp2.push_back(0);
+      temp.push_back(temp2);
+    }
+    nevents_central.push_back(temp);
+  }
+
+  for ( int k = 0 ; k < PtBins_HF ; k++ ) {
+    std::vector< std::vector< double > >  temp;
+    for (int r = 0; r < 13; r++) {
+      std::vector< double >  temp2;
+      for (int m = 0; m < AlphaBins; m++) temp2.push_back(0);
+      temp.push_back(temp2);
+    }
+    nevents_HF.push_back(temp);
+  }
+
+  // for ( int k = 0 ; k < PtBins_HF ; k++ ) nevents_HF.push_back(std::vector< std::vector< double > > (0));
+  // for (size_t i = 0; i < nevents_central.size(); i++) std::cout << " " << nevents_central[i];
+  // for (size_t i = 0; i < nevents_HF.size(); i++) std::cout << " " << nevents_HF[i];
 
   MakeHistograms(asymmetries_SM,            asymmetries_pt_SM,            asymmetries_rho_SM,            asymmetries_pt3_SM,            alpha_spectrum_SM,            "asymm", "_SM",            EtaBins_SM,            PtBins_Central, AlphaBins, etaShift_SM,            0, 0);
   MakeHistograms(asymmetries_SM_control,    asymmetries_pt_SM_control,    asymmetries_rho_SM_control,    asymmetries_pt3_SM_control,    alpha_spectrum_SM_control,    "asymm", "_SM_control",    EtaBins_SM_control,    PtBins_HF,      AlphaBins, etaShift_SM_control,    0, 0);
@@ -241,17 +267,20 @@ Bool_t MySelector::Process(Long64_t entry) {
   std::vector<double> Eta_bins_FE_control(    eta_bins + etaShift_FE_control,    eta_bins + etaShift_FE_control + EtaBins_FE_control + 1);
   std::vector<double> Eta_bins_FE(            eta_bins + etaShift_FE,            eta_bins + etaShift_FE + EtaBins_FE + 1);
 
-  std::vector<int> Pt_bins_Central(pt_bins_Di, pt_bins_Di + sizeof(pt_bins_Di)/sizeof(double));
-  std::vector<int> Pt_bins_HF(pt_bins_Di_HF, pt_bins_Di_HF + sizeof(pt_bins_Di_HF)/sizeof(double));
+  std::vector<int> Pt_bins_Central(pt_bins_Di_ext, pt_bins_Di_ext + sizeof(pt_bins_Di_ext)/sizeof(double));
+  std::vector<int> Pt_bins_HF(pt_bins_Di_HF_ext, pt_bins_Di_HF_ext + sizeof(pt_bins_Di_HF_ext)/sizeof(double));
   Pt_bins_Central.push_back(1500);
   Pt_bins_HF.push_back(1500);
 
-  std::cout << "Process: " << std::endl;
-  std::cout << "Pt_bins_Central: " << Pt_bins_Central.size();
-  for (size_t i = 0; i < Pt_bins_Central.size(); i++) std::cout << " " << Pt_bins_Central[i];
 
-  std::cout << "Pt_bins_HF: " << Pt_bins_HF.size();
-for (size_t i = 0; i < Pt_bins_HF.size(); i++) std::cout << " " << Pt_bins_HF[i];
+  //
+  //
+  // std::cout << "Process: " << std::endl;
+  // std::cout << "Pt_bins_Central: " << Pt_bins_Central.size();
+  // for (size_t i = 0; i < Pt_bins_Central.size(); i++) std::cout << " " << Pt_bins_Central[i];
+  //
+  // std::cout << "Pt_bins_HF: " << Pt_bins_HF.size();
+  // for (size_t i = 0; i < Pt_bins_HF.size(); i++) std::cout << " " << Pt_bins_HF[i];
 
   std::vector<double> Alpha_bins;
   Alpha_bins.push_back(0.05); Alpha_bins.push_back(0.1);  Alpha_bins.push_back(0.15); Alpha_bins.push_back(0.20); Alpha_bins.push_back(0.25); Alpha_bins.push_back(0.3);
@@ -316,6 +345,8 @@ for (size_t i = 0; i < Pt_bins_HF.size(); i++) std::cout << " " << Pt_bins_HF[i]
     if (flag1 == 1 ) alpha = TMath::Abs(parallel);
     if (flag1 == 2 ) alpha = TMath::Abs(perpendicular);
 
+    bool dofill=true;
+
     if ( TMath::Abs(TVector2::Phi_mpi_pi((probejet_phi - barreljet_phi))) > 2.7 ) {
       for ( int k = 0 ; k < PtBins_Central ; k++ ) {
         if (trigger[k]) {
@@ -348,6 +379,7 @@ for (size_t i = 0; i < Pt_bins_HF.size(); i++) std::cout << " " << Pt_bins_HF[i]
           }
         }
       }
+      dofill=false;
       for ( int k = 0 ; k < PtBins_HF ; k++ ) {
         if (ftrigger[k]) {
           if ((pt_ave > Pt_bins_HF[k]) && (pt_ave < Pt_bins_HF[k+1]) ) {
@@ -379,6 +411,43 @@ void MySelector::SlaveTerminate() {
   // on each slave server.
 
   std::cout <<"            Analyzed events #" <<  TotalEvents << std::endl;
+
+  std::cout << "Pt_bins_Central: " << nevents_central.size() << std::endl;
+  for (size_t i = 0; i < nevents_central.size(); i++) std::cout << "\t" << pt_bins_Di_ext[i];
+  std::cout << std::endl;
+
+
+  for (int r = 0; r < 13; r++) {
+    for (int m = 0; m < 6; m++){
+      std::cout << r << " " << m << " ";
+      for ( int k = 0 ; k < nevents_central.size() ; k++ ) {
+        std::cout << "\t" << nevents_central[k][r][m];
+      }
+      std::cout << std::endl;
+    }
+    std::cout << std::endl;
+  }
+
+  // for (size_t i = 0; i < nevents_central.size(); i++) std::cout << "\t" << nevents_central[i];
+  // std::cout << std::endl;
+
+  std::cout << "Pt_bins_HF: " << nevents_HF.size() << std::endl;
+  for (size_t i = 0; i < nevents_HF.size(); i++) std::cout << "\t" << pt_bins_Di_HF_ext[i];
+  std::cout << std::endl;
+  // for (size_t i = 0; i < nevents_HF.size(); i++) std::cout << "\t" << nevents_HF[i];
+  // std::cout << std::endl;
+
+
+    for (int r = 0; r < 13; r++) {
+      for (int m = 0; m < 6; m++){
+        std::cout << r << " " << m << " ";
+        for ( int k = 0 ; k < nevents_HF.size() ; k++ ) {
+          std::cout << "\t" << nevents_HF[k][r][m];
+        }
+        std::cout << std::endl;
+      }
+      std::cout << std::endl;
+    }
 
   std::ofstream mytxtfile;
   mytxtfile.open (outdir+"counts.txt");

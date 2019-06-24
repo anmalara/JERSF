@@ -540,8 +540,8 @@ void plot_SF_systematics() {
   // DATAS.push_back("RunA");
   // DATAS.push_back("RunB");
   // DATAS.push_back("RunC");
-  // DATAS.push_back("RunD");
-  // DATAS.push_back("RunABC");
+  DATAS.push_back("RunD");
+  DATAS.push_back("RunABC");
   DATAS.push_back("RunABCD");
 
 

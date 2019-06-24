@@ -1,8 +1,0 @@
-/nfs/dust/cms/user/amalara/sframe_all/JER2017_QCD/Fall17_17Nov2017_V32/AK4CHS/PU/up/uhh2.AnalysisModuleRunner.MC.QCDHT1000to1500.root
-/nfs/dust/cms/user/amalara/sframe_all/JER2017_QCD/Fall17_17Nov2017_V32/AK4CHS/PU/up/uhh2.AnalysisModuleRunner.MC.QCDHT100to200.root
-/nfs/dust/cms/user/amalara/sframe_all/JER2017_QCD/Fall17_17Nov2017_V32/AK4CHS/PU/up/uhh2.AnalysisModuleRunner.MC.QCDHT1500to2000.root
-/nfs/dust/cms/user/amalara/sframe_all/JER2017_QCD/Fall17_17Nov2017_V32/AK4CHS/PU/up/uhh2.AnalysisModuleRunner.MC.QCDHT2000toInf.root
-/nfs/dust/cms/user/amalara/sframe_all/JER2017_QCD/Fall17_17Nov2017_V32/AK4CHS/PU/up/uhh2.AnalysisModuleRunner.MC.QCDHT200to300.root
-/nfs/dust/cms/user/amalara/sframe_all/JER2017_QCD/Fall17_17Nov2017_V32/AK4CHS/PU/up/uhh2.AnalysisModuleRunner.MC.QCDHT300to500.root
-/nfs/dust/cms/user/amalara/sframe_all/JER2017_QCD/Fall17_17Nov2017_V32/AK4CHS/PU/up/uhh2.AnalysisModuleRunner.MC.QCDHT500to700.root
-/nfs/dust/cms/user/amalara/sframe_all/JER2017_QCD/Fall17_17Nov2017_V32/AK4CHS/PU/up/uhh2.AnalysisModuleRunner.MC.QCDHT700to1000.root
