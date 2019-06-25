@@ -1,2 +1,0 @@
-/nfs/dust/cms/user/amalara/sframe_all/JER2017_MB_test_DATA/Fall17_17Nov2017_V10/AK4CHS/uhh2.AnalysisModuleRunner.DATA.DATA_RunB_MB.root
-/nfs/dust/cms/user/amalara/sframe_all/JER2017_MB_test_DATA/Fall17_17Nov2017_V10/AK4CHS/uhh2.AnalysisModuleRunner.DATA.DATA_RunC_MB.root

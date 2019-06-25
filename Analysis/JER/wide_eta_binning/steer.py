@@ -3,30 +3,24 @@ import os
 import time
 import numpy as np
 
-sys.path.append("/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94X_v2/CMSSW_9_4_1/src/UHH2/PersonalCode/")
+sys.path.append("/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/PersonalCode/")
 from parallelise import *
 
 def getLabel(sample):
-    if sample == "B":
-        LABEL_LUMI_INV_FB = "[MC 94X] Run2017B 4.77 fb^{-1}"
+    if sample == "A":
+        LABEL_LUMI_INV_FB = "[MC 102X] Run2018A 14.00 fb^{-1}"
+    elif sample == "B":
+        LABEL_LUMI_INV_FB = "[MC 102X] Run2018B 7.10 fb^{-1}"
     elif sample == "C":
-        LABEL_LUMI_INV_FB = "[MC 94X] Run2017C 9.58 fb^{-1}"
+        LABEL_LUMI_INV_FB = "[MC 102X] Run2018C 6.94 fb^{-1}"
     elif sample == "D":
-        LABEL_LUMI_INV_FB="[MC 94X] Run2017D 4.22 fb^{-1}"
-    elif sample == "E":
-        LABEL_LUMI_INV_FB="[MC 94X] Run2017E 9.26 fb^{-1}"
-    elif sample == "F":
-        LABEL_LUMI_INV_FB="[MC 94X] Run2017F 13.46 fb^{-1}"
-    elif sample == "BC":
-        LABEL_LUMI_INV_FB="[MC 94X] Run2017BC 14.35 fb^{-1}"
-    elif sample == "DE":
-        LABEL_LUMI_INV_FB="[MC 94X] Run2017DE 13.48 fb^{-1}"
-    elif sample == "DEF":
-        LABEL_LUMI_INV_FB="[MC 94X] Run2017DEF 26.95 fb^{-1}"
-    elif sample == "BCDEF":
-        LABEL_LUMI_INV_FB="[MC 94X] 2017 41.53 fb^{-1}"
+        LABEL_LUMI_INV_FB = "[MC 102X] Run2018D 31.93 fb^{-1}"
+    elif sample == "ABC":
+        LABEL_LUMI_INV_FB = "[MC 102X] Run2018 28.04 fb^{-1}"
+    elif sample == "ABCD":
+        LABEL_LUMI_INV_FB = "[MC 102X] Run2018 59.97 fb^{-1}"
     else:
-        LABEL_LUMI_INV_FB="[MC 94X] (2017)"
+        LABEL_LUMI_INV_FB = "[MC 102X] (2018)"
     return LABEL_LUMI_INV_FB
 
 
@@ -44,7 +38,7 @@ def main_function(gaustails=False, shiftForPLI="central", gaustail_num = 0.985):
     if shiftForPLI=="down":
         outdir = out_path+newJECVersion+"/"+newJetLabel+"/PLI/down/"+QCDsample+"/"+run+"/"
         shiftForPLI_num = -0.25
-    # print "outdir ", outdir
+    print "outdir ", outdir
     if os.path.isdir(outdir):
         for el in sorted(os.listdir(outdir)):
             cmd = "rm -fr %s" % (outdir+el)
@@ -57,7 +51,7 @@ def main_function(gaustails=False, shiftForPLI="central", gaustail_num = 0.985):
     a = os.system(cmd)
     cmd = "cp functions.C %s" % (outdir)
     a = os.system(cmd)
-    cmd = "cp /nfs/dust/cms/user/amalara/WorkingArea/UHH2_94X_v2/CMSSW_9_4_1/src/UHH2/PersonalCode/tdrstyle_all.C %s" % (outdir)
+    cmd = "cp /nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/PersonalCode/tdrstyle_all.C %s" % (outdir)
     a = os.system(cmd)
     os.chdir(outdir)
     os.makedirs("pdfy")
@@ -87,23 +81,40 @@ def main_function(gaustails=False, shiftForPLI="central", gaustail_num = 0.985):
 
 
 
-source_path = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94X_v2/CMSSW_9_4_1/src/UHH2/JER2017/Analysis/hist_preparation/"
-common_path = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94X_v2/CMSSW_9_4_1/src/UHH2/JER2017/Analysis/JER/wide_eta_binning/"
+source_path = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/JERSF/Analysis/hist_preparation/"
+common_path = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/JERSF/Analysis/JER/wide_eta_binning/"
 
 
-samples = ["B","C","D","E","F","BC","DE","DEF","BCDEF", "F_ECAL"]
-samples = ["BCDEF"]
+# samples = ["A"]
+# samples = ["ABC"]
+# samples = ["B"]
+# samples = ["D"]
+samples = ["A", "B", "C", "ABC"]
+#samples = ["A", "B", "C"]
+samples = ["D"]
+samples = ["A", "B", "C", "D", "ABC", "ABCD"]
+samples = ["D", "ABC", "ABCD"]
+# samples = ["ABC"]
+#samples = ["A"]
+#samples = ["ABCD", "D"]
 # QCDSamples = ["QCDPt","QCDHT"]
-QCDSamples = ["QCDPt"]
-# JetLabels=["AK4CHS"]
-JetLabels=["AK8PUPPI"]
-JECVersions=["Fall17_17Nov2017_V32"]
+#QCDSamples = ["QCD_Flat2018"]
+#QCDSamples = ["QCD_Flat", "QCD_Flat2018"]
+QCDSamples = ["QCDHT"]
+# QCDSamples = ["QCDHT", "QCD_Flat"]
+# QCDSamples = ["QCD_Flat"]
+JetLabels=["AK4CHS"]
+#JetLabels = ["AK4CHS_wPUID"]
+# JetLabels=["AK8PUPPI"]
+JECVersions=["Autumn18_V10"]
+JECVersions=["Autumn18_V13h"]
 dirs = ["", "up", "down"]
 # studies = ["StandardPtBins/", "StandardPtBins_L1Seed/"]
 studies = ["StandardPtBins/", "StandardPtBins_allweights/", "StandardPtBins_weightcut/"]
 studies = ["StandardPtBins/"]
-# systematics=["", "PU", "JEC", "alpha", "JER"]
-systematics=[""]
+systematics=["", "PU", "JEC", "alpha", "JER"]
+#systematics=[""]
+#systematics=["", "JEC"]
 
 list_processes = []
 list_logfiles = []
@@ -136,23 +147,23 @@ for extraText in [""]:
                                 # Data_file = '\\"'+source_path+"data/wide_eta_bin/file/save_v1/"+study+pattern.replace("/standard","")+run+extraText+"/histograms_data_incl_full.root"+'\\"'
                                 MC_file   = '\\"'+source_path+"MC/wide_eta_bin/file/"+study+pattern.replace("/standard","")+QCDsample+extraText+"/histograms_mc_incl_full.root"+'\\"'
                                 Data_file = '\\"'+source_path+"data/wide_eta_bin/file/"+study+pattern.replace("/standard","")+run+extraText+"/histograms_data_incl_full.root"+'\\"'
-                                # print MC_file, Data_file
+                                print MC_file, Data_file
                                 if not os.path.isfile(str(MC_file.replace("\\","").strip("\""))) or not os.path.isfile(str(Data_file.replace("\\","").strip("\""))):
                                     continue
                                 # print MC_file, Data_file
                                 main_function(gaustails=False)
-                                #if syst == "":
-                                    #main_function(gaustails=False, shiftForPLI="up")
-                                    #main_function(gaustails=False, shiftForPLI="down")
-                                    #main_function(gaustails=True, shiftForPLI="central")
-                                    #main_function(gaustails=True, shiftForPLI="central", gaustail_num = 0.95)
-                                    # for gaustail_num in np.arange(0.8,1.0,0.005):
-                                       # main_function(gaustails=True, shiftForPLI="central", gaustail_num=gaustail_num)
+                                if syst == "":
+                                   main_function(gaustails=False, shiftForPLI="up")
+                                   main_function(gaustails=False, shiftForPLI="down")
+                                   main_function(gaustails=True, shiftForPLI="central")
+                                   main_function(gaustails=True, shiftForPLI="central", gaustail_num = 0.95)
+                                    ## for gaustail_num in np.arange(0.8,1.0,0.005):
+                                    ##    main_function(gaustails=True, shiftForPLI="central", gaustail_num=gaustail_num)
 
 
 
 # for i in list_processes:
-#   print i
-
+#     print i
+#
 # print len(list_processes)
-# parallelise(list_processes, 10, list_logfiles)
+#parallelise(list_processes, 10, list_logfiles)

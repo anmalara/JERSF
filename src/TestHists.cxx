@@ -1,4 +1,4 @@
-#include "UHH2/JERSF/include/JECAnalysisHists.h"
+#include "UHH2/JERSF/include/TestHists.h"
 #include "UHH2/JERSF/include/constants.hpp"
 #include "UHH2/core/include/Event.h"
 #include "UHH2/core/include/Jet.h"
@@ -18,8 +18,7 @@
 using namespace std;
 using namespace uhh2;
 //using namespace baconhep;
-uhh2::Event::Handle<TClonesArray> h_pv;
-JECAnalysisHists::JECAnalysisHists(Context & ctx, const string & dirname): Hists(ctx, dirname){
+TestHists::TestHists(Context & ctx, const string & dirname): Hists(ctx, dirname){
   // book all histograms here
   // jets
   TH1::SetDefaultSumw2();
@@ -73,37 +72,12 @@ JECAnalysisHists::JECAnalysisHists(Context & ctx, const string & dirname): Hists
 
 
 
-  tt_gen_pthat  = ctx.get_handle<float>("gen_pthat");
-  tt_gen_weight = ctx.get_handle<float>("gen_weight");
-  tt_jet1_pt = ctx.get_handle<float>("jet1_pt");
-  tt_jet2_pt = ctx.get_handle<float>("jet2_pt");
-  tt_jet3_pt = ctx.get_handle<float>("jet3_pt");
-  tt_jet1_ptRaw = ctx.get_handle<float>("jet1_ptRaw");
-  tt_jet2_ptRaw = ctx.get_handle<float>("jet2_ptRaw");
-  tt_jet3_ptRaw = ctx.get_handle<float>("jet3_ptRaw");
-  tt_nvertices = ctx.get_handle<int>("nvertices");
-  tt_probejet_eta = ctx.get_handle<float>("probejet_eta");
-  tt_probejet_phi = ctx.get_handle<float>("probejet_phi");
-  tt_probejet_pt = ctx.get_handle<float>("probejet_pt");
-  tt_probejet_ptRaw = ctx.get_handle<float>("probejet_ptRaw");
-  tt_barreljet_eta = ctx.get_handle<float>("barreljet_eta");
-  tt_barreljet_phi = ctx.get_handle<float>("barreljet_phi");
-  tt_barreljet_pt = ctx.get_handle<float>("barreljet_pt");
-  tt_barreljet_ptRaw = ctx.get_handle<float>("barreljet_ptRaw");
-  tt_pt_ave = ctx.get_handle<float>("pt_ave");
-  tt_alpha = ctx.get_handle<float>("alpha");
-  tt_alpha_sum = ctx.get_handle<float>("alpha_sum");
-  tt_rel_r = ctx.get_handle<float>("rel_r");
-  tt_mpf_r = ctx.get_handle<float>("mpf_r");
-  tt_asymmetry = ctx.get_handle<float>("asymmetry");
-  tt_nPU = ctx.get_handle<int>("nPU");
-
 }
 
-void JECAnalysisHists::fill(const uhh2::Event & ev){
+void TestHists::fill(const uhh2::Event & ev){
   fill(ev, 0);
 }
-void JECAnalysisHists::fill(const uhh2::Event & ev, const int rand){
+void TestHists::fill(const uhh2::Event & ev, const int rand){
   // fill the histograms. Please note the comments in the header file:
   // 'hist' is used here a lot for simplicity, but it will be rather
   // slow when you have many histograms; therefore, better
@@ -114,7 +88,6 @@ void JECAnalysisHists::fill(const uhh2::Event & ev, const int rand){
   double weight = ev.weight;
   const int njets = ev.jets->size();
   hist("N_jets")->Fill(njets, weight);
-  if(!ev.isRealData)hist("pt_hat")->Fill(ev.get(tt_gen_pthat),weight);
 
   for (int i=0; i<njets; i++){
     Jet* jets = &ev.jets->at(i);
@@ -124,52 +97,27 @@ void JECAnalysisHists::fill(const uhh2::Event & ev, const int rand){
     hist("phi")->Fill(jets->phi(), weight);
 
     hist("MET")->Fill(ev.met->pt(), weight);
-    hist("nPu")->Fill(ev.get(tt_nPU), weight);
     hist("weight_histo")->Fill(weight, 1);
   }
 
-  hist("N_PV")->Fill(ev.get(tt_nvertices), weight);
 
 
-
-  Jet* jet1 = &ev.jets->at(0);
-  hist("pt_1")->Fill(jet1->pt(), weight);
-  hist("eta_1")->Fill(jet1->eta(), weight);
-  Jet* jet2 = &ev.jets->at(1);
-  hist("pt_2")->Fill(jet2->pt(), weight);
-  hist("eta_2")->Fill(jet2->eta(), weight);
-  // float ratio_pt = (ev.get(tt_pt_ave) - ev.get(tt_gen_pthat))/ev.get(tt_gen_pthat);
-  hist("pt_ave")          ->Fill(ev.get(tt_pt_ave), weight);
-  hist("pt_ave_pthat")   ->Fill(ev.get(tt_pt_ave), weight);
-  hist("pt_ave_rebin") ->Fill(ev.get(tt_pt_ave), weight);
-  hist("ptRaw_barrel")    ->Fill(ev.get(tt_barreljet_ptRaw), weight);
-  hist("ptRaw_probe")     ->Fill(ev.get(tt_probejet_ptRaw) , weight);
-  hist("pt_barrel")   ->Fill(ev.get(tt_barreljet_pt), weight);
-  hist("pt_probe")    ->Fill(ev.get(tt_probejet_pt) , weight);
-  hist("eta_barrel")  ->Fill(ev.get(tt_barreljet_eta), weight);
-  hist("eta_probe")   ->Fill(ev.get(tt_probejet_eta) , weight);
-  if(ev.get(tt_probejet_eta)>=0) hist("eta_probe_pos")->Fill(ev.get(tt_probejet_eta) , weight);
-  else hist("eta_probe_neg")->Fill(fabs(ev.get(tt_probejet_eta)) , weight);
-  hist("mpf")         ->Fill(ev.get(tt_mpf_r), weight);
-  hist("asym")        ->Fill(ev.get(tt_asymmetry), weight);
-  hist("r_rel")       ->Fill(ev.get(tt_rel_r), weight);
-
-
-  ((TH2D*)hist("mpf_vs_etaProbe"))->Fill(ev.get(tt_probejet_eta),ev.get(tt_mpf_r),weight);
-  ((TH2D*)hist("r_rel_vs_etaProbe"))->Fill(ev.get(tt_probejet_eta),ev.get(tt_rel_r),weight);
-  float pt_ave = (0.5*(ev.get(tt_jet1_pt) + ev.get(tt_jet2_pt)));
-  ((TH2D*)hist("pt_ave_vs_etaProbe"))->Fill(ev.get(tt_probejet_eta),pt_ave,weight);
-
-  double deltaPhi = std::abs(TVector2::Phi_mpi_pi(jet1->phi() - jet2->phi()));
-  ((TH2D*)hist("dPhi_vs_alpha"))->Fill(ev.get(tt_alpha),deltaPhi, weight);
-
+  if (njets>0) {
+    Jet* jet1 = &ev.jets->at(0);
+    hist("pt_1")->Fill(jet1->pt(), weight);
+    hist("eta_1")->Fill(jet1->eta(), weight);
+  }
+  if (njets>1) {
+    Jet* jet2 = &ev.jets->at(1);
+    hist("pt_2")->Fill(jet2->pt(), weight);
+    hist("eta_2")->Fill(jet2->eta(), weight);
+  }
   if (njets > 2){
     Jet* jet3 = &ev.jets->at(2);
-    hist("pt_3")->Fill(ev.get(tt_jet3_pt), weight);
+    hist("pt_3")->Fill(jet3->pt(), weight);
     hist("eta_3")->Fill(jet3->eta(), weight);
-    hist("pt_rel")->Fill(ev.get(tt_jet3_pt)/(0.5*(ev.get(tt_barreljet_pt) + ev.get(tt_probejet_pt) )),weight);
 
   }
 }
 
-JECAnalysisHists::~JECAnalysisHists(){}
+TestHists::~TestHists(){}

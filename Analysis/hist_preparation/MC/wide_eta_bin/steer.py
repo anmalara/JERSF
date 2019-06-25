@@ -2,7 +2,7 @@ import sys
 import os
 import time
 
-sys.path.append("/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94X_v2/CMSSW_9_4_1/src/UHH2/PersonalCode/")
+sys.path.append("/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/PersonalCode/")
 from parallelise import *
 
 def main_program(path="", list_path="", out_path="", JECVersions=[], JetLabels=[], systematics=[], samples=[], barrel_check = 0):
@@ -37,8 +37,8 @@ def main_program(path="", list_path="", out_path="", JECVersions=[], JetLabels=[
             run_list = list_path_+pattern+"file_QCD"+sample+".txt"
             with open(run_list, "w") as outputfile:
               for writable in sorted(os.listdir(source_path)):
-                if "15to30" in writable:
-                  continue
+                # if "15to30" in writable:
+                #   continue
                 if not os.path.isfile(source_path+writable):
                   continue
                 if sample in writable and ".root" in writable:
@@ -50,7 +50,8 @@ def main_program(path="", list_path="", out_path="", JECVersions=[], JetLabels=[
               os.makedirs(outdir)
             print "RUNNING ON ", run_list
             temp_time=time.time()
-            cmd = "cp MySelector_full_Single.C MySelector.C"
+            # cmd = "cp MySelector_full_Single.C MySelector.C"
+            cmd = "cp MySelector_full_DiJet.C MySelector.C"
             a = os.system(cmd)
             cmd = 'sed -i -e """s/jet_threshold=15/jet_threshold=%s/g" MySelector.C' % (alpha_cut)
             a = os.system(cmd)
@@ -93,14 +94,14 @@ def main_program(path="", list_path="", out_path="", JECVersions=[], JetLabels=[
             print ("time needed: "+str((time.time()-temp_time))+" s")
 
 
-common_path = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94X_v2/CMSSW_9_4_1/src/UHH2/JER2017/Analysis/hist_preparation/MC/"
+common_path = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/JERSF/Analysis/hist_preparation/MC/"
 study = "StandardPtBins"
 
 list_path   = common_path+"lists/"+study+"/"
 out_path    = common_path+"wide_eta_bin/file/"+study+"/"
 os.chdir(common_path+"wide_eta_bin/")
 
-inputdir = "JER2017"
+inputdir = "JER2018"
 
 sframe_ = "/nfs/dust/cms/user/amalara/sframe_all/"
 
@@ -108,13 +109,25 @@ list_processes = []
 list_logfiles = []
 for el in [""]:
   path = sframe_+inputdir+el+"_QCD/"
-  samples = ["Pt","HT"]
-  # samples = ["HT"]
-  JECVersions = ["Fall17_17Nov2017_V32"]
-  JetLabels = ["AK8PUPPI"]
-  # JetLabels = ["AK4CHS"]
+  # samples = ["Pt","HT"]
+  samples = ["_Flat2018"]
+  samples = ["_Flat"]
+  samples = ["HT"]
+  samples = ["HT","_Flat"]
+  # samples = ["HT","_Flat"]
+  # samples = ["HT1000to1500", "HT100to200"]
+  # samples = ["HT1500to2000", "HT300to500"]
+  # samples = ["HT2000toInf", "HT200to300"]
+  # samples = ["HT500to700", "HT50to100"]
+  # samples = ["HT700to1000"]
+
+  JECVersions = ["Autumn18_V4","Autumn18_V5","Autumn18_V7"]
+  JECVersions = ["Autumn18_V10"]
+  JECVersions = ["Autumn18_V13h"]
+  # JetLabels = ["AK8PUPPI"]
+  JetLabels = ["AK4CHS","AK4CHS_wPUID"]
   systematics = ["", "alpha","PU", "JEC", "JER"]
-  # systematics = ["JER"]
+  #systematics = [""]
   main_program(path, list_path, out_path, JECVersions, JetLabels, systematics, samples)
 
 print len(list_processes)

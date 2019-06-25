@@ -193,8 +193,8 @@ void MySelector::SlaveBegin(TTree * /*tree*/) {
   etaShift_FE_control   = EtaBins_FE_reference;
   etaShift_FE           = EtaBins_FE_reference + EtaBins_FE_control;
 
-  PtBins_Central = n_pt_bins_Si;
-  PtBins_HF = n_pt_bins_Si_HF;
+  PtBins_Central = n_pt_bins_Di;
+  PtBins_HF = n_pt_bins_Di_HF;
   AlphaBins = 6;
 
   MakeHistograms(asymmetries_SM,            asymmetries_pt_SM,            asymmetries_rho_SM,            asymmetries_pt3_SM,            alpha_spectrum_SM,            "asymm", "_SM",            EtaBins_SM,            PtBins_Central, AlphaBins, etaShift_SM,            0, 0);
@@ -229,6 +229,11 @@ Bool_t MySelector::Process(Long64_t entry) {
 
   GetEntry( entry );
   BuildEvent();
+  //
+  // if (-2.964 < jet1_eta && jet1_eta < -1.305 && -1.6 < jet1_phi && jet1_phi < -0.7) return false;
+  // if (-2.964 < jet2_eta && jet2_eta < -1.305 && -1.6 < jet2_phi && jet2_phi < -0.7) return false;
+  // if (-2.964 < jet3_eta && jet3_eta < -1.305 && -1.6 < jet3_phi && jet3_phi < -0.7) return false;
+
 
   //2017
   std::vector<double> Eta_bins_SM(            eta_bins + etaShift_SM,            eta_bins + etaShift_SM + EtaBins_SM + 1);
@@ -237,8 +242,8 @@ Bool_t MySelector::Process(Long64_t entry) {
   std::vector<double> Eta_bins_FE_control(    eta_bins + etaShift_FE_control,    eta_bins + etaShift_FE_control + EtaBins_FE_control + 1);
   std::vector<double> Eta_bins_FE(            eta_bins + etaShift_FE,            eta_bins + etaShift_FE + EtaBins_FE + 1);
 
-  std::vector<int> Pt_bins_Central(pt_bins_Si, pt_bins_Si + sizeof(pt_bins_Si)/sizeof(double));
-  std::vector<int> Pt_bins_HF(pt_bins_Si_HF, pt_bins_Si_HF + sizeof(pt_bins_Si_HF)/sizeof(double));
+  std::vector<int> Pt_bins_Central(pt_bins_Di, pt_bins_Di + sizeof(pt_bins_Di)/sizeof(double));
+  std::vector<int> Pt_bins_HF(pt_bins_Di_HF, pt_bins_Di_HF + sizeof(pt_bins_Di_HF)/sizeof(double));
   Pt_bins_Central.push_back(1500);
   Pt_bins_HF.push_back(1500);
 
@@ -260,7 +265,7 @@ Bool_t MySelector::Process(Long64_t entry) {
       }
     }
   }
-  if (pass_trigger_bl) { // FIXME this is only a temporal solution
+  if (pass_trigger_hf) { // FIXME this is only a temporal solution
     for( int i = 0; i < PtBins_HF; i++ ) {
       if (Pt_bins_HF[i] <= pt_ave && Pt_bins_HF[i + 1] >= pt_ave) {
         ftrigger[i] = true;

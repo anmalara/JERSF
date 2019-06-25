@@ -5,11 +5,11 @@
 #include <unistd.h>
 #include "TROOT.h"
 #include "TMath.h"
-#include "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94X_v2/CMSSW_9_4_1/src/UHH2/JER2017/include/constants.hpp"
-#include "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94X_v2/CMSSW_9_4_1/src/UHH2/PersonalCode/tdrstyle_all.C"
+#include "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/JERSF/include/constants.hpp"
+#include "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/PersonalCode/tdrstyle_all.C"
 
 
-int shift_SM = 5;
+int shift_SM = 8;
 int shift_FE = 3;
 int shift_barrel = 1;
 
@@ -42,13 +42,13 @@ void LoadSF(std::vector<std::vector<std::vector<double>>> &SFs, TString filename
   std::string line;
   getline(file, line);
 
-  if (gSystem->AccessPathName(filename)) { std::cout << filename << '\n'; return false;}
+  if (gSystem->AccessPathName(filename)) { std::cout << "check: " << filename << '\n'; return false;}
 
   while (!file.eof()) {
     getline(file, line);
     std::istringstream iss(line);
     std::vector<std::string> results(std::istream_iterator<std::string>{iss}, std::istream_iterator<std::string>());
-    for (unsigned int i = 0; i < results.size(); i++) { SF.at(i).push_back(std::stod(results[i]));}
+    for (unsigned int i = 0; i < results.size(); i++) { SF.at(i).push_back(std::stold(results[i]));}
   }
 
   SFs.push_back(SF);
@@ -58,6 +58,7 @@ void LoadSF(std::vector<std::vector<std::vector<double>>> &SFs, TString filename
 
 void Load_all_SF(std::vector<std::vector<std::vector<double>>> & SFs, TString path, TString central_SF_txt, std::vector<TString> systematics_name) {
   TString filename = path+central_SF_txt;
+  //std::cout << filename << '\n';
   LoadSF(SFs, filename);
   for (unsigned int i = 0; i < systematics_name.size(); i++) {
     TString temp = central_SF_txt.Copy();
@@ -67,6 +68,8 @@ void Load_all_SF(std::vector<std::vector<std::vector<double>>> & SFs, TString pa
     else if (sys.Contains("_")) filename = path+temp.ReplaceAll("standard",sys(0,sys.First("_"))+"/"+sys(sys.First("_")+1,sys.Length()));
     else if (sys.Contains("pTdep")) filename = path+central_SF_txt;
     else filename = path+temp.ReplaceAll("standard",sys);
+    //std::cout << filename << '\n';
+    std::cout << filename  << " " << sys << '\n';
     LoadSF(SFs, filename);
   }
 }
@@ -143,13 +146,13 @@ void Plot_Uncertainties(TString name_method, std::vector<double> eta_bins, std::
   tdrHeader(leg,"Uncertainties", 12);
   TGraphErrors* gr_stat = new TGraphErrors(eta_bins.size()-1, &(eta_bin_center[0]), &SF[0], &(eta_bin_error[0]), &stat[0]);
   TGraphErrors* gr_syst = new TGraphErrors(eta_bins.size()-1, &(eta_bin_center[0]), &SF[0], &(eta_bin_error[0]), &systematics_all[0]);
-  TGraphErrors* gr_tot = new TGraphErrors(eta_bins.size()-1, &(eta_bin_center[0]), &SF[0], &(eta_bin_error[0]), &total_error[0]);
+  TGraphErrors* gr_tot  = new TGraphErrors(eta_bins.size()-1, &(eta_bin_center[0]), &SF[0], &(eta_bin_error[0]), &total_error[0]);
   leg->AddEntry(gr_stat, "stat","f");
   leg->AddEntry(gr_syst, "syst","f");
   leg->AddEntry(gr_tot, "stat+syst","f");
-  tdrDraw(gr_tot, "P5", kFullDotLarge, kGreen-2, kSolid, kGreen-2, 3005, kGreen-2);
-  tdrDraw(gr_syst, "P5", kFullDotLarge, kBlue-4, kSolid, kBlue-4, 3005, kBlue-4);
-  tdrDraw(gr_stat, "P5", kFullDotLarge, kRed+1, kSolid, kRed+1, 3005, kRed+1);
+  tdrDraw(gr_tot,  "P5", kFullDotLarge, kGreen-2, kSolid, kGreen-2, 3005, kGreen-2);
+  tdrDraw(gr_syst, "P5", kFullDotLarge, kBlue-4,  kSolid, kBlue-4,  3005, kBlue-4);
+  tdrDraw(gr_stat, "P5", kFullDotLarge, kRed+1,   kSolid, kRed+1,   3005, kRed+1);
   leg->Draw("same");
 
   canv_SF->Print(path+"SF_"+name_method+".pdf","pdf");
@@ -196,30 +199,36 @@ void Plot_Uncertainties(TString name_method, std::vector<double> eta_bins, std::
 
 
 // SFs == (n_systematics, columns in files, eta_bins)
-void plot_SF_systematics_(TString path = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/JER2017/Analysis/JER/wide_eta_binning/file/Single/Fall17_17Nov2017_V10/AK4CHS/", TString QCD_DATA = "QCDPt/RunBCDEF/") {
+void plot_SF_systematics_(TString path = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_10_2_10/src/UHH2/JERSF/Analysis/JER/wide_eta_binning/file/Single/Fall17_17Nov2017_V10/AK4CHS/", TString QCD_DATA = "QCDPt/RunBCDEF/") {
   gPrintViaErrorHandler = kTRUE;
   gErrorIgnoreLevel = kFatal;
 
   extraText  = "Preliminary";  // default extra text is "Preliminary"
-  lumi_13TeV = "[MC 94X] Run2017BCDEF 41.53 fb^{-1}";
+  lumi_13TeV = "[MC 102X] Run2018 41.53 fb^{-1}";
   lumi_sqrtS = "13 TeV";       // used with iPeriod = 0, e.g. for simulation-only plots (default is an empty string)
 
-  if (QCD_DATA.Contains("RunB"))     lumi_13TeV = "[MC 94X] Run2017B 4.77 fb^{-1}";
-  if (QCD_DATA.Contains("RunC"))     lumi_13TeV = "[MC 94X] Run2017C 9.58 fb^{-1}";
-  if (QCD_DATA.Contains("RunD"))     lumi_13TeV = "[MC 94X] Run2017D 4.2 fb^{-1}";
-  if (QCD_DATA.Contains("RunE"))     lumi_13TeV = "[MC 94X] Run2017E 9.26 fb^{-1}";
-  if (QCD_DATA.Contains("RunF"))     lumi_13TeV = "[MC 94X] Run2017F 13.46 fb^{-1}";
-  if (QCD_DATA.Contains("RunBC"))    lumi_13TeV = "[MC 94X] Run2017BC 14.35 fb^{-1}";
-  if (QCD_DATA.Contains("RunDE"))    lumi_13TeV = "[MC 94X] Run2017DE 13.48 fb^{-1}";
-  if (QCD_DATA.Contains("RunDEF"))   lumi_13TeV = "[MC 94X] Run2017DEF 26.95 fb^{-1}";
-  if (QCD_DATA.Contains("RunBCDEF")) lumi_13TeV = "[MC 94X] Run2017BCDEF 41.53 fb^{-1}";
+  if (QCD_DATA.Contains("RunA"))     lumi_13TeV = "[MC 102X] Run2018A     14.00 fb^{-1}";
+  if (QCD_DATA.Contains("RunB"))     lumi_13TeV = "[MC 102X] Run2018B      7.10 fb^{-1}";
+  if (QCD_DATA.Contains("RunC"))     lumi_13TeV = "[MC 102X] Run2018C      6.94 fb^{-1}";
+  if (QCD_DATA.Contains("RunD"))     lumi_13TeV = "[MC 102X] Run2018D     31.93 fb^{-1}";
+  if (QCD_DATA.Contains("RunAB"))    lumi_13TeV = "[MC 102X] Run2018AB    14.10 fb^{-1}";
+  if (QCD_DATA.Contains("RunABC"))   lumi_13TeV = "[MC 102X] Run2018ABC   28.04 fb^{-1}";
+  if (QCD_DATA.Contains("RunABCD"))  lumi_13TeV = "[MC 102X] Run2018ABCD  59.97 fb^{-1}";
 
-  lumi_13TeV = "[MC Pythia8] RunII";
+  //lumi_13TeV = "[MC Pythia8] RunII";
 
 
-  std::vector<double> eta_bins_all(eta_bins, eta_bins + sizeof(eta_bins)/sizeof(double));
-  std::vector<double> eta_bins_SM(eta_bins, eta_bins + sizeof(eta_bins)/sizeof(double) - shift_SM);
-  std::vector<double> eta_bins_FE(eta_bins + shift_barrel, eta_bins + sizeof(eta_bins)/sizeof(double));
+  // std::vector<double> eta_bins_all(eta_bins,                eta_bins + sizeof(eta_bins)/sizeof(double));
+  // std::vector<double> eta_bins_SM(eta_bins,                 eta_bins + sizeof(eta_bins)/sizeof(double) - shift_SM);
+  // std::vector<double> eta_bins_FE(eta_bins + shift_barrel,  eta_bins + sizeof(eta_bins)/sizeof(double));
+
+  std::vector<double> eta_bins_all(eta_bins2,                eta_bins2 + sizeof(eta_bins2)/sizeof(double));
+  std::vector<double> eta_bins_SM(eta_bins2,                 eta_bins2 + sizeof(eta_bins2)/sizeof(double) - shift_SM);
+  std::vector<double> eta_bins_FE(eta_bins2 + shift_barrel,  eta_bins2 + sizeof(eta_bins2)/sizeof(double));
+
+  std::cout << "eta_bins_all " << eta_bins_all.size() << std::endl; for (size_t i = 0; i < eta_bins_all.size(); i++) std::cout << eta_bins_all[i] << " "; std::cout << '\n';
+  std::cout << "eta_bins_SM " << eta_bins_SM.size() << std::endl; for (size_t i = 0; i < eta_bins_SM.size(); i++) std::cout << eta_bins_SM[i] << " "; std::cout << '\n';
+  std::cout << "eta_bins_FE " << eta_bins_FE.size() << std::endl; for (size_t i = 0; i < eta_bins_FE.size(); i++) std::cout << eta_bins_FE[i] << " "; std::cout << '\n';
 
   int method = 4; //2-uncorr 4-corr
   int pt_dep_method = 4; //4-min value 5-max value
@@ -249,8 +258,17 @@ void plot_SF_systematics_(TString path = "/nfs/dust/cms/user/amalara/WorkingArea
 
   Load_all_SF(SFs_SM, path, central_SM, systematics_name);
 
+  // for (size_t i = 0; i < SFs_SM.size(); i++) {
+  //   for (size_t j = 0; j < SFs_SM[i].size(); j++) {
+  //     for (size_t k = 0; k < SFs_SM[i][j].size(); k++) {
+  //       std::cout << SFs_SM.size() << "\t" << SFs_SM[i].size() << "\t" << SFs_SM[i][j].size() << "\t" << i << " " << j << " " << k << "\t" << SFs_SM[i][j][k] << '\n';
+  //     }
+  //   }
+  // }
+
   if (SFs_SM.size() != systematics_name.size()+1) {
     std::cout << "ERROR SM" << '\n';
+    std::cout << SFs_SM.size() << '\n';
     return false;
   }
 
@@ -270,6 +288,15 @@ void plot_SF_systematics_(TString path = "/nfs/dust/cms/user/amalara/WorkingArea
     std::cout << "ERROR FE" << '\n';
     return false;
   }
+
+  //
+  // for (size_t i = 0; i < SFs_FE.size(); i++) {
+  //   for (size_t j = 0; j < SFs_FE[i].size(); j++) {
+  //     for (size_t k = 0; k < SFs_FE[i][j].size(); k++) {
+  //       std::cout << SFs_FE.size() << "\t" << SFs_FE[i].size() << "\t" << SFs_FE[i][j].size() << "\t" << i << " " << j << " " << k << "\t" << SFs_FE[i][j][k] << '\n';
+  //     }
+  //   }
+  // }
 
   std::vector <double> SF_FE, stat_FE, eta_bin_FE_center, eta_bin_FE_error;
   std::vector <std::vector <double> > systematics_FE;
@@ -295,27 +322,27 @@ void plot_SF_systematics_(TString path = "/nfs/dust/cms/user/amalara/WorkingArea
 
   for (unsigned int i = 0; i < eta_bins_all.size()-1; i++) {
     if (i < shift_FE){
-      eta_bin_all_center.push_back(eta_bin_SM_center.at(i));
-      eta_bin_all_error.push_back(eta_bin_SM_error.at(i));
-      SF_final.push_back(SF_SM.at(i));
-      SF_final_error.push_back(total_error_SM.at(i));
-      SF_final_error_stat.push_back(stat_SM.at(i));
-      SF_final_error_syst.push_back(systematics_SM_all.at(i));
+      /***/eta_bin_all_center.push_back(eta_bin_SM_center.at(i));
+      /****/eta_bin_all_error.push_back(eta_bin_SM_error.at(i));
+      /*************/SF_final.push_back(SF_SM.at(i));
+      /*******/SF_final_error.push_back(total_error_SM.at(i));
+      /**/SF_final_error_stat.push_back(stat_SM.at(i));
+      /**/SF_final_error_syst.push_back(systematics_SM_all.at(i));
     } else if (i < eta_bins_all.size() - 1 - shift_SM){
-      eta_bin_all_center.push_back(eta_bin_SM_center.at(i));
-      eta_bin_all_error.push_back(eta_bin_SM_error.at(i));
-      SF_final.push_back((SF_SM.at(i)+SF_FE.at(i-shift_FE+shift_barrel+1))/2);
-      // SF_final_error.push_back(TMath::Sqrt(TMath::Power((stat_SM.at(i)+stat_FE.at(i-shift_FE+shift_barrel+1))/2, 2)+TMath::Power((systematics_SM_all.at(i)+systematics_FE_all.at(i-shift_FE+shift_barrel+1))/2, 2)+TMath::Power((SF_SM.at(i)-SF_FE.at(i-shift_FE+shift_barrel+1))/2, 2)));
-      SF_final_error.push_back(TMath::Sqrt(stat_SM.at(i)*stat_SM.at(i)+stat_FE.at(i-shift_FE+shift_barrel+1)*stat_FE.at(i-shift_FE+shift_barrel+1) +systematics_SM_all.at(i)*systematics_SM_all.at(i)+systematics_FE_all.at(i-shift_FE+shift_barrel+1)*systematics_FE_all.at(i-shift_FE+shift_barrel+1)+TMath::Power((SF_SM.at(i)-SF_FE.at(i-shift_FE+shift_barrel+1))/2, 2)));
-      SF_final_error_stat.push_back(TMath::Sqrt(stat_SM.at(i)*stat_SM.at(i)+stat_FE.at(i-shift_FE+shift_barrel+1)*stat_FE.at(i-shift_FE+shift_barrel+1) ));
-      SF_final_error_syst.push_back(TMath::Sqrt(systematics_SM_all.at(i)*systematics_SM_all.at(i)+systematics_FE_all.at(i-shift_FE+shift_barrel+1)*systematics_FE_all.at(i-shift_FE+shift_barrel+1)+TMath::Power((SF_SM.at(i)-SF_FE.at(i-shift_FE+shift_barrel+1))/2, 2)));
+      /***/eta_bin_all_center.push_back(eta_bin_SM_center.at(i));
+      /****/eta_bin_all_error.push_back(eta_bin_SM_error.at(i));
+      /*************/SF_final.push_back((SF_SM.at(i)+SF_FE.at(i-shift_FE+shift_barrel+1))/2);
+      // /****/SF_final_error.push_back(TMath::Sqrt(TMath::Power((stat_SM.at(i)+stat_FE.at(i-shift_FE+shift_barrel+1))/2, 2)+TMath::Power((systematics_SM_all.at(i)+systematics_FE_all.at(i-shift_FE+shift_barrel+1))/2, 2)+TMath::Power((SF_SM.at(i)-SF_FE.at(i-shift_FE+shift_barrel+1))/2, 2)));
+      /*******/SF_final_error.push_back(TMath::Sqrt(stat_SM.at(i)*stat_SM.at(i)+stat_FE.at(i-shift_FE+shift_barrel+1)*stat_FE.at(i-shift_FE+shift_barrel+1) +systematics_SM_all.at(i)*systematics_SM_all.at(i)+systematics_FE_all.at(i-shift_FE+shift_barrel+1)*systematics_FE_all.at(i-shift_FE+shift_barrel+1)+TMath::Power((SF_SM.at(i)-SF_FE.at(i-shift_FE+shift_barrel+1))/2, 2)));
+      /**/SF_final_error_stat.push_back(TMath::Sqrt(stat_SM.at(i)*stat_SM.at(i)+stat_FE.at(i-shift_FE+shift_barrel+1)*stat_FE.at(i-shift_FE+shift_barrel+1) ));
+      /**/SF_final_error_syst.push_back(TMath::Sqrt(systematics_SM_all.at(i)*systematics_SM_all.at(i)+systematics_FE_all.at(i-shift_FE+shift_barrel+1)*systematics_FE_all.at(i-shift_FE+shift_barrel+1)+TMath::Power((SF_SM.at(i)-SF_FE.at(i-shift_FE+shift_barrel+1))/2, 2)));
     } else {
-      eta_bin_all_center.push_back(eta_bin_FE_center.at(i-1));
-      eta_bin_all_error.push_back(eta_bin_FE_error.at(i-1));
-      SF_final.push_back(SF_FE.at(i-shift_barrel));
-      SF_final_error.push_back(total_error_FE.at(i-shift_barrel));
-      SF_final_error_stat.push_back(stat_FE.at(i-shift_barrel));
-      SF_final_error_syst.push_back(systematics_FE_all.at(i-shift_barrel));
+      /***/eta_bin_all_center.push_back(eta_bin_FE_center.at(i-1));
+      /****/eta_bin_all_error.push_back(eta_bin_FE_error.at(i-1));
+      /*************/SF_final.push_back(SF_FE.at(i-shift_barrel));
+      /*******/SF_final_error.push_back(total_error_FE.at(i-shift_barrel));
+      /**/SF_final_error_stat.push_back(stat_FE.at(i-shift_barrel));
+      /**/SF_final_error_syst.push_back(systematics_FE_all.at(i-shift_barrel));
     }
   }
 
@@ -323,7 +350,7 @@ void plot_SF_systematics_(TString path = "/nfs/dust/cms/user/amalara/WorkingArea
   TCanvas* canv_SF_final = tdrCanvas("SF_final", eta_bins_all.at(0)-0.1, eta_bins_all.at(eta_bins_all.size()-1)+0.5, 0., 3.0, "#eta", "JER SF");
   canv_SF_final->SetTickx(0);
   canv_SF_final->SetTicky(0);
-  TLegend *leg_final = tdrLeg(0.65,0.67,0.80,0.92, 0.040, 42, kBlack);
+  TLegend *leg_final = tdrLeg(0.64,0.67,0.79,0.92, 0.040, 42, kBlack);
   tdrHeader(leg_final,"", 12);
 
   double etaSummer16_25nsV1[] = {0, 0.522, 0.783, 1.131, 1.305, 1.740, 1.930, 2.043, 2.322, 2.5, 2.853, 2.964, 3.139, 5.191};
@@ -332,11 +359,53 @@ void plot_SF_systematics_(TString path = "/nfs/dust/cms/user/amalara/WorkingArea
   // double jerSummer16_25nsV1[13][2] = {{1.17716, 0.04438},{1.21224, 0.04054},{1.14975, 0.082},{1.1395, 0.06360},{1.15978, 0.1112},{1.20805, 0.089},{1.39324, 0.302},{1.32341, 0.183},{1.58005, 0.598},{2.26888, 0.261},{2.65, 0.337},{1.27321, 0.103},{1.20094, 0.105}};
 
   // double etaSpring16_25nsV10[] = {0, 0.5, 0.8, 1.11, 1.3, 1.7, 1.9, 2.1, 2.3, 2.5, 2.8, 3.0, 3.2, 5.0};
-  double etaSpring16_25nsV10[] = {0, 0.522, 0.783, 1.131, 1.305, 1.740, 1.930, 2.043, 2.322, 2.5, 2.853, 2.964, 3.139, 5.191};
-  double jerSpring16_25nsV10[13][2] = {{1.109,0.008},{1.138,0.013},{1.114,0.013},{1.123,0.024},{1.084,0.011},{1.082,0.035},{1.140,0.047},{1.067,0.053},{1.177,0.041},{1.364,0.039},{1.857,0.071},{1.328,0.022},{1.16,0.029}};
+  // double etaSpring16_25nsV10[] = {0, 0.522, 0.783, 1.131, 1.305, 1.740, 1.930, 2.043, 2.322, 2.5, 2.853, 2.964, 3.139, 5.191};
+  // double jerSpring16_25nsV10[13][2] = {{1.109,0.008},{1.138,0.013},{1.114,0.013},{1.123,0.024},{1.084,0.011},{1.082,0.035},{1.140,0.047},{1.067,0.053},{1.177,0.041},{1.364,0.039},{1.857,0.071},{1.328,0.022},{1.16,0.029}};
+
+  double etaFall17_V3[] = {0, 0.522, 0.783, 1.131, 1.305, 1.740, 1.930, 2.043, 2.322, 2.5, 2.853, 2.964, 3.139, 5.191};
+  double jerFall17_V3[13][2] = {{1.1432,0.0222},{1.1815,0.0484},{1.0989,0.0456},{1.1137,0.1397},{1.1307,0.1470},{1.1600,0.0976},{1.2393,0.1909},{1.2604,0.1501},{1.4085,0.2020},{1.9909,0.5684},{2.2923,0.3743},{1.2696,0.1089},{1.1542,0.1524}};
+
+  double etaAutumn18_V1[] = {0, 0.522, 0.783, 1.131, 1.305, 1.740, 1.930, 2.043, 2.322, 2.5, 2.853, 2.964, 3.139, 5.191};
+  // RUNABCD
+  //double jerAutumn18_V1[13][2] = {{1.15,0.043},{1.134,0.08},{1.102,0.052},{1.134,0.112},{1.104,0.211},{1.149,0.159},{1.148,0.209},{1.114,0.191},{1.347,0.274},{2.137,0.524},{1.65,0.941},{1.225,0.194},{1.082,0.198}};
+  // double jerAutumn18_V1[13][2] = {{1.15,0.008},{1.134,0.018},{1.102,0.014},{1.134,0.033},{1.104,0.019},{1.149,0.02},{1.148,0.041},{1.114,0.025},{1.347,0.053},{2.137,0.102},{1.65,0.18},{1.225,0.054},{1.082,0.057}}; // stat
+  // double jerAutumn18_V1[13][2] = {{1.15,0.042},{1.134,0.078},{1.102,0.05},{1.134,0.107},{1.104,0.21},{1.149,0.157},{1.148,0.205},{1.114,0.19},{1.347,0.269},{2.137,0.514},{1.65,0.923},{1.225,0.187},{1.082,0.189}}; // sys
+  // RUND
+  double jerAutumn18_V1[13][2] = {{1.1401,0.0323},{1.1370,0.0969},{1.1109,0.0676},{1.1585,0.1111},{1.0997,0.2897},{1.1428,0.2264},{1.1157,0.2216},{1.0903,0.2131},{1.4930,0.3106},{2.4518,0.5757},{1.8935,0.9319},{1.1826,0.2058},{1.0439,0.2040}};
+  // double jerAutumn18_V1[13][2] = {{1.1401,0.0082},{1.1370,0.0183},{1.1109,0.0142},{1.1585,0.0344},{1.0997,0.0193},{1.1428,0.0210},{1.1157,0.0416},{1.0903,0.0257},{1.4930,0.0579},{2.4518,0.1171},{1.8935,0.2069},{1.1826,0.0518},{1.0439,0.0551}}; // stat
+  // double jerAutumn18_V1[13][2] = {{1.1401,0.0313},{1.1370,0.0952},{1.1109,0.0660},{1.1585,0.1056},{1.0997,0.2890},{1.1428,0.2254},{1.1157,0.2177},{1.0903,0.2115},{1.4930,0.3051},{2.4518,0.5636},{1.8935,0.9087},{1.1826,0.1992},{1.0439,0.1964}}; // sys
+  // RUNABC
+  //double jerAutumn18_V1[13][2] = {{1.1609,0.0552},{1.1309,0.0610},{1.0918,0.0352},{1.1064,0.1131},{1.1097,0.1206},{1.1554,0.0820},{1.1843,0.1951},{1.1401,0.1669},{1.1818,0.2327},{1.7778,0.4659},{1.3718,0.9507},{1.2725,0.1810},{1.1255,0.1901}};
+  // double jerAutumn18_V1[13][2] = {{1.1609,0.0077},{1.1309,0.0170},{1.0918,0.0129},{1.1064,0.0307},{1.1097,0.0177},{1.1554,0.0196},{1.1843,0.0412},{1.1401,0.0239},{1.1818,0.0467},{1.7778,0.0842},{1.3718,0.1489},{1.2725,0.0556},{1.1255,0.0589}}; // stat
+  // double jerAutumn18_V1[13][2] = {{1.1609,0.0547},{1.1309,0.0586},{1.0918,0.0327},{1.1064,0.1089},{1.1097,0.1193},{1.1554,0.0797},{1.1843,0.1907},{1.1401,0.1652},{1.1818,0.2280},{1.7778,0.4582},{1.3718,0.9390},{1.2725,0.1723},{1.1255,0.1807}}; // sys
+
+
+  double etaAutumn18_V3[] = {0, 0.522, 0.783, 1.131, 1.305, 1.740, 1.930, 2.043, 2.322, 2.5, 2.853, 2.964, 3.139, 5.191};
+  double jerAutumn18_V3[13][2] = {{1.1813,0.0639},{1.1136,0.0978},{1.1048,0.0328},{1.0741,0.0526},{1.0923,0.0953},{1.0779,0.0593},{1.0893,0.1941},{1.0755,0.1270},{1.4188,0.2210},{1.9206,0.4811},{2.0118,0.2916},{1.1904,0.1223},{1.0846,0.2697}};
+  // double jerAutumn18_V3[13][2] = {{1.1813,0.0031},{1.1136,0.0068},{1.1048,0.0055},{1.0741,0.0133},{1.0923,0.0075},{1.0779,0.0081},{1.0893,0.0130},{1.0755,0.0101},{1.4188,0.0292},{1.9206,0.0214},{2.0118,0.0369},{1.1904,0.0122},{1.0846,0.0137}}; // stat
+  // double jerAutumn18_V3[13][2] = {{1.1813,0.0638},{1.1136,0.0976},{1.1048,0.0324},{1.0741,0.0509},{1.0923,0.0950},{1.0779,0.0587},{1.0893,0.1936},{1.0755,0.1266},{1.4188,0.2191},{1.9206,0.4807},{2.0118,0.2893},{1.1904,0.1217},{1.0846,0.2694}}; // syst
+
+
+  double etaAutumn18_V4[] = {0, 0.522, 0.783, 1.131, 1.305, 1.740, 1.930, 2.043, 2.322, 2.5, 2.853, 2.964, 3.139, 5.191};
+  double jerAutumn18_V4[13][2] = {{1.1588,0.0392},{1.1504,0.0728},{1.1253,0.0343},{1.1217,0.0826},{1.1069,0.0890},{1.0916,0.0430},{1.0977,0.0951},{1.1177,0.0721},{1.4494,0.1502},{2.3588,0.6411},{2.2520,0.3542},{1.1759,0.0540},{1.0777,0.0542}}; // RunD
+  //double jerAutumn18_V4[13][2] = {{1.1677,0.0477},{1.1475,0.0520},{1.1029,0.0310},{1.0781,0.0950},{1.1006,0.0846},{1.1019,0.0386},{1.0459,0.1578},{1.1612,0.0646},{1.2299,0.1087},{1.6736,0.3792},{1.7292,0.2007},{1.2257,0.0452},{1.0733,0.0676}}; // RunABC
+  //double jerAutumn18_V4[13][2] = {{1.1545,0.0308},{1.1481,0.0515},{1.0998,0.0386},{1.0929,0.0856},{1.1093,0.0718},{1.1005,0.0515},{1.0603,0.1301},{1.1287,0.0531},{1.3397,0.1147},{2.0325,0.5361},{2.0567,0.3060},{1.1868,0.0376},{1.0922,0.0489}}; // RunABCD
+
+  double etaAutumn18_V4_wPUId[] = {0, 0.522, 0.783, 1.131, 1.305, 1.740, 1.930, 2.043, 2.322, 2.5, 2.853, 2.964, 3.139, 5.191};
+  double jerAutumn18_V4_wPUId[13][2] = {{1.1560,0.0161},{1.1588,0.0781},{1.1399,0.0870},{1.1223,0.0477},{1.1549,0.0776},{1.1023,0.0768},{1.1543,0.0952},{1.1626,0.0710},{1.3146,0.1141},{1.9192,0.3146},{2.0417,0.3043},{1.2588,0.0401},{1.1573,0.1365}}; // RunABCD
+  double jerAutumn18_V4_noPUId[13][2] = {{1.1545,0.0308},{1.1481,0.0515},{1.0998,0.0386},{1.0929,0.0856},{1.1093,0.0718},{1.1005,0.0515},{1.0603,0.1301},{1.1287,0.0531},{1.3397,0.1147},{2.0325,0.5361},{2.0567,0.3060},{1.1868,0.0376},{1.0922,0.0489}}; // RunABCD
+
+
 
   std::vector<double> etaSummer16_25nsV1_center, etaSummer16_25nsV1_err, SFSummer16_25nsV1, SFSummer16_25nsV1_Err;
-  std::vector<double> etaSpring16_25nsV10_center, etaSpring16_25nsV10_err, SFSpring16_25nsV10, SFSpring16_25nsV10_Err;
+  // std::vector<double> etaSpring16_25nsV10_center, etaSpring16_25nsV10_err, SFSpring16_25nsV10, SFSpring16_25nsV10_Err;
+  std::vector<double> etaFall17_V3_center, etaFall17_V3_err, SFFall17_V3, SFFall17_V3_Err;
+  std::vector<double> etaAutumn18_V1_center, etaAutumn18_V1_err, SFAutumn18_V1, SFAutumn18_V1_Err;
+  std::vector<double> etaAutumn18_V3_center, etaAutumn18_V3_err, SFAutumn18_V3, SFAutumn18_V3_Err;
+  std::vector<double> etaAutumn18_V4_center, etaAutumn18_V4_err, SFAutumn18_V4, SFAutumn18_V4_Err;
+  std::vector<double> etaAutumn18_V4_wPUId_center, etaAutumn18_V4_wPUId_err, SFAutumn18_V4_wPUId, SFAutumn18_V4_wPUId_Err;
+  std::vector<double> etaAutumn18_V4_noPUId_center, etaAutumn18_V4_noPUId_err, SFAutumn18_V4_noPUId, SFAutumn18_V4_noPUId_Err;
+
 
   for (unsigned int i = 0; i < 13; i++) {
     etaSummer16_25nsV1_center.push_back((etaSummer16_25nsV1[i+1]+etaSummer16_25nsV1[i])/2);
@@ -344,23 +413,78 @@ void plot_SF_systematics_(TString path = "/nfs/dust/cms/user/amalara/WorkingArea
     SFSummer16_25nsV1.push_back(jerSummer16_25nsV1[i][0]);
     SFSummer16_25nsV1_Err.push_back(jerSummer16_25nsV1[i][1]);
 
-    etaSpring16_25nsV10_center.push_back((etaSpring16_25nsV10[i+1]+etaSpring16_25nsV10[i])/2);
-    etaSpring16_25nsV10_err.push_back((etaSpring16_25nsV10[i+1]-etaSpring16_25nsV10[i])/2);
-    SFSpring16_25nsV10.push_back(jerSpring16_25nsV10[i][0]);
-    SFSpring16_25nsV10_Err.push_back(jerSpring16_25nsV10[i][1]);
+    // etaSpring16_25nsV10_center.push_back((etaSpring16_25nsV10[i+1]+etaSpring16_25nsV10[i])/2);
+    // etaSpring16_25nsV10_err.push_back((etaSpring16_25nsV10[i+1]-etaSpring16_25nsV10[i])/2);
+    // SFSpring16_25nsV10.push_back(jerSpring16_25nsV10[i][0]);
+    // SFSpring16_25nsV10_Err.push_back(jerSpring16_25nsV10[i][1]);
+
+    /****/etaFall17_V3_center.push_back((etaFall17_V3[i+1]+etaFall17_V3[i])/2);
+    /*******/etaFall17_V3_err.push_back((etaFall17_V3[i+1]-etaFall17_V3[i])/2);
+    /************/SFFall17_V3.push_back(jerFall17_V3[i][0]);
+    /********/SFFall17_V3_Err.push_back(jerFall17_V3[i][1]);
+
+
+    /**/etaAutumn18_V1_center.push_back((etaAutumn18_V1[i+1]+etaAutumn18_V1[i])/2);
+    /*****/etaAutumn18_V1_err.push_back((etaAutumn18_V1[i+1]-etaAutumn18_V1[i])/2);
+    /**********/SFAutumn18_V1.push_back(jerAutumn18_V1[i][0]);
+    /******/SFAutumn18_V1_Err.push_back(jerAutumn18_V1[i][1]);
+
+    /**/etaAutumn18_V3_center.push_back((etaAutumn18_V3[i+1]+etaAutumn18_V3[i])/2);
+    /*****/etaAutumn18_V3_err.push_back((etaAutumn18_V3[i+1]-etaAutumn18_V3[i])/2);
+    /**********/SFAutumn18_V3.push_back(jerAutumn18_V3[i][0]);
+    /******/SFAutumn18_V3_Err.push_back(jerAutumn18_V3[i][1]);
+
+
+    /**/etaAutumn18_V4_center.push_back((etaAutumn18_V4[i+1]+etaAutumn18_V4[i])/2);
+    /*****/etaAutumn18_V4_err.push_back((etaAutumn18_V4[i+1]-etaAutumn18_V4[i])/2);
+    /**********/SFAutumn18_V4.push_back(jerAutumn18_V4[i][0]);
+    /******/SFAutumn18_V4_Err.push_back(jerAutumn18_V4[i][1]);
+
+
+    /**/etaAutumn18_V4_wPUId_center.push_back((etaAutumn18_V4[i+1]+etaAutumn18_V4[i])/2);
+    /*****/etaAutumn18_V4_wPUId_err.push_back((etaAutumn18_V4[i+1]-etaAutumn18_V4[i])/2);
+    /**********/SFAutumn18_V4_wPUId.push_back(jerAutumn18_V4_wPUId[i][0]);
+    /******/SFAutumn18_V4_wPUId_Err.push_back(jerAutumn18_V4_wPUId[i][1]);
+
+
+
+    /**/etaAutumn18_V4_noPUId_center.push_back((etaAutumn18_V4[i+1]+etaAutumn18_V4[i])/2);
+    /*****/etaAutumn18_V4_noPUId_err.push_back((etaAutumn18_V4[i+1]-etaAutumn18_V4[i])/2);
+    /**********/SFAutumn18_V4_noPUId.push_back(jerAutumn18_V4_noPUId[i][0]);
+    /******/SFAutumn18_V4_noPUId_Err.push_back(jerAutumn18_V4_noPUId[i][1]);
+
+
   }
 
 
-  TGraphErrors* gr_SFSummer16_25nsV1 = new TGraphErrors(SFSummer16_25nsV1.size(), &(etaSummer16_25nsV1_center[0]), &SFSummer16_25nsV1[0], &(etaSummer16_25nsV1_err[0]), &SFSummer16_25nsV1_Err[0]);
-  TGraphErrors* gr_SFSpring16_25nsV10 = new TGraphErrors(SFSpring16_25nsV10.size(), &(etaSpring16_25nsV10_center[0]), &SFSpring16_25nsV10[0], &(etaSpring16_25nsV10_err[0]), &SFSpring16_25nsV10_Err[0]);
-  TGraphErrors* gr_final = new TGraphErrors(SF_final.size(), &(eta_bin_all_center[0]), &SF_final[0], &(eta_bin_all_error[0]), &SF_final_error[0]);
-  // tdrDraw(gr_SFSummer16_25nsV1, "P5", kFullDotLarge, kCyan+2, kSolid, kCyan+2, 3001, kCyan+2);
-  tdrDraw(gr_SFSummer16_25nsV1, "P5", kFullDotLarge, kRed+1, kSolid, kRed+1, 3005, kRed+1);
+  // TGraphErrors* gr_SFSpring16_25nsV10 = new TGraphErrors(SFSpring16_25nsV10.size(), &(etaSpring16_25nsV10_center[0]), &SFSpring16_25nsV10[0], &(etaSpring16_25nsV10_err[0]), &SFSpring16_25nsV10_Err[0]);
+  TGraphErrors* gr_SFSummer16_25nsV1  = new TGraphErrors(SFSummer16_25nsV1.size(), &(etaSummer16_25nsV1_center[0]), &SFSummer16_25nsV1[0], &(etaSummer16_25nsV1_err[0]), &SFSummer16_25nsV1_Err[0]);
+  TGraphErrors* gr_SFFall17_V3        = new TGraphErrors(SFFall17_V3.size(), &(etaFall17_V3_center[0]), &SFFall17_V3[0], &(etaFall17_V3_err[0]), &SFFall17_V3_Err[0]);
+  TGraphErrors* gr_SFAutumn18_V1      = new TGraphErrors(SFAutumn18_V1.size(), &(etaAutumn18_V1_center[0]), &SFAutumn18_V1[0], &(etaAutumn18_V1_err[0]), &SFAutumn18_V1_Err[0]);
+  TGraphErrors* gr_SFAutumn18_V3      = new TGraphErrors(SFAutumn18_V3.size(), &(etaAutumn18_V3_center[0]), &SFAutumn18_V3[0], &(etaAutumn18_V3_err[0]), &SFAutumn18_V3_Err[0]);
+  TGraphErrors* gr_SFAutumn18_V4      = new TGraphErrors(SFAutumn18_V4.size(), &(etaAutumn18_V4_center[0]), &SFAutumn18_V4[0], &(etaAutumn18_V4_err[0]), &SFAutumn18_V4_Err[0]);
+  TGraphErrors* gr_SFAutumn18_V4_wPUId= new TGraphErrors(SFAutumn18_V4_wPUId.size(), &(etaAutumn18_V4_wPUId_center[0]), &SFAutumn18_V4_wPUId[0], &(etaAutumn18_V4_wPUId_err[0]), &SFAutumn18_V4_wPUId_Err[0]);
+  TGraphErrors* gr_SFAutumn18_V4_noPUId= new TGraphErrors(SFAutumn18_V4_noPUId.size(), &(etaAutumn18_V4_noPUId_center[0]), &SFAutumn18_V4_noPUId[0], &(etaAutumn18_V4_noPUId_err[0]), &SFAutumn18_V4_noPUId_Err[0]);
+  TGraphErrors* gr_final              = new TGraphErrors(SF_final.size(), &(eta_bin_all_center[0]), &SF_final[0], &(eta_bin_all_error[0]), &SF_final_error[0]); //tot
+  // TGraphErrors* gr_final           = new TGraphErrors(SF_final.size(), &(eta_bin_all_center[0]), &SF_final[0], &(eta_bin_all_error[0]), &SF_final_error_stat[0]); //stat
+  // TGraphErrors* gr_final           = new TGraphErrors(SF_final.size(), &(eta_bin_all_center[0]), &SF_final[0], &(eta_bin_all_error[0]), &SF_final_error_syst[0]); //sys
+  // tdrDraw(gr_SFSpring16_25nsV10, "P5", kFullDotLarge, kOrange-1, kSolid, kOrange-1, 3004, kOrange-1);
+  // tdrDraw(gr_SFSummer16_25nsV1, "P5", kFullDotLarge, kRed+1, kSolid, kRed+1, 3005, kRed+1);
+  // tdrDraw(gr_SFFall17_V3, "P5", kFullDotLarge, kGreen-1, kSolid, kGreen-1, 3004, kGreen-1);
+  tdrDraw(gr_SFAutumn18_V1, "P5", kFullDotLarge, kGreen-1, kSolid, kGreen-1, 3005, kGreen-1);
+  // tdrDraw(gr_SFAutumn18_V3, "P5", kFullDotLarge, kGreen-1, kSolid, kGreen-1, 3005, kGreen-1);
+  tdrDraw(gr_SFAutumn18_V4_noPUId, "P5", kFullDotLarge, kRed+1, kSolid, kRed+1, 3005, kRed+1);
   tdrDraw(gr_final, "P5", kFullDotLarge, kBlue-4, kSolid, kBlue-4, 3005, kBlue-4);
-  tdrDraw(gr_SFSpring16_25nsV10, "P5", kFullDotLarge, kGreen-1, kSolid, kGreen-1, 3004, kGreen-1);
-  leg_final->AddEntry(gr_SFSummer16_25nsV1, "Summer16_25nsV1","f");
-  leg_final->AddEntry(gr_SFSpring16_25nsV10, "Spring16_25nsV10","f");
-  leg_final->AddEntry(gr_final,  "Fall17_V3","f");
+  // tdrDraw(gr_SFAutumn18_V4_wPUId, "P5", kFullDotLarge, kGreen-1, kSolid, kGreen-1, 3005, kGreen-1);
+  // // leg_final->AddEntry(gr_SFSpring16_25nsV10, "Spring16_25nsV10","f");
+  // leg_final->AddEntry(gr_SFSummer16_25nsV1, "Summer16_25nsV1","f");
+  // leg_final->AddEntry(gr_SFFall17_V3,       "Fall17_V3","f");
+  leg_final->AddEntry(gr_SFAutumn18_V1,  "Autumn18_V1RunD","f");
+  // leg_final->AddEntry(gr_SFAutumn18_V3,  "Autumn18_V3","f");
+  leg_final->AddEntry(gr_SFAutumn18_V4_noPUId,  "Autumn18_V4RunD","f");
+  leg_final->AddEntry(gr_final,             "Autumn18_"+QCD_DATA(QCD_DATA.Index("Run"), QCD_DATA.Length()-QCD_DATA.Index("Run")-1),"f");
+  // leg_final->AddEntry(gr_final,             "Autumn18_NoCut","f");
+  // leg_final->AddEntry(gr_SFAutumn18_V4_wPUId,  "Autumn18_V4_NoCut_PuId","f");
   // leg_final->AddEntry(gr_SFSummer16_25nsV1, "RunF_ECAL","f");
   // leg_final->AddEntry(gr_final,  "RunF","f");
   leg_final->Draw("same");
@@ -380,29 +504,75 @@ void plot_SF_systematics_(TString path = "/nfs/dust/cms/user/amalara/WorkingArea
 
   std::cout << SF_final.size() << '\n';
   std::cout << path+"/standard/"+QCD_DATA << '\n';
+  std::cout << "2017 vs 2018" << '\n';
   for (unsigned int i = 0; i < SFSummer16_25nsV1.size(); i++) {
-    std::cout << Form("$[ %.2f-%.2f]$ & $%.2f \\pm %.2f $ \\% & $%.2f \\pm %.2f $ \\% \\\\", eta_bin_all_center[i]-eta_bin_all_error[i], eta_bin_all_center[i]+eta_bin_all_error[i], SFSummer16_25nsV1[i], SFSummer16_25nsV1_Err[i]/SFSummer16_25nsV1[i]*100, SF_final[i], SF_final_error[i]/SF_final[i]*100 ) << std::endl;
+    std::cout << Form("$[ %.2f-%.2f]$ & $%.2f \\pm %.2f $ \\% & $%.2f \\pm %.2f $ \\% \\\\", eta_bin_all_center[i]-eta_bin_all_error[i], eta_bin_all_center[i]+eta_bin_all_error[i], SFFall17_V3[i], SFFall17_V3_Err[i]/SFFall17_V3[i]*100, SF_final[i], SF_final_error[i]/SF_final[i]*100 ) << std::endl;
   }
 
+  for (unsigned int i = 0; i < SFSummer16_25nsV1.size(); i++) {
+    std::cout << Form("[ %.2f-%.2f] \t %.2f +- %.2f \% \t %.2f +- %.2f \% ", eta_bin_all_center[i]-eta_bin_all_error[i], eta_bin_all_center[i]+eta_bin_all_error[i], SFFall17_V3[i], SFFall17_V3_Err[i]/SFFall17_V3[i]*100, SF_final[i], SF_final_error[i]/SF_final[i]*100 ) << std::endl;
+  }
+
+
+  ofstream SF_file_twiki;
+  SF_file_twiki.open (path+"standard/"+QCD_DATA+"SF_final_twiki.txt");
+
   std::cout << '\n' << "|  *abs(eta) region* |";
-  for (size_t i = 0; i < eta_bin_all_center.size(); i++) { std::cout << Form("|%.3f-%.3f|", eta_bin_all_center[i]-eta_bin_all_error[i], eta_bin_all_center[i]+eta_bin_all_error[i]); }
+  SF_file_twiki << "|  *abs(eta) region* |";
+  for (size_t i = 0; i < eta_bin_all_center.size(); i++) {
+    std::cout << Form("|%.3f-%.3f|", eta_bin_all_center[i]-eta_bin_all_error[i], eta_bin_all_center[i]+eta_bin_all_error[i]);
+    SF_file_twiki << Form("|%.3f-%.3f|", eta_bin_all_center[i]-eta_bin_all_error[i], eta_bin_all_center[i]+eta_bin_all_error[i]);
+  }
+
+  std::cout << '\n' << "SF_plot" << std::endl; for (size_t i = 0; i < eta_bin_all_center.size(); i++) std::cout << Form("{%.4f,%.4f},", SF_final[i],SF_final_error[i]);
+  std::cout << '\n' << "SF_plot Stat" << std::endl; for (size_t i = 0; i < eta_bin_all_center.size(); i++) std::cout << Form("{%.4f,%.4f},", SF_final[i],SF_final_error_stat[i]);
+  std::cout << '\n' << "SF_plot Sys" << std::endl; for (size_t i = 0; i < eta_bin_all_center.size(); i++) std::cout << Form("{%.4f,%.4f},", SF_final[i],SF_final_error_syst[i]);
+
+
 
   std::cout << '\n' << "|  *Data/MC SF*      |";
-  for (size_t i = 0; i < eta_bin_all_center.size(); i++) { std::cout << Form("|%.4f|", SF_final[i]); }
+  SF_file_twiki << '\n' << "|  *Data/MC SF*      |";
+  for (size_t i = 0; i < eta_bin_all_center.size(); i++) {
+    std::cout << Form("|%.4f|", SF_final[i]);
+    SF_file_twiki << Form("|%.4f|", SF_final[i]);
+  }
   std::cout << '\n' << "|  *Stat.Unc*        |";
-  for (size_t i = 0; i < eta_bin_all_center.size(); i++) { std::cout << Form("|%.4f|", SF_final_error_stat[i]); }
+  SF_file_twiki << '\n' << "|  *Stat.Unc*        |";
+  for (size_t i = 0; i < eta_bin_all_center.size(); i++) {
+    std::cout << Form("|%.4f|", SF_final_error_stat[i]);
+    SF_file_twiki << Form("|%.4f|", SF_final_error_stat[i]);
+  }
   std::cout << '\n' << "|  *Syst.Unc*        |";
-  for (size_t i = 0; i < eta_bin_all_center.size(); i++) { std::cout << Form("|%.4f|", SF_final_error_syst[i]); }
+  SF_file_twiki << '\n' << "|  *Syst.Unc*        |";
+  for (size_t i = 0; i < eta_bin_all_center.size(); i++) {
+    std::cout << Form("|%.4f|", SF_final_error_syst[i]);
+    SF_file_twiki << Form("|%.4f|", SF_final_error_syst[i]);
+  }
   std::cout << '\n' << "|  *Total.Unc*       |";
-  for (size_t i = 0; i < eta_bin_all_center.size(); i++) { std::cout << Form("|%.4f|", SF_final_error[i]); }
+  SF_file_twiki << '\n' << "|  *Total.Unc*       |";
+  for (size_t i = 0; i < eta_bin_all_center.size(); i++) {
+    std::cout << Form("|%.4f|", SF_final_error[i]);
+    SF_file_twiki << Form("|%.4f|", SF_final_error[i]);
+  }
 
+  SF_file_twiki.close();
 
-
+  ofstream SF_file_DB;
+  SF_file_DB.open (path+"standard/"+QCD_DATA+"SF_final_DB.txt");
 
   std::cout << '\n' << "{1 JetEta 0 None ScaleFactor}" << '\n';
+  SF_file_DB << '\n' << "{1 JetEta 0 None ScaleFactor}" << '\n';
 
-  for (unsigned int i = SF_final.size()-1; i > 0 ; i--) { std::cout << Form("%.3f %.3f 3 %.4f %.4f %.4f", -(eta_bin_all_center[i]+eta_bin_all_error[i]), -(eta_bin_all_center[i]-eta_bin_all_error[i]), SF_final[i], SF_final[i]-SF_final_error[i], SF_final[i]+SF_final_error[i] ) << std::endl; }
-  for (unsigned int i = 0; i < SF_final.size(); i++) { std::cout << Form("%.3f %.3f 3 %.4f %.4f %.4f",   eta_bin_all_center[i]-eta_bin_all_error[i],    eta_bin_all_center[i]+eta_bin_all_error[i],  SF_final[i], SF_final[i]-SF_final_error[i], SF_final[i]+SF_final_error[i] ) << std::endl; }
+  for (int i = SF_final.size()-1; i >= 0 ; i--) {
+    std::cout << Form("%.3f %.3f 3 %.4f %.4f %.4f", -(eta_bin_all_center[i]+eta_bin_all_error[i]), -(eta_bin_all_center[i]-eta_bin_all_error[i]), SF_final[i], SF_final[i]-SF_final_error[i], SF_final[i]+SF_final_error[i] ) << std::endl;
+    SF_file_DB << Form("%.3f %.3f 3 %.4f %.4f %.4f", -(eta_bin_all_center[i]+eta_bin_all_error[i]), -(eta_bin_all_center[i]-eta_bin_all_error[i]), SF_final[i], SF_final[i]-SF_final_error[i], SF_final[i]+SF_final_error[i] ) << std::endl;
+  }
+  for (unsigned int i = 0; i < SF_final.size(); i++) {
+    std::cout << Form("%.3f %.3f 3 %.4f %.4f %.4f",   eta_bin_all_center[i]-eta_bin_all_error[i],    eta_bin_all_center[i]+eta_bin_all_error[i],  SF_final[i], SF_final[i]-SF_final_error[i], SF_final[i]+SF_final_error[i] ) << std::endl;
+    SF_file_DB << Form("%.3f %.3f 3 %.4f %.4f %.4f",   eta_bin_all_center[i]-eta_bin_all_error[i],    eta_bin_all_center[i]+eta_bin_all_error[i],  SF_final[i], SF_final[i]-SF_final_error[i], SF_final[i]+SF_final_error[i] ) << std::endl;
+  }
+
+  SF_file_DB.close();
 
   return true;
 
@@ -413,47 +583,40 @@ void plot_SF_systematics_(TString path = "/nfs/dust/cms/user/amalara/WorkingArea
 void plot_SF_systematics() {
 
   TString path ;
-  // TString path_ = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/JER2017/Analysis/JER/wide_eta_binning/file/";
-  TString path_ = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94X_v2/CMSSW_9_4_1/src/UHH2/JER2017/Analysis/JER/wide_eta_binning/file/";
+  // TString path_ = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_10_2_10/src/UHH2/JERSF/Analysis/JER/wide_eta_binning/file/";
+  TString path_ = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/JERSF/Analysis/JER/wide_eta_binning/file/";
 
   std::vector<TString> studies;
-  // studies.push_back("Single");
-  // studies.push_back("Single_MB");
-  // studies.push_back("LowPtJets");
-  // studies.push_back("LowPtJets_MB");
   studies.push_back("StandardPtBins");
-  // studies.push_back("StandardPtBins_weightcut");
-  // studies.push_back("StandardPtBins_allweights");
-  // studies.push_back("StandardPtBins_CrossCheck");
-  // studies.push_back("StandardPtBins_CrossCheck_1");
-  // studies.push_back("StandardPtBins_L1Seed");
 
   std::vector<TString> JECs;
-  // JECs.push_back("Fall17_17Nov2017_V10");
-  // JECs.push_back("Fall17_17Nov2017_V24");
-  // JECs.push_back("Fall17_17Nov2017_V27");
-  JECs.push_back("Fall17_17Nov2017_V31");
-  JECs.push_back("Fall17_17Nov2017_V32");
+  //JECs.push_back("Autumn18_V4");
+  //JECs.push_back("Autumn18_V8");
+  // JECs.push_back("Autumn18_V8_test");
+  //JECs.push_back("Autumn18_V10");
+  // JECs.push_back("Autumn18_V13");
+  JECs.push_back("Autumn18_V13h");
+  // JECs.push_back("Autumn18_V10_noPUId");
+  // JECs.push_back("Autumn18_V10_wPUId");
+  // JECs.push_back("Autumn18_V10_test");
 
   std::vector<TString> JETs;
   JETs.push_back("AK4CHS");
+  // JETs.push_back("AK4CHS_wPUID");
   // JETs.push_back("AK8PUPPI");
 
   std::vector<TString> QCDS;
-  QCDS.push_back("QCDPt");
+  // QCDS.push_back("QCD_Flat2018");
+  //QCDS.push_back("QCD_Flat");
   QCDS.push_back("QCDHT");
 
   std::vector<TString> DATAS;
+  // DATAS.push_back("RunA");
   // DATAS.push_back("RunB");
   // DATAS.push_back("RunC");
-  // DATAS.push_back("RunD");
-  // DATAS.push_back("RunE");
-  // DATAS.push_back("RunF");
-  // DATAS.push_back("RunBC");
-  // DATAS.push_back("RunDE");
-  // DATAS.push_back("RunDEF");
-  DATAS.push_back("RunBCDEF");
-  // DATAS.push_back("RunF_ECAL");
+  DATAS.push_back("RunD");
+  //DATAS.push_back("RunABC");
+  //DATAS.push_back("RunABCD");
 
 
 
@@ -466,8 +629,9 @@ void plot_SF_systematics() {
           for(TString QCD : QCDS){
             for(TString DATA : DATAS){
               TString QCD_DATA = QCD+"/"+DATA+"/";
-              std::cout << QCD_DATA << '\n';
+              std::cout << "start: " << QCD_DATA << '\n';
               plot_SF_systematics_(path, QCD_DATA);
+              std::cout << "end: " << QCD_DATA << '\n';
               sleep(5);
             }
           }

@@ -2,7 +2,7 @@ import sys
 import os
 import time
 
-sys.path.append("/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94X_v2/CMSSW_9_4_1/src/UHH2/PersonalCode/")
+sys.path.append("/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/PersonalCode/")
 from parallelise import *
 
 def main_program(path="", list_path="", out_path="", JECVersions=[], JetLabels=[], systematics=[], samples=[], barrel_check = 0):
@@ -55,7 +55,10 @@ def main_program(path="", list_path="", out_path="", JECVersions=[], JetLabels=[
               os.makedirs(outdir)
             print "RUNNING ON ", run_list
             temp_time=time.time()
-            cmd = "cp MySelector_full_Single.C MySelector.C"
+            # cmd = "cp MySelector_full_Single.C MySelector.C"
+            cmd = "cp MySelector_full_DiJet.C MySelector.C"
+            # if "D"==sample:
+            #     cmd = "cp MySelector_full_DiJet_RunD.C MySelector.C"
             a = os.system(cmd)
             cmd = 'sed -i -e """s/jet_threshold=15/jet_threshold=%s/g" MySelector.C' % (alpha_cut)
             a = os.system(cmd)
@@ -98,14 +101,14 @@ def main_program(path="", list_path="", out_path="", JECVersions=[], JetLabels=[
             print ("time needed: "+str((time.time()-temp_time))+" s")
 
 
-common_path = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94X_v2/CMSSW_9_4_1/src/UHH2/JER2017/Analysis/hist_preparation/data/"
+common_path = "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/JERSF/Analysis/hist_preparation/data/"
 study = "StandardPtBins"
 
 list_path   = common_path+"lists/"+study+"/"
 out_path    = common_path+"wide_eta_bin/file/"+study+"/"
 os.chdir(common_path+"wide_eta_bin/")
 
-inputdir = "JER2017"
+inputdir = "JER2018"
 
 sframe_ = "/nfs/dust/cms/user/amalara/sframe_all/"
 
@@ -113,13 +116,18 @@ list_processes = []
 list_logfiles = []
 for el in [""]:
   path = sframe_+inputdir+el+"_DATA/"
-  samples = ["B","C","D","E","F","BC","DE","DEF", "BCDEF"]
-  samples = ["BCDEF"]
-  JECVersions = ["Fall17_17Nov2017_V32"]
-  JetLabels = ["AK8PUPPI"]
-  # JetLabels = ["AK4CHS"]
-  systematics = ["", "alpha","PU", "JEC", "JER"]
-  # systematics = ["JER"]
+  # samples = ["ABCD"]
+  samples = ["A", "B", "C", "D", "ABC", "ABCD"]
+  samples = ["A"]
+  #samples = ["B", "C", "D", "ABC"]
+  JECVersions = ["Autumn18_V4","Autumn18_V5","Autumn18_V7"]
+  JECVersions = ["Autumn18_V10"]
+  JECVersions = ["Autumn18_V13h"]
+  # JetLabels = ["AK8PUPPI"]
+  # JetLabels = ["AK4CHS","AK4CHS_wPUID"]
+  JetLabels = ["AK4CHS"]
+  # systematics = ["", "alpha","PU", "JEC", "JER"]
+  systematics = [""]
   main_program(path, list_path, out_path, JECVersions, JetLabels, systematics, samples)
 
 print len(list_processes)
@@ -127,4 +135,4 @@ print len(list_processes)
 for i in list_processes:
   print i
 
-parallelise(list_processes, 20, list_logfiles)
+#parallelise(list_processes, 20, list_logfiles)

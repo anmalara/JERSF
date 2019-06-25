@@ -31,7 +31,7 @@
 #include <TLorentzVector.h>
 #include <TRandom3.h>
 #include "MySelector.h"
-#include "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/JER2017/include/constants.hpp"
+#include "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/JERSF/include/constants.hpp"
 
 #define FILL_HISTOS(region,method)                                                                        \
 asymmetries_##region.at(r).at(k).at(m) -> Fill( asy , weight );                                           \
@@ -423,23 +423,24 @@ Bool_t MySelector::Process(Long64_t entry) {
   ++TotalEvents;
   if ( TotalEvents%100000 == 0 ) {  std::cout << "            Analyzing event #" << TotalEvents << std::endl; }
 
+  GetEntry( entry );
+  BuildEvent();
+
   if (weight <= 0 || weight > 50) {
     TString filename = fChain->GetDirectory()->GetPath();
     std::cout << "WARNING: weight was very small/large " << weight << std::endl;
     std::cout << "Filename is " << filename << std::endl;
     std::cout << "leading jet eta is " << probejet_eta << std::endl;
     weight = 0;
+    return kFALSE;
   }
 
-  GetEntry( entry );
-  BuildEvent();
-
   //2017
-  std::vector<double> Eta_bins_SM(             eta_bins + etaShift_SM,            eta_bins + etaShift_SM + EtaBins_SM + 1);
-  std::vector<double> Eta_bins_SM_control(     eta_bins + etaShift_SM_control,    eta_bins + etaShift_SM_control + EtaBins_SM_control + 1);
-  std::vector<double> Eta_bins_FE_reference(   eta_bins + etaShift_FE_reference,  eta_bins + etaShift_FE_reference + EtaBins_FE_reference + 1);
-  std::vector<double> Eta_bins_FE_control(     eta_bins + etaShift_FE_control,    eta_bins + etaShift_FE_control + EtaBins_FE_control + 1);
-  std::vector<double> Eta_bins_FE(             eta_bins + etaShift_FE,            eta_bins + etaShift_FE + EtaBins_FE + 1);
+  std::vector<double> Eta_bins_SM(            eta_bins + etaShift_SM,            eta_bins + etaShift_SM + EtaBins_SM + 1);
+  std::vector<double> Eta_bins_SM_control(    eta_bins + etaShift_SM_control,    eta_bins + etaShift_SM_control + EtaBins_SM_control + 1);
+  std::vector<double> Eta_bins_FE_reference(  eta_bins + etaShift_FE_reference,  eta_bins + etaShift_FE_reference + EtaBins_FE_reference + 1);
+  std::vector<double> Eta_bins_FE_control(    eta_bins + etaShift_FE_control,    eta_bins + etaShift_FE_control + EtaBins_FE_control + 1);
+  std::vector<double> Eta_bins_FE(            eta_bins + etaShift_FE,            eta_bins + etaShift_FE + EtaBins_FE + 1);
 
   std::vector<int> Pt_bins_Central(pt_bins_Si, pt_bins_Si + sizeof(pt_bins_Si)/sizeof(double));
   std::vector<int> Pt_bins_HF(pt_bins_Si_HF, pt_bins_Si_HF + sizeof(pt_bins_Si_HF)/sizeof(double));
