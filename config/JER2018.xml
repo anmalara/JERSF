@@ -33,6 +33,7 @@
 <!ENTITY PILEUP_DIRECTORY_DATA_DOWN "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_102X_v1/CMSSW_10_2_10/src/UHH2/common/data/2018/MyDataPileupHistogram2018_66017.root">
 
 <!-- Cleaning Cuts -->
+<!ENTITY APPLY_PUid                 "false">    <!--Apply PUid -->
 <!ENTITY APPLY_EtaPhi_cut           "true">     <!--Apply Eta Phi cleaning during ECAL problems -->
 <!ENTITY APPLY_EtaPhi_HCAL          "true">     <!--Apply Eta Phi cleaning during HCAL problems -->
 <!ENTITY apply_L1seed_from_bx1_filter "false">  <!--Apply L1seed matching -->
@@ -80,7 +81,7 @@
 
 
 <!--
-<ConfigParse NEventsBreak="0" FileSplit="25" AutoResubmit="5"/>
+<ConfigParse NEventsBreak="0" FileSplit="100" AutoResubmit="5"/>
 <ConfigSGE RAM ="2" DISK ="2" Mail="andrea.malara@desy.de" Notification="as" Workdir="workdir_JER2018"/>
 -->
 
@@ -199,6 +200,7 @@
       <Item Name="pileup_directory_data_down" Value="&PILEUP_DIRECTORY_DATA_DOWN;"/>  <!--used only in UHH2/common/include/MCWeight.h -->
 
       <!-- Cleaning Cuts -->
+      <Item Name="apply_PUid"                 Value="&APPLY_PUid;"/>
       <Item Name="EtaPhi_cut"                 Value="&APPLY_EtaPhi_cut;"/>
       <Item Name="EtaPhi_HCAL"                Value="&APPLY_EtaPhi_HCAL;"/>
       <Item Name="apply_L1seed_from_bx1_filter" Value="&apply_L1seed_from_bx1_filter;"/>

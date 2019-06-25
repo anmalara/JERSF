@@ -297,27 +297,19 @@ void PLOT_WIDTH_gr(std::vector< std::vector< TGraphErrors* > > h_data, std::vect
     else for (size_t i = 0; i <= h_data.at(m).size(); i++) { Pt_bins.push_back(Pt_bins_HF[i]); }
     for( unsigned int p = 0; p < h_data.at(m).size(); p++ ){
 
-
       double range = 0.05;
       if ( p == 0) range = 0.25;
       if ( p == 1) range = 0.2;
       if ( p == 2) range = 0.15;
-      if ( p == 3) range = 0.1;
+      if ( p == 3) range = 0.15;
       if ( p == 4) range = 0.1;
       if ( p == 5) range = 0.1;
-      if ( !isFE && m == 6 && p == 2) range = 0.2;
-      if ( !isFE && m == 6 && p == 3) range = 0.2;
-      if ( !isFE && m == 5 && p == 6) range = 0.1;
-      if ( !isFE && m == 6 && p == 6) range = 0.15;
-      if ( !isFE && m == 6 && p == 9) range = 0.1;
-      if ( !isFE && m == 7 && p == 6) range = 0.1;
-      if ( !isFE && m == 7 && p == 7) range = 0.1;
-      if ( !isFE && m == 7 && p == 8) range = 0.1;
-      if ( !isFE && m == 8 && p == 2) range = 0.2;
-      if ( !isFE && m == 8 && p == 6) range = 0.2;
-      if ( !isFE && m == 9 && p == 3) range = 0.15;
-      if (  isFE && m == 9 && p >= 7) range = 0.1;
-      if (  isFE && m == 11&& p == 7) range = 0.15;
+
+      if (!isFE && m >= 6 && p == 2) range = 0.2;
+      if (!isFE && m >= 2 && p == 3) range = 0.15;
+      if (!isFE && m >= 4 && p >= 6) range = 0.1;
+      if ( isFE && m >= 11&& p == 0) range = 0.2;
+      if ( isFE && m == 10&& p == 8) range = 0.15;
 
       TString canvName  = h_data.at(m).at(p)->GetTitle();
       TString nameXaxis = "#alpha_{max}";
@@ -611,6 +603,9 @@ void PLOT_NCS(std::vector< TH1F* > h_data, std::vector< TH1F* > h_MC, std::vecto
 
 int mainRun( bool data_, const char* filename, const char* filename_data, TString lumi, TString label_mc, TString label_data, TString Trigger, TString outdir, double gaustails = 0.985, float shiftForPLI = 0.0, int ref_shift = 3){
 
+  // bool debug = true;
+  bool debug = false;
+
   gPrintViaErrorHandler = kTRUE;
   gErrorIgnoreLevel = kFatal;
   double hist_max_value = 0.3;
@@ -640,9 +635,9 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
   int EtaBins_SM            = 10; // st method bins
   int EtaBins_SM_control    =  3; // st method bins control
   int EtaBins_FE_reference  =  3; // fe method bins reference
-  int EtaBins_FE_control    =  7; // fe method bins control
+  int EtaBins_FE_control    =  8; // fe method bins control
   int EtaBins_FE            =  3; // fe method bins
-  int shift_ = EtaBins_SM + EtaBins_FE;
+  int shift_ = EtaBins_SM + EtaBins_FE+1;
 
   int etaShift_SM           = 0;
   int etaShift_SM_control   = EtaBins_SM;
@@ -673,8 +668,11 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
   std::cout << "Pt_bins_Central\t"; for (size_t i = 0; i < Pt_bins_Central.size(); i++) std::cout << Pt_bins_Central[i] << '\t'; std::cout << '\n';
   std::cout << "Pt_bins_HF\t";  for (size_t i = 0; i < Pt_bins_HF.size(); i++) std::cout << Pt_bins_HF[i] << '\t'; std::cout << '\n';
 
-  std::vector<double> eta_bins_edge_SM(eta_bins, eta_bins + sizeof(eta_bins)/sizeof(double));
-  std::vector<double> eta_bins_edge_FE(eta_bins+1, eta_bins + sizeof(eta_bins)/sizeof(double));
+  // std::vector<double> eta_bins_edge_SM(eta_bins, eta_bins + sizeof(eta_bins)/sizeof(double));
+  // std::vector<double> eta_bins_edge_FE(eta_bins+1, eta_bins + sizeof(eta_bins)/sizeof(double));
+
+  std::vector<double> eta_bins_edge_SM(eta_bins2, eta_bins2 + sizeof(eta_bins2)/sizeof(double));
+  std::vector<double> eta_bins_edge_FE(eta_bins2, eta_bins2 + sizeof(eta_bins2)/sizeof(double));
 
 
   std::cout << "Eta bins " << Trigger << " " << eta_bins_edge_SM.size() << " " << eta_bins_edge_FE.size() << '\n';
@@ -709,32 +707,42 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
 
   // real_data = true, data = false
   histLoadAsym( *f_data,  real_data,  "asymm_SM",           asymmetries_data_SM,  gen_asymmetries_data_SM,  EtaBins_SM,           PtBins_Central, AlphaBins, etaShift_SM);
-  histLoadAsym( *f,       data_,       "asymm_SM",           asymmetries_SM,       gen_asymmetries_SM,       EtaBins_SM,           PtBins_Central, AlphaBins, etaShift_SM);
+  histLoadAsym( *f,       data_,      "asymm_SM",           asymmetries_SM,       gen_asymmetries_SM,       EtaBins_SM,           PtBins_Central, AlphaBins, etaShift_SM);
   histLoadAsym( *f_data,  real_data,  "asymm_SM_control",   asymmetries_data_SM,  gen_asymmetries_data_SM,  EtaBins_SM_control,   PtBins_HF,      AlphaBins, etaShift_SM_control);
-  histLoadAsym( *f,       data_,       "asymm_SM_control",   asymmetries_SM,       gen_asymmetries_SM,       EtaBins_SM_control,   PtBins_HF,      AlphaBins, etaShift_SM_control);
+  histLoadAsym( *f,       data_,      "asymm_SM_control",   asymmetries_SM,       gen_asymmetries_SM,       EtaBins_SM_control,   PtBins_HF,      AlphaBins, etaShift_SM_control);
   histLoadAsym( *f_data,  real_data,  "asymm_FE_reference", asymmetries_data_FE,  gen_asymmetries_data_FE,  EtaBins_FE_reference, PtBins_Central, AlphaBins, etaShift_FE_reference);
-  histLoadAsym( *f,       data_,       "asymm_FE_reference", asymmetries_FE,       gen_asymmetries_FE,       EtaBins_FE_reference, PtBins_Central, AlphaBins, etaShift_FE_reference);
+  histLoadAsym( *f,       data_,      "asymm_FE_reference", asymmetries_FE,       gen_asymmetries_FE,       EtaBins_FE_reference, PtBins_Central, AlphaBins, etaShift_FE_reference);
   histLoadAsym( *f_data,  real_data,  "asymm_FE_control",   asymmetries_data_FE,  gen_asymmetries_data_FE,  EtaBins_FE_control,   PtBins_Central, AlphaBins, etaShift_FE_control);
-  histLoadAsym( *f,       data_,       "asymm_FE_control",   asymmetries_FE,       gen_asymmetries_FE,       EtaBins_FE_control,   PtBins_Central, AlphaBins, etaShift_FE_control);
+  histLoadAsym( *f,       data_,      "asymm_FE_control",   asymmetries_FE,       gen_asymmetries_FE,       EtaBins_FE_control,   PtBins_Central, AlphaBins, etaShift_FE_control);
   histLoadAsym( *f_data,  real_data,  "asymm_FE",           asymmetries_data_FE,  gen_asymmetries_data_FE,  EtaBins_FE,           PtBins_HF,      AlphaBins, etaShift_FE);
-  histLoadAsym( *f,       data_,       "asymm_FE",           asymmetries_FE,       gen_asymmetries_FE,       EtaBins_FE,           PtBins_HF,      AlphaBins, etaShift_FE);
+  histLoadAsym( *f,       data_,      "asymm_FE",           asymmetries_FE,       gen_asymmetries_FE,       EtaBins_FE,           PtBins_HF,      AlphaBins, etaShift_FE);
+
+  if (debug) {
+    std::cout << "asymmetries_data_SM " << asymmetries_data_SM.size() << "=" << EtaBins_SM << "+" << EtaBins_SM_control << '\n';
+    std::cout << "asymmetries_data_FE " << asymmetries_data_FE.size() << "=" << EtaBins_FE_reference << "+" << EtaBins_FE_control << "+" << EtaBins_FE << '\n';
+  }
 
   histLoadAsym( *f_data,  real_data,  "asymmpt_SM",           asymmetries_pt_data_SM,  gen_asymmetries_pt_data_SM,  EtaBins_SM,           PtBins_Central, AlphaBins, etaShift_SM);
-  histLoadAsym( *f,       data_,       "asymmpt_SM",           asymmetries_pt_SM,       gen_asymmetries_pt_SM,       EtaBins_SM,           PtBins_Central, AlphaBins, etaShift_SM);
+  histLoadAsym( *f,       data_,      "asymmpt_SM",           asymmetries_pt_SM,       gen_asymmetries_pt_SM,       EtaBins_SM,           PtBins_Central, AlphaBins, etaShift_SM);
   histLoadAsym( *f_data,  real_data,  "asymmpt_SM_control",   asymmetries_pt_data_SM,  gen_asymmetries_pt_data_SM,  EtaBins_SM_control,   PtBins_HF,      AlphaBins, etaShift_SM_control);
-  histLoadAsym( *f,       data_,       "asymmpt_SM_control",   asymmetries_pt_SM,       gen_asymmetries_pt_SM,       EtaBins_SM_control,   PtBins_HF,      AlphaBins, etaShift_SM_control);
+  histLoadAsym( *f,       data_,      "asymmpt_SM_control",   asymmetries_pt_SM,       gen_asymmetries_pt_SM,       EtaBins_SM_control,   PtBins_HF,      AlphaBins, etaShift_SM_control);
   histLoadAsym( *f_data,  real_data,  "asymmpt_FE_reference", asymmetries_pt_data_FE,  gen_asymmetries_pt_data_FE,  EtaBins_FE_reference, PtBins_Central, AlphaBins, etaShift_FE_reference);
-  histLoadAsym( *f,       data_,       "asymmpt_FE_reference", asymmetries_pt_FE,       gen_asymmetries_pt_FE,       EtaBins_FE_reference, PtBins_Central, AlphaBins, etaShift_FE_reference);
+  histLoadAsym( *f,       data_,      "asymmpt_FE_reference", asymmetries_pt_FE,       gen_asymmetries_pt_FE,       EtaBins_FE_reference, PtBins_Central, AlphaBins, etaShift_FE_reference);
   histLoadAsym( *f_data,  real_data,  "asymmpt_FE_control",   asymmetries_pt_data_FE,  gen_asymmetries_pt_data_FE,  EtaBins_FE_control,   PtBins_Central, AlphaBins, etaShift_FE_control);
-  histLoadAsym( *f,       data_,       "asymmpt_FE_control",   asymmetries_pt_FE,       gen_asymmetries_pt_FE,       EtaBins_FE_control,   PtBins_Central, AlphaBins, etaShift_FE_control);
+  histLoadAsym( *f,       data_,      "asymmpt_FE_control",   asymmetries_pt_FE,       gen_asymmetries_pt_FE,       EtaBins_FE_control,   PtBins_Central, AlphaBins, etaShift_FE_control);
   histLoadAsym( *f_data,  real_data,  "asymmpt_FE",           asymmetries_pt_data_FE,  gen_asymmetries_pt_data_FE,  EtaBins_FE,           PtBins_HF,      AlphaBins, etaShift_FE);
-  histLoadAsym( *f,       data_,       "asymmpt_FE",           asymmetries_pt_FE,       gen_asymmetries_pt_FE,       EtaBins_FE,           PtBins_HF,      AlphaBins, etaShift_FE);
+  histLoadAsym( *f,       data_,      "asymmpt_FE",           asymmetries_pt_FE,       gen_asymmetries_pt_FE,       EtaBins_FE,           PtBins_HF,      AlphaBins, etaShift_FE);
 
   histLoadAsym( *f,       data_,       "mctruth_SM",           MC_Truth_asymmetries_SM,  dummy_hists,       EtaBins_SM,           PtBins_Central, AlphaBins, etaShift_SM);
   histLoadAsym( *f,       data_,       "mctruth_SM_control",   MC_Truth_asymmetries_SM,  dummy_hists,       EtaBins_SM_control,   PtBins_HF,      AlphaBins, etaShift_SM_control);
   histLoadAsym( *f,       data_,       "mctruth_FE_reference", MC_Truth_asymmetries_FE,  dummy_hists,       EtaBins_FE_reference, PtBins_Central, AlphaBins, etaShift_FE_reference);
   histLoadAsym( *f,       data_,       "mctruth_FE_control",   MC_Truth_asymmetries_FE,  dummy_hists,       EtaBins_FE_control,   PtBins_Central, AlphaBins, etaShift_FE_control);
   histLoadAsym( *f,       data_,       "mctruth_FE",           MC_Truth_asymmetries_FE,  dummy_hists,       EtaBins_FE,           PtBins_HF,      AlphaBins, etaShift_FE);
+
+  if (debug) {
+    std::cout << "asymmpt_SM " << asymmetries_pt_data_SM.size() << '\n';
+    std::cout << "asymmpt_FE " << asymmetries_pt_data_FE.size() << '\n';
+  }
 
   // std::vector < TH2F* > Map_mean_data;
   //
@@ -774,6 +782,11 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
   histMeanPt( asymmetries_pt_data_FE,     width_pt_data_FE );
   histMeanPt( gen_asymmetries_pt_data_FE, gen_width_pt_data_FE );
 
+  if (debug) {
+    std::cout << "histMeanPt_SM " << width_pt_SM.size() << '\n';
+    std::cout << "histMeanPt_FE " << width_pt_FE.size() << '\n';
+  }
+
   // gen_all_data is for running a cross check with smeared MC.
 
   ////////////////////////////////////////////////////////////////////////////
@@ -797,6 +810,11 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
   histWidthAsym( asymmetries_data_FE , asymmetries_width_data_FE, asymmetries_width_data_FE_error, false, gaustails, 1, lower_x_data_FE, upper_x_data_FE);
   histWidthAsym( gen_asymmetries_data_FE , gen_asymmetries_width_data_FE, gen_asymmetries_width_data_FE_error, false, gaustails, 1, gen_lower_x_data_FE, gen_upper_x_data_FE);
 
+  if (debug) {
+    std::cout << "asymmetries_width_SM " << asymmetries_width_SM.size() << '\n';
+    std::cout << "asymmetries_width_Fe " << asymmetries_width_FE.size() << '\n';
+  }
+
   ////////////////////////////////////////////////////////////////////////////
   //    I calculate widths, this time also including                        //
   //    alpha bins below 10GeV threshold                                    //
@@ -819,6 +837,11 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
   histWidthAsym( asymmetries_data_FE , soft_asymmetries_width_data_FE, soft_asymmetries_width_data_FE_error, true, gaustails, 1, dummy_vec_x, dummy_vec_y);
   histWidthAsym( gen_asymmetries_data_FE , gen_soft_asymmetries_width_data_FE, gen_soft_asymmetries_width_data_FE_error, true, gaustails, 1, dummy_vec_x, dummy_vec_y);
 
+  if (debug) {
+    std::cout << "asymmetries_SM " << asymmetries_SM.size() << '\n';
+    std::cout << "asymmetries_FE " << asymmetries_FE.size() << '\n';
+  }
+
   ////////////////////////////////////////////////////////////////////////////
   //    Calculate mcTruth resolution for cross check with dijet calculation //
   ////////////////////////////////////////////////////////////////////////////
@@ -828,6 +851,11 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
 
   histWidthMCTruth( MC_Truth_asymmetries_SM, mcTruth_res_SM, mcTruth_res_SM_error);
   histWidthMCTruth( MC_Truth_asymmetries_FE, mcTruth_res_FE, mcTruth_res_FE_error);
+
+  if (debug) {
+    std::cout << "MC_Truth_asymmetries_SM " << MC_Truth_asymmetries_SM.size() << '\n';
+    std::cout << "MC_Truth_asymmetries_FE " << MC_Truth_asymmetries_FE.size() << '\n';
+  }
 
   ////////////////////////////////////////////////////////////////////////////
   //     I fill width(alpha_max) histograms                                 //
@@ -845,6 +873,11 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
   fill_widths_hists( "widths_gen_fe", gen_widths_hist_FE , gen_asymmetries_width_FE, gen_asymmetries_width_FE_error );
   fill_widths_hists( "widths_data_fe", widths_hist_data_FE , asymmetries_width_data_FE, asymmetries_width_data_FE_error );
   fill_widths_hists( "widths_gen_data_fe", gen_widths_hist_data_FE , gen_asymmetries_width_data_FE, gen_asymmetries_width_data_FE_error );
+
+  if (debug) {
+    std::cout << "widths_hist_SM " << widths_hist_SM.size() << '\n';
+    std::cout << "widths_hist_FE " << widths_hist_FE.size() << '\n';
+  }
 
   ////////////////////////////////////////////////////////////////////////////
   //    I do same for alpha unconstrained widths                            //
@@ -884,6 +917,11 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
   histLinFit( widths_hist_data_FE , extrapolated_widths_data_FE, extrapolated_widths_data_FE_error, true );
   histLinFit( gen_widths_hist_data_FE , extrapolated_gen_widths_data_FE, extrapolated_gen_widths_data_FE_error, true );
 
+  if (debug) {
+    std::cout << "extrapolated_widths_SM " << extrapolated_widths_SM.size() << '\n';
+    std::cout << "extrapolated_widths_FE " << extrapolated_widths_FE.size() << '\n';
+  }
+
   ////////////////////////////////////////////////////////////////////////////
   //    Correlated fit                                                      //
   ////////////////////////////////////////////////////////////////////////////
@@ -907,6 +945,11 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
   histLinCorFit(asymmetries_width_data_FE, asymmetries_width_data_FE_error, data_correlated_graphs_FE, extrapolated_widths_correlated_data_FE, extrapolated_widths_correlated_data_FE_error, true, false, h_chi2_tot);
   histLinCorFit(gen_asymmetries_width_FE, gen_asymmetries_width_FE_error, gen_correlated_graphs_FE, extrapolated_gen_widths_correlated_FE, extrapolated_gen_widths_correlated_FE_error, true, false, h_chi2_tot);
   histLinCorFit(gen_asymmetries_width_data_FE, gen_asymmetries_width_data_FE_error, gen_data_correlated_graphs_FE, extrapolated_gen_widths_correlated_data_FE, extrapolated_gen_widths_correlated_data_FE_error, true, false, h_chi2_tot);
+
+  if (debug) {
+    std::cout << "extrapolated_widths_correlated_SM " << extrapolated_widths_correlated_SM.size() << '\n';
+    std::cout << "extrapolated_widths_correlated_FE " << extrapolated_widths_correlated_FE.size() << '\n';
+  }
 
   ////////////////////////////////////////////////////////////////////////////
   //    I make histograms ratio of widths(alpha=0.15)                       //
@@ -945,6 +988,11 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
     correctJERwithPLI( JER_uncorrelated_corrected_data_FE_ref, JER_uncorrelated_corrected_data_FE_ref_error, extrapolated_widths_data_FE, extrapolated_widths_data_FE_error, extrapolated_gen_widths_data_FE, extrapolated_gen_widths_data_FE_error, shiftForPLI);
   }
 
+  if (debug) {
+    std::cout << "JER_uncorrelated_corrected_MC_SM " << JER_uncorrelated_corrected_MC_SM.size() << '\n';
+    std::cout << "JER_uncorrelated_corrected_MC_FE_ref " << JER_uncorrelated_corrected_MC_FE_ref.size() << '\n';
+  }
+
   ////////////////////////////////////////////////////////////////////////////
   //    PLI corrected using b parameters                                    //
   ////////////////////////////////////////////////////////////////////////////
@@ -973,6 +1021,20 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
   } else {
     // correct 'data' with own PLI
     correctJERwithPLI( JER_correlated_corrected_data_FE_ref, JER_correlated_corrected_data_FE_ref_error, extrapolated_widths_correlated_data_FE, extrapolated_widths_correlated_data_FE_error, extrapolated_gen_widths_correlated_data_FE, extrapolated_gen_widths_correlated_data_FE_error, shiftForPLI);
+  }
+
+  if (debug) {
+    std::cout << "JER_correlated_corrected_MC_SM " << JER_correlated_corrected_MC_SM.size() << '\n';
+    std::cout << "JER_correlated_corrected_MC_FE_ref " << JER_correlated_corrected_MC_FE_ref.size() << '\n';
+    std::cout << "TEST" << '\n';
+    std::cout << JER_correlated_corrected_data_FE_ref.size() << " " << JER_correlated_corrected_data_FE_ref[0].size() << '\n';
+    std::cout << extrapolated_widths_correlated_data_FE.size() << " " << extrapolated_widths_correlated_data_FE[0].size() << '\n';
+    std::cout << extrapolated_gen_widths_correlated_FE.size() << " " << extrapolated_gen_widths_correlated_FE[0].size() << '\n';
+    for (size_t i = 0; i < JER_correlated_corrected_data_FE_ref.size(); i++) {
+      for (size_t j = 0; j < JER_correlated_corrected_data_FE_ref[i].size(); j++) {
+        std::cout << i << " " << j << " " << JER_correlated_corrected_data_FE_ref.at(i).at(j) << " " << extrapolated_widths_correlated_data_FE.at(i).at(j) << " " << extrapolated_gen_widths_correlated_FE.at(i).at(j) << " " << TMath::Sqrt(2)*TMath::Sqrt( extrapolated_widths_correlated_data_FE.at(i).at(j) * extrapolated_widths_correlated_data_FE.at(i).at(j) - extrapolated_gen_widths_correlated_FE.at(i).at(j) * extrapolated_gen_widths_correlated_FE.at(i).at(j) ) << '\n';
+      }
+    }
   }
 
   ////////////////////////////////////////////////////////////////////////////
@@ -1015,6 +1077,8 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
   correctForRef( "mccorrected", JER_uncorrelated_corrected_MC_FE, JER_uncorrelated_corrected_MC_FE_error, JER_uncorrelated_corrected_MC_FE_ref, JER_uncorrelated_corrected_MC_FE_ref_error, width_pt_FE, ref_shift, outdir);
   correctForRef( "datacorrect", JER_uncorrelated_corrected_data_FE, JER_uncorrelated_corrected_data_FE_error, JER_uncorrelated_corrected_data_FE_ref, JER_uncorrelated_corrected_data_FE_ref_error, width_pt_FE, ref_shift, outdir);
 
+  if (debug) std::cout << "JER_uncorrelated_corrected_MC_FE " << JER_uncorrelated_corrected_MC_FE.size() << '\n';
+
   ////////////////////////////////////////////////////////////////////////////
   //    forward widths corrected for Ref widths!                            //
   ////////////////////////////////////////////////////////////////////////////
@@ -1026,6 +1090,8 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
 
   correctForRef( "mc_cor_corrected", JER_correlated_corrected_MC_FE,   JER_correlated_corrected_MC_FE_error,   JER_correlated_corrected_MC_FE_ref,   JER_correlated_corrected_MC_FE_ref_error,   width_pt_FE, ref_shift, outdir);
   correctForRef( "data_cor_correct", JER_correlated_corrected_data_FE, JER_correlated_corrected_data_FE_error, JER_correlated_corrected_data_FE_ref, JER_correlated_corrected_data_FE_ref_error, width_pt_FE, ref_shift, outdir);
+
+  if (debug) std::cout << "JER_correlated_corrected_MC_FE " << JER_correlated_corrected_MC_FE.size() << '\n';
 
   ////////////////////////////////////////////////////////////////////////////
   //    ref region corrected for correlated fit                             //
@@ -1065,6 +1131,14 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
 
   makeScales( scales015_SM, scales015_SM_error, JER015_data_SM, JER015_data_SM_error, JER015_MC_SM, JER015_MC_SM_error );
   makeScales( scales015_FE, scales015_FE_error, JER015_data_FE, JER015_data_FE_error, JER015_MC_FE, JER015_MC_FE_error );
+
+  if (debug) {
+    std::cout << "scales_uncorrelated_SM " << scales_uncorrelated_SM.size() << '\n';
+    std::cout << "scales_uncorrelated_FE " << scales_uncorrelated_FE.size() << '\n';
+    std::cout << "scales_uncorrelated_FE_control " << scales_uncorrelated_FE_control.size() << '\n';
+    std::cout << "scales_correlated_FE " << scales_correlated_FE.size() << " " << scales_correlated_FE[0].size() << '\n';
+    std::cout << "scales_correlated_FE_control " << scales_correlated_FE_control.size() << " " << scales_correlated_FE_control[0].size() << '\n';
+  }
 
   ////////////////////////////////////////////////////////////////////////////
   //    I make plots with MCTruth: Res from dijet                           //
@@ -1138,7 +1212,7 @@ int mainRun( bool data_, const char* filename, const char* filename_data, TStrin
   PLOT_MCT(JER_MC_Truth_FE,JER_uncorrelated_MC_hist_FE,JER_correlated_MC_hist_FE,JER015_uncorrelated_MC_hist_FE,outdir+"pdfy/MCTruth/",eta_bins_edge_FE, true);
   fMCTruth.Close();
 
-  // bool plot_all = true;
+  //bool plot_all = true;
   bool plot_all = false;
   if (plot_all) {
     ////////////////////////////////////////////////////////////////////////////

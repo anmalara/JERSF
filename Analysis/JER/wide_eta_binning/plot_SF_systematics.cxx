@@ -218,9 +218,17 @@ void plot_SF_systematics_(TString path = "/nfs/dust/cms/user/amalara/WorkingArea
   //lumi_13TeV = "[MC Pythia8] RunII";
 
 
-  std::vector<double> eta_bins_all(eta_bins,                eta_bins + sizeof(eta_bins)/sizeof(double));
-  std::vector<double> eta_bins_SM(eta_bins,                 eta_bins + sizeof(eta_bins)/sizeof(double) - shift_SM);
-  std::vector<double> eta_bins_FE(eta_bins + shift_barrel,  eta_bins + sizeof(eta_bins)/sizeof(double));
+  // std::vector<double> eta_bins_all(eta_bins,                eta_bins + sizeof(eta_bins)/sizeof(double));
+  // std::vector<double> eta_bins_SM(eta_bins,                 eta_bins + sizeof(eta_bins)/sizeof(double) - shift_SM);
+  // std::vector<double> eta_bins_FE(eta_bins + shift_barrel,  eta_bins + sizeof(eta_bins)/sizeof(double));
+
+  std::vector<double> eta_bins_all(eta_bins2,                eta_bins2 + sizeof(eta_bins2)/sizeof(double));
+  std::vector<double> eta_bins_SM(eta_bins2,                 eta_bins2 + sizeof(eta_bins2)/sizeof(double) - shift_SM);
+  std::vector<double> eta_bins_FE(eta_bins2 + shift_barrel,  eta_bins2 + sizeof(eta_bins2)/sizeof(double));
+
+  std::cout << "eta_bins_all " << eta_bins_all.size() << std::endl; for (size_t i = 0; i < eta_bins_all.size(); i++) std::cout << eta_bins_all[i] << " "; std::cout << '\n';
+  std::cout << "eta_bins_SM " << eta_bins_SM.size() << std::endl; for (size_t i = 0; i < eta_bins_SM.size(); i++) std::cout << eta_bins_SM[i] << " "; std::cout << '\n';
+  std::cout << "eta_bins_FE " << eta_bins_FE.size() << std::endl; for (size_t i = 0; i < eta_bins_FE.size(); i++) std::cout << eta_bins_FE[i] << " "; std::cout << '\n';
 
   int method = 4; //2-uncorr 4-corr
   int pt_dep_method = 4; //4-min value 5-max value
@@ -250,6 +258,14 @@ void plot_SF_systematics_(TString path = "/nfs/dust/cms/user/amalara/WorkingArea
 
   Load_all_SF(SFs_SM, path, central_SM, systematics_name);
 
+  // for (size_t i = 0; i < SFs_SM.size(); i++) {
+  //   for (size_t j = 0; j < SFs_SM[i].size(); j++) {
+  //     for (size_t k = 0; k < SFs_SM[i][j].size(); k++) {
+  //       std::cout << SFs_SM.size() << "\t" << SFs_SM[i].size() << "\t" << SFs_SM[i][j].size() << "\t" << i << " " << j << " " << k << "\t" << SFs_SM[i][j][k] << '\n';
+  //     }
+  //   }
+  // }
+
   if (SFs_SM.size() != systematics_name.size()+1) {
     std::cout << "ERROR SM" << '\n';
     std::cout << SFs_SM.size() << '\n';
@@ -272,6 +288,15 @@ void plot_SF_systematics_(TString path = "/nfs/dust/cms/user/amalara/WorkingArea
     std::cout << "ERROR FE" << '\n';
     return false;
   }
+
+  //
+  // for (size_t i = 0; i < SFs_FE.size(); i++) {
+  //   for (size_t j = 0; j < SFs_FE[i].size(); j++) {
+  //     for (size_t k = 0; k < SFs_FE[i][j].size(); k++) {
+  //       std::cout << SFs_FE.size() << "\t" << SFs_FE[i].size() << "\t" << SFs_FE[i][j].size() << "\t" << i << " " << j << " " << k << "\t" << SFs_FE[i][j][k] << '\n';
+  //     }
+  //   }
+  // }
 
   std::vector <double> SF_FE, stat_FE, eta_bin_FE_center, eta_bin_FE_error;
   std::vector <std::vector <double> > systematics_FE;
@@ -342,15 +367,15 @@ void plot_SF_systematics_(TString path = "/nfs/dust/cms/user/amalara/WorkingArea
 
   double etaAutumn18_V1[] = {0, 0.522, 0.783, 1.131, 1.305, 1.740, 1.930, 2.043, 2.322, 2.5, 2.853, 2.964, 3.139, 5.191};
   // RUNABCD
-  double jerAutumn18_V1[13][2] = {{1.15,0.043},{1.134,0.08},{1.102,0.052},{1.134,0.112},{1.104,0.211},{1.149,0.159},{1.148,0.209},{1.114,0.191},{1.347,0.274},{2.137,0.524},{1.65,0.941},{1.225,0.194},{1.082,0.198}};
+  //double jerAutumn18_V1[13][2] = {{1.15,0.043},{1.134,0.08},{1.102,0.052},{1.134,0.112},{1.104,0.211},{1.149,0.159},{1.148,0.209},{1.114,0.191},{1.347,0.274},{2.137,0.524},{1.65,0.941},{1.225,0.194},{1.082,0.198}};
   // double jerAutumn18_V1[13][2] = {{1.15,0.008},{1.134,0.018},{1.102,0.014},{1.134,0.033},{1.104,0.019},{1.149,0.02},{1.148,0.041},{1.114,0.025},{1.347,0.053},{2.137,0.102},{1.65,0.18},{1.225,0.054},{1.082,0.057}}; // stat
   // double jerAutumn18_V1[13][2] = {{1.15,0.042},{1.134,0.078},{1.102,0.05},{1.134,0.107},{1.104,0.21},{1.149,0.157},{1.148,0.205},{1.114,0.19},{1.347,0.269},{2.137,0.514},{1.65,0.923},{1.225,0.187},{1.082,0.189}}; // sys
   // RUND
-  // double jerAutumn18_V1[13][2] = {{1.1401,0.0323},{1.1370,0.0969},{1.1109,0.0676},{1.1585,0.1111},{1.0997,0.2897},{1.1428,0.2264},{1.1157,0.2216},{1.0903,0.2131},{1.4930,0.3106},{2.4518,0.5757},{1.8935,0.9319},{1.1826,0.2058},{1.0439,0.2040}};
+  double jerAutumn18_V1[13][2] = {{1.1401,0.0323},{1.1370,0.0969},{1.1109,0.0676},{1.1585,0.1111},{1.0997,0.2897},{1.1428,0.2264},{1.1157,0.2216},{1.0903,0.2131},{1.4930,0.3106},{2.4518,0.5757},{1.8935,0.9319},{1.1826,0.2058},{1.0439,0.2040}};
   // double jerAutumn18_V1[13][2] = {{1.1401,0.0082},{1.1370,0.0183},{1.1109,0.0142},{1.1585,0.0344},{1.0997,0.0193},{1.1428,0.0210},{1.1157,0.0416},{1.0903,0.0257},{1.4930,0.0579},{2.4518,0.1171},{1.8935,0.2069},{1.1826,0.0518},{1.0439,0.0551}}; // stat
   // double jerAutumn18_V1[13][2] = {{1.1401,0.0313},{1.1370,0.0952},{1.1109,0.0660},{1.1585,0.1056},{1.0997,0.2890},{1.1428,0.2254},{1.1157,0.2177},{1.0903,0.2115},{1.4930,0.3051},{2.4518,0.5636},{1.8935,0.9087},{1.1826,0.1992},{1.0439,0.1964}}; // sys
   // RUNABC
-  // double jerAutumn18_V1[13][2] = {{1.1609,0.0552},{1.1309,0.0610},{1.0918,0.0352},{1.1064,0.1131},{1.1097,0.1206},{1.1554,0.0820},{1.1843,0.1951},{1.1401,0.1669},{1.1818,0.2327},{1.7778,0.4659},{1.3718,0.9507},{1.2725,0.1810},{1.1255,0.1901}};
+  //double jerAutumn18_V1[13][2] = {{1.1609,0.0552},{1.1309,0.0610},{1.0918,0.0352},{1.1064,0.1131},{1.1097,0.1206},{1.1554,0.0820},{1.1843,0.1951},{1.1401,0.1669},{1.1818,0.2327},{1.7778,0.4659},{1.3718,0.9507},{1.2725,0.1810},{1.1255,0.1901}};
   // double jerAutumn18_V1[13][2] = {{1.1609,0.0077},{1.1309,0.0170},{1.0918,0.0129},{1.1064,0.0307},{1.1097,0.0177},{1.1554,0.0196},{1.1843,0.0412},{1.1401,0.0239},{1.1818,0.0467},{1.7778,0.0842},{1.3718,0.1489},{1.2725,0.0556},{1.1255,0.0589}}; // stat
   // double jerAutumn18_V1[13][2] = {{1.1609,0.0547},{1.1309,0.0586},{1.0918,0.0327},{1.1064,0.1089},{1.1097,0.1193},{1.1554,0.0797},{1.1843,0.1907},{1.1401,0.1652},{1.1818,0.2280},{1.7778,0.4582},{1.3718,0.9390},{1.2725,0.1723},{1.1255,0.1807}}; // sys
 
@@ -361,11 +386,26 @@ void plot_SF_systematics_(TString path = "/nfs/dust/cms/user/amalara/WorkingArea
   // double jerAutumn18_V3[13][2] = {{1.1813,0.0638},{1.1136,0.0976},{1.1048,0.0324},{1.0741,0.0509},{1.0923,0.0950},{1.0779,0.0587},{1.0893,0.1936},{1.0755,0.1266},{1.4188,0.2191},{1.9206,0.4807},{2.0118,0.2893},{1.1904,0.1217},{1.0846,0.2694}}; // syst
 
 
+  double etaAutumn18_V4[] = {0, 0.522, 0.783, 1.131, 1.305, 1.740, 1.930, 2.043, 2.322, 2.5, 2.853, 2.964, 3.139, 5.191};
+  double jerAutumn18_V4[13][2] = {{1.1588,0.0392},{1.1504,0.0728},{1.1253,0.0343},{1.1217,0.0826},{1.1069,0.0890},{1.0916,0.0430},{1.0977,0.0951},{1.1177,0.0721},{1.4494,0.1502},{2.3588,0.6411},{2.2520,0.3542},{1.1759,0.0540},{1.0777,0.0542}}; // RunD
+  //double jerAutumn18_V4[13][2] = {{1.1677,0.0477},{1.1475,0.0520},{1.1029,0.0310},{1.0781,0.0950},{1.1006,0.0846},{1.1019,0.0386},{1.0459,0.1578},{1.1612,0.0646},{1.2299,0.1087},{1.6736,0.3792},{1.7292,0.2007},{1.2257,0.0452},{1.0733,0.0676}}; // RunABC
+  //double jerAutumn18_V4[13][2] = {{1.1545,0.0308},{1.1481,0.0515},{1.0998,0.0386},{1.0929,0.0856},{1.1093,0.0718},{1.1005,0.0515},{1.0603,0.1301},{1.1287,0.0531},{1.3397,0.1147},{2.0325,0.5361},{2.0567,0.3060},{1.1868,0.0376},{1.0922,0.0489}}; // RunABCD
+
+  double etaAutumn18_V4_wPUId[] = {0, 0.522, 0.783, 1.131, 1.305, 1.740, 1.930, 2.043, 2.322, 2.5, 2.853, 2.964, 3.139, 5.191};
+  double jerAutumn18_V4_wPUId[13][2] = {{1.1560,0.0161},{1.1588,0.0781},{1.1399,0.0870},{1.1223,0.0477},{1.1549,0.0776},{1.1023,0.0768},{1.1543,0.0952},{1.1626,0.0710},{1.3146,0.1141},{1.9192,0.3146},{2.0417,0.3043},{1.2588,0.0401},{1.1573,0.1365}}; // RunABCD
+  double jerAutumn18_V4_noPUId[13][2] = {{1.1545,0.0308},{1.1481,0.0515},{1.0998,0.0386},{1.0929,0.0856},{1.1093,0.0718},{1.1005,0.0515},{1.0603,0.1301},{1.1287,0.0531},{1.3397,0.1147},{2.0325,0.5361},{2.0567,0.3060},{1.1868,0.0376},{1.0922,0.0489}}; // RunABCD
+
+
+
   std::vector<double> etaSummer16_25nsV1_center, etaSummer16_25nsV1_err, SFSummer16_25nsV1, SFSummer16_25nsV1_Err;
   // std::vector<double> etaSpring16_25nsV10_center, etaSpring16_25nsV10_err, SFSpring16_25nsV10, SFSpring16_25nsV10_Err;
   std::vector<double> etaFall17_V3_center, etaFall17_V3_err, SFFall17_V3, SFFall17_V3_Err;
   std::vector<double> etaAutumn18_V1_center, etaAutumn18_V1_err, SFAutumn18_V1, SFAutumn18_V1_Err;
   std::vector<double> etaAutumn18_V3_center, etaAutumn18_V3_err, SFAutumn18_V3, SFAutumn18_V3_Err;
+  std::vector<double> etaAutumn18_V4_center, etaAutumn18_V4_err, SFAutumn18_V4, SFAutumn18_V4_Err;
+  std::vector<double> etaAutumn18_V4_wPUId_center, etaAutumn18_V4_wPUId_err, SFAutumn18_V4_wPUId, SFAutumn18_V4_wPUId_Err;
+  std::vector<double> etaAutumn18_V4_noPUId_center, etaAutumn18_V4_noPUId_err, SFAutumn18_V4_noPUId, SFAutumn18_V4_noPUId_Err;
+
 
   for (unsigned int i = 0; i < 13; i++) {
     etaSummer16_25nsV1_center.push_back((etaSummer16_25nsV1[i+1]+etaSummer16_25nsV1[i])/2);
@@ -393,6 +433,27 @@ void plot_SF_systematics_(TString path = "/nfs/dust/cms/user/amalara/WorkingArea
     /*****/etaAutumn18_V3_err.push_back((etaAutumn18_V3[i+1]-etaAutumn18_V3[i])/2);
     /**********/SFAutumn18_V3.push_back(jerAutumn18_V3[i][0]);
     /******/SFAutumn18_V3_Err.push_back(jerAutumn18_V3[i][1]);
+
+
+    /**/etaAutumn18_V4_center.push_back((etaAutumn18_V4[i+1]+etaAutumn18_V4[i])/2);
+    /*****/etaAutumn18_V4_err.push_back((etaAutumn18_V4[i+1]-etaAutumn18_V4[i])/2);
+    /**********/SFAutumn18_V4.push_back(jerAutumn18_V4[i][0]);
+    /******/SFAutumn18_V4_Err.push_back(jerAutumn18_V4[i][1]);
+
+
+    /**/etaAutumn18_V4_wPUId_center.push_back((etaAutumn18_V4[i+1]+etaAutumn18_V4[i])/2);
+    /*****/etaAutumn18_V4_wPUId_err.push_back((etaAutumn18_V4[i+1]-etaAutumn18_V4[i])/2);
+    /**********/SFAutumn18_V4_wPUId.push_back(jerAutumn18_V4_wPUId[i][0]);
+    /******/SFAutumn18_V4_wPUId_Err.push_back(jerAutumn18_V4_wPUId[i][1]);
+
+
+
+    /**/etaAutumn18_V4_noPUId_center.push_back((etaAutumn18_V4[i+1]+etaAutumn18_V4[i])/2);
+    /*****/etaAutumn18_V4_noPUId_err.push_back((etaAutumn18_V4[i+1]-etaAutumn18_V4[i])/2);
+    /**********/SFAutumn18_V4_noPUId.push_back(jerAutumn18_V4_noPUId[i][0]);
+    /******/SFAutumn18_V4_noPUId_Err.push_back(jerAutumn18_V4_noPUId[i][1]);
+
+
   }
 
 
@@ -401,21 +462,29 @@ void plot_SF_systematics_(TString path = "/nfs/dust/cms/user/amalara/WorkingArea
   TGraphErrors* gr_SFFall17_V3        = new TGraphErrors(SFFall17_V3.size(), &(etaFall17_V3_center[0]), &SFFall17_V3[0], &(etaFall17_V3_err[0]), &SFFall17_V3_Err[0]);
   TGraphErrors* gr_SFAutumn18_V1      = new TGraphErrors(SFAutumn18_V1.size(), &(etaAutumn18_V1_center[0]), &SFAutumn18_V1[0], &(etaAutumn18_V1_err[0]), &SFAutumn18_V1_Err[0]);
   TGraphErrors* gr_SFAutumn18_V3      = new TGraphErrors(SFAutumn18_V3.size(), &(etaAutumn18_V3_center[0]), &SFAutumn18_V3[0], &(etaAutumn18_V3_err[0]), &SFAutumn18_V3_Err[0]);
+  TGraphErrors* gr_SFAutumn18_V4      = new TGraphErrors(SFAutumn18_V4.size(), &(etaAutumn18_V4_center[0]), &SFAutumn18_V4[0], &(etaAutumn18_V4_err[0]), &SFAutumn18_V4_Err[0]);
+  TGraphErrors* gr_SFAutumn18_V4_wPUId= new TGraphErrors(SFAutumn18_V4_wPUId.size(), &(etaAutumn18_V4_wPUId_center[0]), &SFAutumn18_V4_wPUId[0], &(etaAutumn18_V4_wPUId_err[0]), &SFAutumn18_V4_wPUId_Err[0]);
+  TGraphErrors* gr_SFAutumn18_V4_noPUId= new TGraphErrors(SFAutumn18_V4_noPUId.size(), &(etaAutumn18_V4_noPUId_center[0]), &SFAutumn18_V4_noPUId[0], &(etaAutumn18_V4_noPUId_err[0]), &SFAutumn18_V4_noPUId_Err[0]);
   TGraphErrors* gr_final              = new TGraphErrors(SF_final.size(), &(eta_bin_all_center[0]), &SF_final[0], &(eta_bin_all_error[0]), &SF_final_error[0]); //tot
   // TGraphErrors* gr_final           = new TGraphErrors(SF_final.size(), &(eta_bin_all_center[0]), &SF_final[0], &(eta_bin_all_error[0]), &SF_final_error_stat[0]); //stat
   // TGraphErrors* gr_final           = new TGraphErrors(SF_final.size(), &(eta_bin_all_center[0]), &SF_final[0], &(eta_bin_all_error[0]), &SF_final_error_syst[0]); //sys
   // tdrDraw(gr_SFSpring16_25nsV10, "P5", kFullDotLarge, kOrange-1, kSolid, kOrange-1, 3004, kOrange-1);
   // tdrDraw(gr_SFSummer16_25nsV1, "P5", kFullDotLarge, kRed+1, kSolid, kRed+1, 3005, kRed+1);
   // tdrDraw(gr_SFFall17_V3, "P5", kFullDotLarge, kGreen-1, kSolid, kGreen-1, 3004, kGreen-1);
-  // tdrDraw(gr_SFAutumn18_V1, "P5", kFullDotLarge, kRed+1, kSolid, kRed+1, 3005, kRed+1);
-  tdrDraw(gr_SFAutumn18_V3, "P5", kFullDotLarge, kGreen-1, kSolid, kGreen-1, 3005, kGreen-1);
+  tdrDraw(gr_SFAutumn18_V1, "P5", kFullDotLarge, kGreen-1, kSolid, kGreen-1, 3005, kGreen-1);
+  // tdrDraw(gr_SFAutumn18_V3, "P5", kFullDotLarge, kGreen-1, kSolid, kGreen-1, 3005, kGreen-1);
+  tdrDraw(gr_SFAutumn18_V4_noPUId, "P5", kFullDotLarge, kRed+1, kSolid, kRed+1, 3005, kRed+1);
   tdrDraw(gr_final, "P5", kFullDotLarge, kBlue-4, kSolid, kBlue-4, 3005, kBlue-4);
+  // tdrDraw(gr_SFAutumn18_V4_wPUId, "P5", kFullDotLarge, kGreen-1, kSolid, kGreen-1, 3005, kGreen-1);
   // // leg_final->AddEntry(gr_SFSpring16_25nsV10, "Spring16_25nsV10","f");
   // leg_final->AddEntry(gr_SFSummer16_25nsV1, "Summer16_25nsV1","f");
   // leg_final->AddEntry(gr_SFFall17_V3,       "Fall17_V3","f");
-  // leg_final->AddEntry(gr_SFAutumn18_V1,  "Autumn18_V1RunABC","f");
-  leg_final->AddEntry(gr_SFAutumn18_V3,  "Autumn18_V3","f");
+  leg_final->AddEntry(gr_SFAutumn18_V1,  "Autumn18_V1RunD","f");
+  // leg_final->AddEntry(gr_SFAutumn18_V3,  "Autumn18_V3","f");
+  leg_final->AddEntry(gr_SFAutumn18_V4_noPUId,  "Autumn18_V4RunD","f");
   leg_final->AddEntry(gr_final,             "Autumn18_"+QCD_DATA(QCD_DATA.Index("Run"), QCD_DATA.Length()-QCD_DATA.Index("Run")-1),"f");
+  // leg_final->AddEntry(gr_final,             "Autumn18_NoCut","f");
+  // leg_final->AddEntry(gr_SFAutumn18_V4_wPUId,  "Autumn18_V4_NoCut_PuId","f");
   // leg_final->AddEntry(gr_SFSummer16_25nsV1, "RunF_ECAL","f");
   // leg_final->AddEntry(gr_final,  "RunF","f");
   leg_final->Draw("same");
@@ -524,11 +593,16 @@ void plot_SF_systematics() {
   //JECs.push_back("Autumn18_V4");
   //JECs.push_back("Autumn18_V8");
   // JECs.push_back("Autumn18_V8_test");
-  JECs.push_back("Autumn18_V10");
+  //JECs.push_back("Autumn18_V10");
+  // JECs.push_back("Autumn18_V13");
+  JECs.push_back("Autumn18_V13h");
+  // JECs.push_back("Autumn18_V10_noPUId");
+  // JECs.push_back("Autumn18_V10_wPUId");
   // JECs.push_back("Autumn18_V10_test");
 
   std::vector<TString> JETs;
   JETs.push_back("AK4CHS");
+  // JETs.push_back("AK4CHS_wPUID");
   // JETs.push_back("AK8PUPPI");
 
   std::vector<TString> QCDS;
@@ -541,8 +615,8 @@ void plot_SF_systematics() {
   // DATAS.push_back("RunB");
   // DATAS.push_back("RunC");
   DATAS.push_back("RunD");
-  DATAS.push_back("RunABC");
-  DATAS.push_back("RunABCD");
+  //DATAS.push_back("RunABC");
+  //DATAS.push_back("RunABCD");
 
 
 

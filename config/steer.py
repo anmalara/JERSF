@@ -2,7 +2,7 @@
 
 from createConfigFiles import *
 
-def cont_event(paths ="./submittedJobs/" , JECVersions_Data=["Autumn18_V4"], JetLabels=["AK4CHS"], systematics=["", "PU", "JEC", "JER"]):
+def cont_event(paths ="./submittedJobs/" , JECVersions_Data=["Autumn18_V4"], JetLabels=["AK4CHS"], systematics=["", "PU", "JEC", "JER"],extratext=""):
     count = 0
     for newJECVersion in JECVersions_Data:
         for newJetLabel in JetLabels:
@@ -14,7 +14,7 @@ def cont_event(paths ="./submittedJobs/" , JECVersions_Data=["Autumn18_V4"], Jet
                         continue
                     if sys == "JER" and dir == "":
                         dir = "nominal"
-                    path = paths+newJECVersion+"/"+newJetLabel+"/"+sys+"/"+dir+"/"
+                    path = paths+newJECVersion+"/"+newJetLabel+extratext+"/"+sys+"/"+dir+"/"
                     for sample in sorted(os.listdir(path)):
                         if not ".xml" in sample:
                             continue
@@ -22,7 +22,7 @@ def cont_event(paths ="./submittedJobs/" , JECVersions_Data=["Autumn18_V4"], Jet
     return count
 
 @timeit
-def condor_control(original_dir ="./submittedJobs/" , JECVersions_Data=["Autumn18_V4"], JetLabels=["AK4CHS"], systematics=["", "PU", "JEC", "JER"], internal_option="-l", processes=[]):
+def condor_control(original_dir ="./submittedJobs/" , JECVersions_Data=["Autumn18_V4"], JetLabels=["AK4CHS"], systematics=["", "PU", "JEC", "JER"], internal_option="-l", processes=[], extratext=""):
     count = 0
     for newJECVersion in JECVersions_Data:
         for newJetLabel in JetLabels:
@@ -34,14 +34,14 @@ def condor_control(original_dir ="./submittedJobs/" , JECVersions_Data=["Autumn1
                         continue
                     if sys == "JER" and dir == "":
                         dir = "nominal"
-                    path = original_dir+newJECVersion+"/"+newJetLabel+"/"+sys+"/"+dir+"/"
+                    path = original_dir+newJECVersion+"/"+newJetLabel+extratext+"/"+sys+"/"+dir+"/"
                     print path
                     for sample in sorted(os.listdir(path)):
                         if not ".xml" in sample:
                             continue
  			if all(not control in sample for control in processes): continue
                         count += 1
-                        all_events = cont_event(original_dir, JECVersions_Data, JetLabels, systematics)
+                        all_events = cont_event(original_dir, JECVersions_Data, JetLabels, systematics,extratext)
                         print "Already completed "+str(count)+" out of "+str(all_events)+" jobs --> "+str(float(count)/float(all_events)*100)+"%."
                         os.chdir(original_dir)
                         os.chdir(path)
@@ -58,7 +58,7 @@ def condor_control(original_dir ="./submittedJobs/" , JECVersions_Data=["Autumn1
 
 from createConfigFiles import *
 @timeit
-def delete_workdir(original_dir ="./SubmittedJobs/" , JECVersions_Data=["Autumn18_V4", "Autumn18_V4"], JetLabels=["AK4CHS", "AK8PUPPI"], systematics=["", "PU", "JEC", "JER"]):
+def delete_workdir(original_dir ="./SubmittedJobs/" , JECVersions_Data=["Autumn18_V4", "Autumn18_V4"], JetLabels=["AK4CHS", "AK8PUPPI"], systematics=["", "PU", "JEC", "JER"],extratext=""):
     add_name = original_dir[original_dir.find("SubmittedJobs")+len("SubmittedJobs"):-1]
     for sample in ["DATA", "QCD"]:
         for newJECVersion in JECVersions_Data:
@@ -71,13 +71,13 @@ def delete_workdir(original_dir ="./SubmittedJobs/" , JECVersions_Data=["Autumn1
                             continue
                     	if sys == "JER" and dir == "":
                        	    dir = "nominal"
-                        path = "/nfs/dust/cms/user/amalara/sframe_all/"+outdir+add_name+"_"+sample+"/"+newJECVersion+"/"+newJetLabel+"/"+sys+"/"+dir+"/"
+                        path = "/nfs/dust/cms/user/amalara/sframe_all/"+outdir+add_name+"_"+sample+"/"+newJECVersion+"/"+newJetLabel+extratext+"/"+sys+"/"+dir+"/"
                         if os.path.isdir(path):
                             for workdir in sorted(os.listdir(path)):
                                 if "workdir" in workdir:
                                     cmd = "rm -fr %s" % (path+workdir)
                                     a = os.system(cmd)
-                        path = original_dir+newJECVersion+"/"+newJetLabel+"/"+sys+"/"+dir+"/"
+                        path = original_dir+newJECVersion+"/"+newJetLabel+extratext+"/"+sys+"/"+dir+"/"
                         if os.path.isdir(path):
                             for workdir in sorted(os.listdir(path)):
                                 if "workdir" in workdir:
@@ -87,13 +87,13 @@ def delete_workdir(original_dir ="./SubmittedJobs/" , JECVersions_Data=["Autumn1
 
 
 
-def main_program(option="", internal_option="", processes=[], JECVersions_Data=[], JECVersions_MC=[], JetLabels=[], systematics=[], original_dir="./SubmittedJobs/", original_file="JER2018.xml", isMB=False, test_trigger=False, isThreshold=False, isLowPt=False, isL1Seed=False, isECAL=False):
+def main_program(option="", internal_option="", processes=[], JECVersions_Data=[], JECVersions_MC=[], JetLabels=[], systematics=[], original_dir="./SubmittedJobs/", original_file="JER2018.xml", isMB=False, test_trigger=False, isThreshold=False, isLowPt=False, isL1Seed=False, isECAL=False, apply_PUid=False, extratext=""):
     if option == "new":
-        createConfigFiles(processes, JECVersions_Data, JECVersions_MC, JetLabels, systematics, original_dir, original_file, outdir, isMB, test_trigger, isThreshold,isLowPt,isL1Seed,isECAL)
+        createConfigFiles(processes, JECVersions_Data, JECVersions_MC, JetLabels, systematics, original_dir, original_file, outdir, isMB, test_trigger, isThreshold,isLowPt,isL1Seed,isECAL,apply_PUid,extratext)
     elif option == "remove" or option == "delete":
-        delete_workdir(original_dir, JECVersions_Data, JetLabels, systematics)
+        delete_workdir(original_dir, JECVersions_Data, JetLabels, systematics, extratext)
     else:
-        condor_control(original_dir, JECVersions_Data, JetLabels, systematics, internal_option, processes)
+        condor_control(original_dir, JECVersions_Data, JetLabels, systematics, internal_option, processes, extratext)
 
 
 
@@ -170,8 +170,8 @@ original_file = "JER2018.xml"
 outdir = "JER2018"
 original_dir_ = os.getcwd()
 
-JECVersions_Data = ["Autumn18_V10"]
-JECVersions_MC = ["Autumn18_V10"]
+JECVersions_Data = ["Autumn18_V13h"]
+JECVersions_MC = ["Autumn18_V13h"]
 JetLabels = ["AK4CHS"]
 # JetLabels = ["AK8PUPPI"]
 systematics = ["", "PU", "JEC", "JER"]
@@ -183,6 +183,11 @@ test_trigger = False
 isThreshold = False
 isL1Seed = False
 isECAL = False
+apply_PUid = False
+#apply_PUid = True
+extratext = ""
+if apply_PUid:
+    extratext = "_wPUID"
 original_dir = original_dir_
 original_dir += "/SubmittedJobs/"
-main_program(option, internal_option, processes, JECVersions_Data, JECVersions_MC, JetLabels, systematics, original_dir, original_file, isMB, test_trigger, isThreshold, isLowPt, isL1Seed)
+main_program(option, internal_option, processes, JECVersions_Data, JECVersions_MC, JetLabels, systematics, original_dir, original_file, isMB=isMB, test_trigger=test_trigger, isThreshold=isThreshold, isLowPt=isLowPt, isL1Seed=isL1Seed, isECAL=isECAL, apply_PUid=apply_PUid, extratext=extratext)

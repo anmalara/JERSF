@@ -189,8 +189,7 @@ protected:
   JetId Jet_PFID;
   int n_evt;
   bool test_trigger, isThreshold;
-  // bool apply_PUid = true;
-  bool apply_PUid = false;
+  bool apply_PUid;
   std::unique_ptr<TFile> f_weights;
 
   std::map<run_lumi, double> rl2lumi;
@@ -219,6 +218,7 @@ JERSFModule::JERSFModule(uhh2::Context & ctx) {
   isMC = (ctx.get("dataset_type") == "MC");
   test_trigger = string2bool(ctx.get("test_trigger", "false"));
   isThreshold = string2bool(ctx.get("isThreshold", "false"));
+  apply_PUid = string2bool(ctx.get("apply_PUid", "false"));
   cout << "Dataset is " << ((isMC) ? " mc " : " data") << endl;
 
   //#############################################  Filters  #########################################################
@@ -395,6 +395,7 @@ JERSFModule::JERSFModule(uhh2::Context & ctx) {
       else MAKE_JEC_MC(Autumn18_V7, AK4PFchs)
       else MAKE_JEC_MC(Autumn18_V8, AK4PFchs)
       else MAKE_JEC_MC(Autumn18_V10, AK4PFchs)
+      else MAKE_JEC_MC(Autumn18_V13h, AK4PFchs)
       else throw runtime_error("In JERSFModule.cxx: Invalid JEC_Version for deriving residuals on AK4CHS, MC specified ("+JEC_Version+") ");
     }
     else if (jetLabel == "AK8PUPPI") {
@@ -410,6 +411,7 @@ JERSFModule::JERSFModule(uhh2::Context & ctx) {
       else MAKE_JEC(Autumn18_V7, AK4PFchs)
       else MAKE_JEC(Autumn18_V8, AK4PFchs)
       else MAKE_JEC(Autumn18_V10, AK4PFchs)
+      else MAKE_JEC(Autumn18_V13h, AK4PFchs)
       else throw runtime_error("In JERSFModule.cxx: Invalid JEC_Version for deriving residuals on AK4CHS "+JEC_Version+", DATA specified.");
     }
     else if (jetLabel == "AK8PUPPI") {

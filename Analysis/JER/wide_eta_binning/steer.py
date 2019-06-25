@@ -38,7 +38,7 @@ def main_function(gaustails=False, shiftForPLI="central", gaustail_num = 0.985):
     if shiftForPLI=="down":
         outdir = out_path+newJECVersion+"/"+newJetLabel+"/PLI/down/"+QCDsample+"/"+run+"/"
         shiftForPLI_num = -0.25
-    # print "outdir ", outdir
+    print "outdir ", outdir
     if os.path.isdir(outdir):
         for el in sorted(os.listdir(outdir)):
             cmd = "rm -fr %s" % (outdir+el)
@@ -94,9 +94,9 @@ samples = ["A", "B", "C", "ABC"]
 samples = ["D"]
 samples = ["A", "B", "C", "D", "ABC", "ABCD"]
 samples = ["D", "ABC", "ABCD"]
-#samples = ["ABC"]
-samples = ["A"]
-# samples = ["ABCD"]
+# samples = ["ABC"]
+#samples = ["A"]
+#samples = ["ABCD", "D"]
 # QCDSamples = ["QCDPt","QCDHT"]
 #QCDSamples = ["QCD_Flat2018"]
 #QCDSamples = ["QCD_Flat", "QCD_Flat2018"]
@@ -104,15 +104,17 @@ QCDSamples = ["QCDHT"]
 # QCDSamples = ["QCDHT", "QCD_Flat"]
 # QCDSamples = ["QCD_Flat"]
 JetLabels=["AK4CHS"]
+#JetLabels = ["AK4CHS_wPUID"]
 # JetLabels=["AK8PUPPI"]
 JECVersions=["Autumn18_V10"]
+JECVersions=["Autumn18_V13h"]
 dirs = ["", "up", "down"]
 # studies = ["StandardPtBins/", "StandardPtBins_L1Seed/"]
 studies = ["StandardPtBins/", "StandardPtBins_allweights/", "StandardPtBins_weightcut/"]
 studies = ["StandardPtBins/"]
 systematics=["", "PU", "JEC", "alpha", "JER"]
-systematics=["alpha"]
-# systematics=["", "JEC"]
+#systematics=[""]
+#systematics=["", "JEC"]
 
 list_processes = []
 list_logfiles = []

@@ -123,8 +123,9 @@ for el in [""]:
 
   JECVersions = ["Autumn18_V4","Autumn18_V5","Autumn18_V7"]
   JECVersions = ["Autumn18_V10"]
+  JECVersions = ["Autumn18_V13h"]
   # JetLabels = ["AK8PUPPI"]
-  JetLabels = ["AK4CHS"]
+  JetLabels = ["AK4CHS","AK4CHS_wPUID"]
   systematics = ["", "alpha","PU", "JEC", "JER"]
   #systematics = [""]
   main_program(path, list_path, out_path, JECVersions, JetLabels, systematics, samples)

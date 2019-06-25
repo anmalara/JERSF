@@ -843,8 +843,46 @@ void fitLin( TH1F &hist, double &width, double &error ) {
 }
 
 
-
 bool removePointsforWidth(bool isFE, int m, int p, int r) {
+  bool check = false;
+  if ( p == 0 && r < 4) check = true;
+  if ( p == 1 && r < 3) check = true;
+  if ( p == 2 && r < 2) check = true;
+  if ( p == 3 && r < 2) check = true;
+  if ( p == 4 && r < 1) check = true;
+  if ( p == 5 && r < 1) check = true;
+
+  if (!isFE   && m >= 6 && p == 2 && r < 3) check = true;
+  if (!isFE   && m >= 2 && p == 3 && r < 2) check = true;
+  if (!isFE   && m >= 4 && p >= 6 && r < 1) check = true;
+  if ( isFE   && m >= 11&& p == 0 && r== 3) check = false;
+  if ( isFE   && m == 10&& p == 8 && r < 2) check = true;
+  return check;
+}
+
+
+bool removePointsforFit(bool isFE, int m, int p) {
+  bool check = false;
+  // if ( p<=1 ) check = true;
+  // if ( !isFE && m==5  && p==8 ) check = true;
+  // if ( !isFE && m==6  && p==8 ) check = true;
+  // if ( !isFE && m==7  && p>=8 ) check = true;
+  // if ( !isFE && m==8  && p>=5 ) check = true;
+  // if ( !isFE && m==9  && p>=5 ) check = true;
+  // if (  isFE && m==5  && p==2 ) check = true;
+  // if (  isFE && m==6  && p==8 ) check = true;
+  // if (  isFE && m==7  && p==7 ) check = true;
+  // if (  isFE && m==8  && p==2 ) check = true;
+  // if (  isFE && m==8  && p==7 ) check = true;
+  // if (  isFE && m==10 && p==6 ) check = true;
+  // if (  isFE && m==10 && p>=8 ) check = true;
+  // if (  isFE && m==11 && p>=7 ) check = true;
+  // if (  isFE && m==12 && p>=7 ) check = true;
+  return check;
+}
+
+
+bool removePointsforWidth2(bool isFE, int m, int p, int r) {
   bool check = false;
   if ( p == 0 && r < 4) check = true;
   if ( p == 1 && r < 4) check = true;
@@ -884,7 +922,7 @@ bool removePointsforWidth(bool isFE, int m, int p, int r) {
 }
 
 
-bool removePointsforFit(bool isFE, int m, int p) {
+bool removePointsforFit2(bool isFE, int m, int p) {
   bool check = false;
   if ( p<=1 ) check = true;
   if ( !isFE && m==5  && p==8 ) check = true;
@@ -897,9 +935,9 @@ bool removePointsforFit(bool isFE, int m, int p) {
   if (  isFE && m==7  && p==7 ) check = true;
   if (  isFE && m==8  && p==2 ) check = true;
   if (  isFE && m==8  && p==7 ) check = true;
-  if (  isFE && m==10 && p==6 ) check = true;
-  if (  isFE && m==10 && p>=8 ) check = true;
-  if (  isFE && m==11 && p>=7 ) check = true;
+  if (  isFE && m==11 && p==6 ) check = true;
+  if (  isFE && m==11 && p>=8 ) check = true;
   if (  isFE && m==12 && p>=7 ) check = true;
+  if (  isFE && m==13 && p>=5 ) check = true;
   return check;
 }

@@ -118,14 +118,16 @@ for el in [""]:
   path = sframe_+inputdir+el+"_DATA/"
   # samples = ["ABCD"]
   samples = ["A", "B", "C", "D", "ABC", "ABCD"]
-  samples = ["A","ABCD"]
-  samples = ["B", "C", "D", "ABC"]
+  samples = ["A"]
+  #samples = ["B", "C", "D", "ABC"]
   JECVersions = ["Autumn18_V4","Autumn18_V5","Autumn18_V7"]
   JECVersions = ["Autumn18_V10"]
+  JECVersions = ["Autumn18_V13h"]
   # JetLabels = ["AK8PUPPI"]
+  # JetLabels = ["AK4CHS","AK4CHS_wPUID"]
   JetLabels = ["AK4CHS"]
-  systematics = ["", "alpha","PU", "JEC", "JER"]
-  #systematics = [""]
+  # systematics = ["", "alpha","PU", "JEC", "JER"]
+  systematics = [""]
   main_program(path, list_path, out_path, JECVersions, JetLabels, systematics, samples)
 
 print len(list_processes)
@@ -133,4 +135,4 @@ print len(list_processes)
 for i in list_processes:
   print i
 
-parallelise(list_processes, 20, list_logfiles)
+#parallelise(list_processes, 20, list_logfiles)

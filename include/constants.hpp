@@ -40,6 +40,8 @@ const double pt_bins_Di_HF_ext[n_pt_bins_Di_HF_ext] = { 93, 116, 141, 210, 278, 
 /* //Eta bins ------------- */
 const int n_eta_bins = 14;
 const double eta_bins[n_eta_bins] = { 0, 0.522, 0.783, 1.131, 1.305, 1.740, 1.930, 2.043, 2.322, 2.5, 2.853, 2.964, 3.139, 5.191 };
+const int n_eta_bins2 = 15;
+const double eta_bins2[n_eta_bins2] = { 0, 0.522, 0.783, 1.131, 1.305, 1.740, 1.930, 2.043, 2.322, 2.5, 2.650, 2.853, 2.964, 3.139, 5.191 };
 
 // taken from https://twiki.cern.ch/twiki/bin/view/CMS/PdmV2018Analysis
 constexpr static int s_runnr_A = 316995; //up to this one, including this one
